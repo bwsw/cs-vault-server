@@ -1,2 +1,18 @@
-*.class
 *.log
+*.class
+
+#sbt specific
+.cache
+.lib/
+dist/*
+target/
+project/plugins/project/
+project/boot/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.idea
+*.csv
+*.iml
+Будет удалено project/project/
