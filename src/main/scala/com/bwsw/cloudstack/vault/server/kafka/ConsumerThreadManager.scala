@@ -16,15 +16,21 @@ import scala.collection.JavaConverters._
 class ConsumerThreadManager(topic: String, brokers: String) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val components = new Components()
+  private var consumerPool: Array[ConsumerThread] = Array.empty
 
   def execute() {
     val partitions = getPartitionListFor(topic)
     partitions.foreach { x =>
       logger.info(s"start threadConsumer for partition: $x")
       val consumerThread = new ConsumerThread(brokers, x, new CloudStackEventHandler(components.csVaultController))
+      consumerPool = consumerPool :+ consumerThread
       val thread = new Thread(consumerThread)
       thread.start()
     }
+    while(!consumerPool.exists(_.closed.get())){
+      Thread.sleep(10000)
+    }
+    consumerPool.foreach(_.shutdown())
   }
 
   private def getPartitionListFor(topic: String): List[TopicPartition] = {

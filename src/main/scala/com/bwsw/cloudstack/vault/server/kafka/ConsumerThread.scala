@@ -1,11 +1,13 @@
 package com.bwsw.cloudstack.vault.server.kafka
 
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.{Collections, Properties}
 
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.errors.WakeupException
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -17,6 +19,7 @@ class ConsumerThread(val brokers: String,
                      val partition: TopicPartition,
                      val eventHandler: EventHandler) extends Runnable {
 
+  val closed: AtomicBoolean = new AtomicBoolean(false)
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val props: Properties = createConsumerConfig(brokers)
   private val consumer = new KafkaConsumer[String, String](props)
@@ -34,15 +37,29 @@ class ConsumerThread(val brokers: String,
     props
   }
 
+  def shutdown(): Unit ={
+    closed.set(true)
+    consumer.wakeup()
+  }
+
   def run() {
-    consumer.assign(Collections.singletonList(partition))
-    logger.info(s"Assign to the partition: ${partition.partition()}")
-    while (true) {
-      logger.debug(s"Waiting for records that consumed from kafka for $timeout milliseconds\n")
-      val records = consumer.poll(timeout)
-      records.asScala.foreach { x =>
-        eventHandler.handleEvent(x.value())
+    try {
+      consumer.assign(Collections.singletonList(partition))
+      logger.info(s"Assign to the partition: ${partition.partition()}")
+      while (!closed.get()) {
+        logger.debug(s"Waiting for records that consumed from kafka for $timeout milliseconds\n")
+        val records = consumer.poll(timeout)
+        records.asScala.foreach { x =>
+          eventHandler.handleEvent(x.value())
+        }
       }
+    } catch {
+      case e: WakeupException if closed.get() => logger.error("Received a WakeupException with closed consumer")
+      case e: Throwable =>
+        closed.set(true)
+        logger.error(s"Resceived an exception $e")
+    } finally {
+      consumer.close()
     }
   }
 
