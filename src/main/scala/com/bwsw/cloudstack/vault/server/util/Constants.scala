@@ -1,4 +1,4 @@
-package com.bwsw.csvault.util
+package com.bwsw.cloudstack.vault.server.util
 
 /**
   * Created by medvedev_vv on 31.07.17.

@@ -1,8 +1,8 @@
-package com.bwsw.csvault.common
+package com.bwsw.cloudstack.vault.server.common
 
 import java.lang.reflect.{ParameterizedType, Type}
 
-import com.bwsw.csvault.common.traits.Serializer
+import com.bwsw.cloudstack.vault.server.common.traits.Serializer
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}

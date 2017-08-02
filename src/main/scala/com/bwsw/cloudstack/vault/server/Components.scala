@@ -1,8 +1,8 @@
-package com.bwsw.csvault
+package com.bwsw.cloudstack.vault.server
 
-import com.bwsw.csvault.controllers.CSVaultController
-import com.bwsw.csvault.cs.CloudStackService
-import com.bwsw.csvault.vault.VaultService
+import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
+import com.bwsw.cloudstack.vault.server.controllers.CSVaultController
+import com.bwsw.cloudstack.vault.server.vault.VaultService
 
 /**
   * Created by medvedev_vv on 02.08.17.

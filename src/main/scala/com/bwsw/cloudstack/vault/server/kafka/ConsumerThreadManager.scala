@@ -1,9 +1,9 @@
-package com.bwsw.csvault.kafka
+package com.bwsw.cloudstack.vault.server.kafka
 
 import java.util.Properties
 
-import com.bwsw.csvault.Components
-import com.bwsw.csvault.cs.util.CloudStackEventHandler
+import com.bwsw.cloudstack.vault.server.Components
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig}
 import org.apache.kafka.common.TopicPartition
 import org.slf4j.LoggerFactory

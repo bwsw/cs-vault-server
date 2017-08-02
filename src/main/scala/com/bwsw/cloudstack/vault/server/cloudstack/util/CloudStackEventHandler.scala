@@ -1,9 +1,9 @@
-package com.bwsw.csvault.cs.util
+package com.bwsw.cloudstack.vault.server.cloudstack.util
 
-import com.bwsw.csvault.common.JsonSerializer
-import com.bwsw.csvault.common.traits.EventHandler
-import com.bwsw.csvault.controllers.CSVaultController
-import com.bwsw.csvault.cs.entities.CloudStackEvent
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
+import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
+import com.bwsw.cloudstack.vault.server.controllers.CSVaultController
 import org.slf4j.LoggerFactory
 
 /**

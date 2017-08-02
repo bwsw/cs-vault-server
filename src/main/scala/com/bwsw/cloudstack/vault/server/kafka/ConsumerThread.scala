@@ -1,16 +1,15 @@
-package com.bwsw.csvault.kafka
+package com.bwsw.cloudstack.vault.server.kafka
 
 import java.util.{Collections, Properties}
 
-import com.bwsw.csvault.common.JsonSerializer
-import com.bwsw.csvault.common.traits.EventHandler
-import com.bwsw.csvault.cs.entities.CloudStackEvent
-import com.bwsw.csvault.cs.util.CloudStackEventHandler
+import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+
 /**
   * Created by medvedev_vv on 31.07.17.
   */

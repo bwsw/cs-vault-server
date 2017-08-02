@@ -1,4 +1,4 @@
-package com.bwsw.csvault.common.traits
+package com.bwsw.cloudstack.vault.server.common.traits
 
 /**
   * Created by medvedev_vv on 02.08.17.

@@ -1,4 +1,4 @@
-package com.bwsw.csvault.cs.entities
+package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
 import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime

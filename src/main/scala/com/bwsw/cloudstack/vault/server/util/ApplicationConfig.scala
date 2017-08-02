@@ -1,4 +1,4 @@
-package com.bwsw.csvault.util
+package com.bwsw.cloudstack.vault.server.util
 
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
