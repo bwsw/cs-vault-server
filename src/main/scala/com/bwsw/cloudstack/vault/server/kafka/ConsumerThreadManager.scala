@@ -30,7 +30,7 @@ class ConsumerThreadManager(topic: String, brokers: String) {
     while(!consumerPool.exists(_.closed.get())){
       Thread.sleep(10000)
     }
-    consumerPool.foreach(_.shutdown())
+    consumerPool.filterNot(_.closed.get()).foreach(_.shutdown())
   }
 
   private def getPartitionListFor(topic: String): List[TopicPartition] = {
