@@ -2,13 +2,9 @@ name := "cs-vault-server"
 
 version := "1.0"
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.11.8"
 
-resolvers += Resolver.bintrayRepo("janstenpickle", "maven")
-
-libraryDependencies += "janstenpickle.vault" %% "vault-core" % "0.4.0"
-libraryDependencies += "janstenpickle.vault" %% "vault-auth" % "0.4.0"
-libraryDependencies += "janstenpickle.vault" %% "vault-manage" % "0.4.0"
+libraryDependencies += "com.bettercloud" % "vault-java-driver" % "2.0.0"
 libraryDependencies += "com.typesafe" % "config" % "1.3.0"
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.21"
