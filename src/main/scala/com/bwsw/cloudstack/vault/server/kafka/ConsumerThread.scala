@@ -37,7 +37,8 @@ class ConsumerThread(val brokers: String,
     props
   }
 
-  def shutdown(): Unit ={
+  def shutdown(): Unit = {
+    logger.debug(s"Shutdown the consumer: $consumer")
     closed.set(true)
     consumer.wakeup()
   }
@@ -57,7 +58,7 @@ class ConsumerThread(val brokers: String,
       case e: WakeupException if closed.get() => logger.error("Received a WakeupException with closed consumer")
       case e: Throwable =>
         closed.set(true)
-        logger.error(s"Resceived an exception $e")
+        logger.error(s"Resieved an exception $e")
     } finally {
       consumer.close()
     }

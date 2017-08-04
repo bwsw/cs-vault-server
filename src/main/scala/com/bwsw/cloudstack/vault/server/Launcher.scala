@@ -1,5 +1,7 @@
 package com.bwsw.cloudstack.vault.server
 
+import java.util.StringTokenizer
+
 import com.bwsw.cloudstack.vault.server.kafka.ConsumerThreadManager
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.typesafe.scalalogging.StrictLogging

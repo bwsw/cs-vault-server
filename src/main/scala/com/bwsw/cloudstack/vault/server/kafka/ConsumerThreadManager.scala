@@ -20,13 +20,21 @@ class ConsumerThreadManager(topic: String, brokers: String) {
 
   def execute() {
     val partitions = getPartitionListFor(topic)
-    partitions.foreach { x =>
-      logger.info(s"start threadConsumer for partition: $x")
-      val consumerThread = new ConsumerThread(brokers, x, new CloudStackEventHandler(components.csVaultController))
-      consumerPool = consumerPool :+ consumerThread
-      val thread = new Thread(consumerThread)
-      thread.start()
+    try {
+      partitions.foreach { x =>
+        logger.info(s"start threadConsumer for partition: $x")
+        val consumerThread = new ConsumerThread(brokers, x, new CloudStackEventHandler(components.csVaultController))
+        consumerPool = consumerPool :+ consumerThread
+        val thread = new Thread(consumerThread)
+        thread.start()
+      }
+    } catch {
+      case e: Exception =>
+        logger.error(s"Can not start all of consumers")
+        consumerPool.filterNot(_.closed.get()).foreach(_.shutdown())
+        throw e
     }
+
     while(!consumerPool.exists(_.closed.get())){
       Thread.sleep(10000)
     }
