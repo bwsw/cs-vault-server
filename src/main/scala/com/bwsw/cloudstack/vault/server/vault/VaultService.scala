@@ -30,7 +30,7 @@ class VaultService {
       val endDelay = tokenizer.nextToken().toInt
     } match {
       case Success(_) =>
-        val checker = new PeriodicChecker( )
+        //val checker = PeriodicChecker( )
       case Failure(e: NumberFormatException) =>
     }
 

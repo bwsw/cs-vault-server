@@ -62,21 +62,24 @@ object CloudStackEvent {
     case object AccountCreate extends Action
     case object VMDelete      extends Action
     case object AccountDelete extends Action
+    case object Other         extends Action
 
-    val fromString: PartialFunction[String, Action] = {
+    def fromString(x: String): Action = {
       case "VM.CREATE"      => Action.VMCreate
       case "VM.DELETE"      => Action.VMDelete
       case "USER.CREATE"    => Action.UserCreate
       case "ACCOUNT.CREATE" => Action.AccountCreate
       case "ACCOUNT.DELETE" => Action.AccountDelete
+      case _                => Action.Other
     }
 
-    def ActionToString(x: Action): String = x match {
+    def toString(x: Action): String = x match {
       case Action.VMCreate       => "VM.CREATE"
       case Action.VMDelete       => "VM.DELETE"
       case Action.UserCreate     => "USER.CREATE"
       case Action.AccountCreate  => "ACCOUNT.CREATE"
       case Action.AccountDelete  => "ACCOUNT.DELETE"
+      case Action.Other          => ""
     }
   }
 
