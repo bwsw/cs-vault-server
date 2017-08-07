@@ -41,7 +41,7 @@ class Consumer[T](val brokers: String,
     consumer.close()
   }
 
-  def start() {
+  def process() {
     logger.info(s"Subscribe to the topic: $topic")
     consumer.subscribe(Collections.singletonList(topic))
 
@@ -65,7 +65,7 @@ class Consumer[T](val brokers: String,
               logger.debug(s"The event: $event was successful")
               eventLatch.countDown()
             case Failure(e: Throwable) =>
-              logger.error(s"During event processing occured an exception: $e")
+              logger.error(s"An exception occurred during the event processing: $e")
               val restartedEvent = eventHandler.restartEvent(event)
               checkEvent(restartedEvent)
           }

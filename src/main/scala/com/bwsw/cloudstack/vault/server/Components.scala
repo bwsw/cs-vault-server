@@ -1,7 +1,7 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.controllers.CSVaultController
+import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 
 /**
@@ -13,6 +13,6 @@ class Components {
   lazy val vaultService = new VaultService
 
   //controllers
-  lazy val csVaultController = new CSVaultController(vaultService, cloudStackService)
+  lazy val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService)
 
 }

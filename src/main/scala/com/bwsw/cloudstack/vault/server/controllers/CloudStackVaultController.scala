@@ -6,6 +6,6 @@ import com.bwsw.cloudstack.vault.server.vault.VaultService
 /**
   * Created by medvedev_vv on 02.08.17.
   */
-class CSVaultController(vaultService: VaultService, cloudStackService: CloudStackService) {
+class CloudStackVaultController(vaultService: VaultService, cloudStackService: CloudStackService) {
 
 }

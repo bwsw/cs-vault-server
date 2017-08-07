@@ -3,7 +3,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack.util
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
-import com.bwsw.cloudstack.vault.server.controllers.CSVaultController
+import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -12,7 +12,7 @@ import CloudStackEvent.Action._
 /**
   * Created by medvedev_vv on 02.08.17.
   */
-class CloudStackEventHandler(controller: CSVaultController)
+class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
   private val jsonSerializer = new JsonSerializer(true)
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -36,15 +36,23 @@ class CloudStackEventHandler(controller: CSVaultController)
         case AccountCreate => (Future(logger.info("Controller.AccountCreate")), event)
         case AccountDelete => (Future(logger.info("Controller.AccountDelete")), event)
         case UserCreate => (Future(logger.info("Controller.UserCreate")), event)
+        case UserDelete => (Future(logger.info("Controller.UserDelete")), event)
       }
     }
 
     override def isDefinedAt(event: CloudStackEvent): Boolean = {
-      event.action match {
-        case VMCreate | VMDelete | AccountCreate | AccountDelete | UserCreate => true
-        case Other =>
-          logger.debug("Unknown event")
-          false
+      if (event.entityuuid == null || event.eventDateTime == null) {
+        false
+      } else {
+        event.action match {
+          case AccountCreate | AccountDelete | UserCreate | UserDelete =>
+            event.status.oneOf(CloudStackEvent.Status.Completed)
+          case VMCreate | VMDelete =>
+            event.status.oneOf(CloudStackEvent.Status.Started)
+          case _ =>
+            logger.debug("Unhandled event")
+            false
+        }
       }
     }
   }
