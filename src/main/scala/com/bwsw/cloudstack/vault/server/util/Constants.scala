@@ -7,7 +7,7 @@ object ConfigLiterals {
   final val applicationDomain = "app"
   final val kafkaDomain = s"$applicationDomain.kafka"
   final val vaultDomain = s"$applicationDomain.vault"
-  final val cloudStackDomain = s"$applicationDomain.cs"
+  final val cloudStackDomain = s"$applicationDomain.cloudStack"
 
   val tokenPeriod = s"$applicationDomain.tokenPeriod"
   val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
@@ -20,9 +20,9 @@ object ConfigLiterals {
   val vaultRetryDelay = s"$vaultDomain.retryDelay"
   val vaultRetryCount = s"$vaultDomain.retryCount"
 
-  val csApiUrlList = s"$cloudStackDomain.apiUrlList"
-  val csApiKey = s"$cloudStackDomain.apiKey"
-  val csSecretKey = s"$cloudStackDomain.secretKey"
-  val csRetryDelay = s"$cloudStackDomain.retryDelay"
-  val csRetryCount = s"$cloudStackDomain.retryCount"
+  val cloudStackApiUrlList = s"$cloudStackDomain.apiUrlList"
+  val cloudStackApiKey = s"$cloudStackDomain.apiKey"
+  val cloudStackSecretKey = s"$cloudStackDomain.secretKey"
+  val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
+  val cloudStackRetryCount = s"$cloudStackDomain.retryCount"
 }

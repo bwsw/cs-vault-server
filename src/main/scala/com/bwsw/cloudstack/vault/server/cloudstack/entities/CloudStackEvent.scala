@@ -46,6 +46,22 @@ object CloudStackEvent {
     }
   }
 
+  class StatusSerializer extends JsonSerializer[Status] {
+    def serialize(value: Status, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
+      gen.writeString(value.toString.toUpperCase)
+    }
+  }
+
+  class StatusDeserializer extends JsonDeserializer[Status] {
+    def deserialize(parser: JsonParser, context: DeserializationContext): Status = {
+      val value = parser.getValueAsString
+      Option(value).map[CloudStackEvent.Status](Status.fromString) match {
+        case Some(x) => x
+        case None => throw new RuntimeJsonMappingException(s"$value is not valid CloudStackEvent.Status")
+      }
+    }
+  }
+
   @JsonSerialize(using = classOf[ActionSerializer])
   @JsonDeserialize(using = classOf[ActionDeserializer])
   sealed trait Action extends Product with Serializable {
@@ -62,12 +78,14 @@ object CloudStackEvent {
     case object AccountCreate extends Action
     case object VMDelete      extends Action
     case object AccountDelete extends Action
+    case object UserDelete    extends Action
     case object Other         extends Action
 
-    def fromString(x: String): Action = {
+    def fromString(eventSting: String): Action = eventSting match {
       case "VM.CREATE"      => Action.VMCreate
-      case "VM.DELETE"      => Action.VMDelete
+      case "VM.DESTROY"     => Action.VMDelete
       case "USER.CREATE"    => Action.UserCreate
+      case "USER.DELETE"    => Action.UserDelete
       case "ACCOUNT.CREATE" => Action.AccountCreate
       case "ACCOUNT.DELETE" => Action.AccountDelete
       case _                => Action.Other
@@ -75,26 +93,49 @@ object CloudStackEvent {
 
     def toString(x: Action): String = x match {
       case Action.VMCreate       => "VM.CREATE"
-      case Action.VMDelete       => "VM.DELETE"
+      case Action.VMDelete       => "VM.DESTROY"
       case Action.UserCreate     => "USER.CREATE"
+      case Action.UserDelete     => "USER.DELETE"
       case Action.AccountCreate  => "ACCOUNT.CREATE"
       case Action.AccountDelete  => "ACCOUNT.DELETE"
       case Action.Other          => ""
     }
   }
 
+
+  @JsonSerialize(using = classOf[StatusSerializer])
+  @JsonDeserialize(using = classOf[StatusDeserializer])
+  sealed trait Status extends Product with Serializable {
+
+    def oneOf(xs: Status*): Boolean = xs.contains(this)
+
+    def oneOf(xs: Set[Status]): Boolean = xs.contains(this)
+
+  }
+
+  object Status {
+    case object Completed      extends Status
+    case object Started        extends Status
+    case object Other          extends Status
+
+    def fromString(statusSting: String): Status = statusSting match {
+      case "Completed"      => Status.Completed
+      case "Started"        => Status.Started
+      case _                => Status.Other
+    }
+
+    def toString(x: Status): String = x match {
+      case Status.Completed     => "VM.CREATE"
+      case Status.Started       => "VM.DESTROY"
+      case Status.Other         => ""
+    }
+  }
+
 }
 
-final case class CloudStackEvent(@JsonProperty("Role")  role: UUID,
-                                 @JsonProperty("Account")  accountCS: UUID,
-                                 @JsonSerialize(using = classOf[CloudStackEvent.LocalDateTimeSerializer])
+final case class CloudStackEvent(@JsonSerialize(using = classOf[CloudStackEvent.LocalDateTimeSerializer])
                                  @JsonDeserialize(using = classOf[CloudStackEvent.LocalDateTimeDeserializer])
                                  eventDateTime: LocalDateTime,
                                  entityuuid: UUID,
-                                 description: String,
-                                 action: CloudStackEvent.Action,
-                                 domain: UUID,
-                                 user: UUID,
-                                 account: UUID,
-                                 entity: String,
-                                 status: String)
+                                 @JsonProperty("event") action: CloudStackEvent.Action,
+                                 status: CloudStackEvent.Status)

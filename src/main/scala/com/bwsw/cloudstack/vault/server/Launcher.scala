@@ -1,8 +1,6 @@
 package com.bwsw.cloudstack.vault.server
 
-import java.util.StringTokenizer
-
-import com.bwsw.cloudstack.vault.server.kafka.ConsumerThreadManager
+import com.bwsw.cloudstack.vault.server.kafka.ConsumerManager
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.typesafe.scalalogging.StrictLogging
 
@@ -12,9 +10,11 @@ import com.typesafe.scalalogging.StrictLogging
 object Launcher extends StrictLogging{
 
   def main(args: Array[String]): Unit = {
-    val consumerManager = new ConsumerThreadManager(
+    val components = new Components
+    val consumerManager = new ConsumerManager(
       ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList)
+      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList),
+      components
     )
     consumerManager.execute()
   }
