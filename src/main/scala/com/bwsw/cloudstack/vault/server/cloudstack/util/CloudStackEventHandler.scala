@@ -46,10 +46,10 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       } else {
         event.action match {
           case AccountCreate | AccountDelete | UserCreate | UserDelete =>
-            event.status.oneOf(CloudStackEvent.Status.Completed)
+            event.status == CloudStackEvent.Status.Completed  //Event must be handle when status of event Completed
           case VMCreate | VMDelete =>
-            event.status.oneOf(CloudStackEvent.Status.Started)
-          case _ =>
+            event.status == CloudStackEvent.Status.Started    //Srarted status is used here because event with
+          case _ =>                                           //status Complete for VM does not have information about entityuuid
             logger.debug("Unhandled event")
             false
         }
