@@ -1,0 +1,69 @@
+package com.bwsw.cloudstack.vault.server.vault.entities
+
+import java.util.UUID
+
+import com.bettercloud.vault.json.Json
+
+/**
+  * Created by medvedev_vv on 08.08.17.
+  */
+
+object Policy {
+
+  sealed trait ACL extends Product with Serializable
+
+  object ACL {
+    case object Read       extends ACL
+    case object Write      extends ACL
+
+    def fromString(acl: String): ACL = acl match {
+      case "read"      => ACL.Read
+      case "write"     => ACL.Write
+    }
+
+    def toString(x: ACL): String = x match {
+      case ACL.Read       => "read"
+      case ACL.Write      => "write"
+    }
+  }
+
+  def getVMReadPolicy(account: UUID, vm: UUID): Policy = {
+    new Policy(
+      name = s"acl_${account}_${vm}_ro*",
+      path = s"secret/cs/vms/$vm",
+      acl = Policy.ACL.Read
+    )
+  }
+
+  def getVMWritePolicy(account: UUID, vm: UUID): Policy = {
+    new Policy(
+      name = s"acl_${account}_${vm}_rw*",
+      path = s"secret/cs/vms/$vm",
+      acl = Policy.ACL.Write
+    )
+  }
+
+  def getAccountReadPolicy(account: UUID): Policy = {
+    new Policy(
+      name = s"acl_${account}_ro",
+      path = s"secret/cs/accounts/$account*",
+      acl = Policy.ACL.Read
+    )
+  }
+
+  def getAccountWritePolicy(account: UUID): Policy = {
+    new Policy(
+      name = s"acl_${account}_rw*",
+      path = s"secret/cs/accounts/$account",
+      acl = Policy.ACL.Write
+    )
+  }
+}
+
+final case class Policy(name: String, path: String, acl: Policy.ACL) {
+  def jsonString: String = {
+    Json.`object`().add(
+      "rules", "path \"" + path + "\" {\"policy\"=\"" + Policy.ACL.toString(acl) + "\"}"
+    ).toString()
+  }
+}
