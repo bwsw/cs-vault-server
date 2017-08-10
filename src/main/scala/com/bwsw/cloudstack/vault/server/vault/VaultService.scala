@@ -24,8 +24,7 @@ class VaultService {
       val jsonSerializer = new JsonSerializer(true)
       policies.foreach(writePolicy)
 
-      val tokenParameters = Token.TokenParameters(
-        null,
+      val tokenParameters = Token.TokenInitParameters(
         policies.map(_.name),
         ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)*24*60*60 //convert days to seconds
       )
@@ -42,7 +41,7 @@ class VaultService {
 
       val token = jsonSerializer.deserialize[Token](new String(response.getBody))
       logger.debug(s"token was created: $token")
-      token.tokenParameters.id
+      token.tokenId.id
     } else {
       throw new VaultException("Vault server is unavailable")
     }
@@ -52,11 +51,12 @@ class VaultService {
     logger.debug(s"revokeToken: $tokenId")
     if (checkVaultServerWithPariod()) {
       val jsonSerializer = new JsonSerializer(true)
+      val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
       val lookupResponse = new Rest()
         .url(s"${ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)}${RequestPath.vaultTokenLookup}")
         .header("X-Vault-Token", ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken))
-        .body(Json.`object`().add("token", tokenId.toString).toString.getBytes("UTF-8"))
+        .body(jsonTokenId.getBytes("UTF-8"))
         .post()
 
       val lookupToken = jsonSerializer.deserialize[LookupToken](new String(lookupResponse.getBody))
@@ -65,7 +65,7 @@ class VaultService {
       val revokeResponse = new Rest()
         .url(s"${ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)}${RequestPath.vaultTokenRevoke}")
         .header("X-Vault-Token", ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken))
-        .body(Json.`object`().add("token", tokenId.toString).toString.getBytes("UTF-8"))
+        .body(jsonTokenId.getBytes("UTF-8"))
         .post()
 
       if (revokeResponse.getStatus != HttpStatuses.OK_STATUS_WITH_EMPTY_BODY) {
@@ -73,7 +73,10 @@ class VaultService {
       }
       logger.debug(s"Token: $tokenId was revoked")
 
-      lookupToken.tokenData.policies.filter(_ != "default").foreach(deletePolicy)//
+      lookupToken.tokenData.policies.filter { x =>
+        x != "default" && x != "root"
+      }.foreach(deletePolicy)
+
       deleteSecret(lookupToken.tokenData.path)
     }
   }
