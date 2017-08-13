@@ -18,13 +18,11 @@ object ConfigLiterals {
   val vaultUrl = s"$vaultDomain.url"
   val vaultRootToken = s"$vaultDomain.rootToken"
   val vaultRetryDelay = s"$vaultDomain.retryDelay"
-  val vaultRetryCount = s"$vaultDomain.retryCount"
 
   val cloudStackApiUrlList = s"$cloudStackDomain.apiUrlList"
   val cloudStackApiKey = s"$cloudStackDomain.apiKey"
   val cloudStackSecretKey = s"$cloudStackDomain.secretKey"
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
-  val cloudStackRetryCount = s"$cloudStackDomain.retryCount"
 }
 
 object HttpStatuses {

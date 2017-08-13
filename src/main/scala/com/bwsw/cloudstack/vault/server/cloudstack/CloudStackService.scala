@@ -6,7 +6,9 @@ import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, Apach
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, PeriodicRunner}
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by medvedev_vv on 02.08.17.
@@ -23,7 +25,8 @@ class CloudStackService {
   }.toList
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
-  private val apacheCloudStackClient = apacheCloudStackClientList.head //TODO: implement choose a working server, with health-check help
+  private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
+  threadLocalClientList.set(apacheCloudStackClientList)
 
   def getUserTagByAccountId(accountId: UUID): List[Tag] = {
     val jsonSerializer = new JsonSerializer(true)
@@ -82,15 +85,22 @@ class CloudStackService {
     request.addParameter("resourceids", resourseId)
     request.addParameter("tags[0].key", tag.key)
     request.addParameter("tags[0].value", tag.value)
-
-    apacheCloudStackClient.executeRequest(request)
+    
+    PeriodicRunner.runMethod[String](
+      executeRequest(request),
+      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
+    )
   }
 
   private def getEntityJsonById(id: UUID, idEntity: String, command: String): String = {
     val request = new ApacheCloudStackRequest(command)
     request.addParameter("response", "json")
     request.addParameter(idEntity, id)
-    apacheCloudStackClient.executeRequest(request)
+
+    PeriodicRunner.runMethod[String](
+      executeRequest(request),
+      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
+    )
   }
 
   private def getJsonTags(resourceType: String, resourceId: UUID): String = {
@@ -100,7 +110,26 @@ class CloudStackService {
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
-    apacheCloudStackClient.executeRequest(tagRequest)
+    PeriodicRunner.runMethod[String](
+      executeRequest(tagRequest),
+      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
+    )
+  }
+
+  private def executeRequest(request: ApacheCloudStackRequest)(): String = {
+    val clientList = threadLocalClientList.get()
+    Try {
+      clientList.head.executeRequest(request)
+    } match {
+      case Success(x) => x
+      case Failure(e) =>
+        if (clientList.tail.isEmpty) {
+          threadLocalClientList.set(apacheCloudStackClientList)
+        } else {
+          threadLocalClientList.set(clientList.tail)
+        }
+        throw e
+    }
   }
 
 }
