@@ -14,32 +14,32 @@ object VaultRest {
                           path: String,
                           data: String,
                           expectedResponseStatus: Int,
-                          performedAction: String):() => RestResponse = {
-    executeRequest(createRest(rootToken, path, data).delete, expectedResponseStatus, performedAction)
+                          requestDescription: String):() => RestResponse = {
+    createRequest(createRest(rootToken, path, data).delete, expectedResponseStatus, requestDescription)
   }
 
   def createPutRequest(rootToken: String,
                        path: String,
                        data: String,
                        expectedResponseStatus: Int,
-                       performedAction: String):() => RestResponse = {
-    executeRequest(createRest(rootToken, path, data).put, expectedResponseStatus, performedAction)
+                       requestDescription: String):() => RestResponse = {
+    createRequest(createRest(rootToken, path, data).put, expectedResponseStatus, requestDescription)
   }
 
   def createPostRequest(rootToken: String,
                         path: String,
                         data: String,
                         expectedResponseStatus: Int,
-                        performedAction: String):() => RestResponse = {
-    executeRequest(createRest(rootToken, path, data).post, expectedResponseStatus, performedAction)
+                        requestDescription: String):() => RestResponse = {
+    createRequest(createRest(rootToken, path, data).post, expectedResponseStatus, requestDescription)
   }
 
   def createGetRequest(rootToken: String,
                        path: String,
                        data: String,
                        expectedResponseStatus: Int,
-                       performedAction: String):() => RestResponse = {
-    executeRequest(createRest(rootToken, path, data).get, expectedResponseStatus, performedAction)
+                       requestDescription: String):() => RestResponse = {
+    createRequest(createRest(rootToken, path, data).get, expectedResponseStatus, requestDescription)
   }
 
   private def createRest(rootToken: String, path: String, data: String): Rest = {
@@ -49,11 +49,11 @@ object VaultRest {
       .body(data.getBytes("UTF-8"))
   }
 
-  private def executeRequest(method: () => RestResponse,
-                             expectedResponseStatus: Int,
-                             performedAction: String)(): RestResponse = {
-    logger.debug(s"Request was executed for: $performedAction")
-    val response = method()
+  private def createRequest(request: () => RestResponse,
+                            expectedResponseStatus: Int,
+                            requestDescription: String)(): RestResponse = {
+    logger.debug(s"Request was executed for: $requestDescription")
+    val response = request()
 
     if (response.getStatus != expectedResponseStatus) {
       throw new VaultException(s"Response status: ${response.getStatus} is not expected")
