@@ -2,33 +2,22 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
-import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
+import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, PeriodicRunner}
-
-import scala.util.{Failure, Success, Try}
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, TaskRunner}
+import org.slf4j.LoggerFactory
 
 /**
   * Created by medvedev_vv on 02.08.17.
   */
 class CloudStackService {
-  private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
-  private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
-  private val apacheCloudStackUser = new ApacheCloudStackUser(secretKey, apiKey)
-  private val cloudStackUrlList: Array[String] = ApplicationConfig
-    .getRequiredString(ConfigLiterals.cloudStackApiUrlList)
-    .split("[,\\s]+")
-  private val apacheCloudStackClientList = cloudStackUrlList.map { x =>
-    new ApacheCloudStackClient(x, apacheCloudStackUser)
-  }.toList
-  apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
-
-  private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
-  threadLocalClientList.set(apacheCloudStackClientList)
+  private val logger = LoggerFactory.getLogger(this.getClass)
+  private val apacheCloudStackTaskCreator= new ApacheCloudStackTaskCreator
+  private val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
 
   def getUserTagByAccountId(accountId: UUID): List[Tag] = {
+    logger.debug(s"getUserTagByAccountId(accountId: $accountId)")
     val jsonSerializer = new JsonSerializer(true)
 
     val listAccountResponse = getEntityJsonById(accountId, "id", "listAccounts")
@@ -39,13 +28,17 @@ class CloudStackService {
         x.users.map(_.id)
       }
 
-    allUsersIdInAccount.flatMap { userId =>
+    val r = allUsersIdInAccount.flatMap { userId =>
       val listTagResponse = getJsonTags("User", userId)
       jsonSerializer.deserialize[ListTagResponse](listTagResponse).tagResponse.tags
     }
+
+    logger.debug(s"Tag was got for account: $accountId)")
+    r
   }
 
   def getUserTagByUserId(userId: UUID): List[Tag] = {
+    logger.debug(s"getUserTagByUserId(userId: $userId)")
     val jsonSerializer = new JsonSerializer(true)
 
     val userList = jsonSerializer.deserialize[ListUserResponse](
@@ -59,77 +52,50 @@ class CloudStackService {
       }
     }
 
-    allUsersIdInAccount.flatMap { userId =>
+    val r = allUsersIdInAccount.flatMap { userId =>
       val listTagResponse = getJsonTags("User", userId)
       jsonSerializer.deserialize[ListTagResponse](listTagResponse).tagResponse.tags
     }
+
+    logger.debug(s"Tag was got for user: $userId)")
+    r
   }
 
-  def getVMTagById(vmId: UUID): List[Tag] = {
+  def getVmTagById(vmId: UUID): List[Tag] = {
+    logger.debug(s"getVmTagById(vmId: $vmId)")
     val jsonSerializer = new JsonSerializer(true)
 
     val vmIdList = jsonSerializer.deserialize[ListVirtualMachinesResponse](
       getEntityJsonById(vmId, "id", "listVirtualMachines")
     ).vmResponse.virtualMashines.map(_.id)
 
-    vmIdList.flatMap { vmId =>
+    val r = vmIdList.flatMap { vmId =>
       val listTagResponse = getJsonTags("UserVM", vmId)
       jsonSerializer.deserialize[ListTagResponse](listTagResponse).tagResponse.tags
     }
+
+    logger.debug(s"Tag was got for vm: $vmId)")
+    r
   }
 
   def setTagToResourse(tag: Tag, resourseId: UUID, resourseType: String): Unit = {
-    val request = new ApacheCloudStackRequest("createTags")
-    request.addParameter("response", "json")
-    request.addParameter("resourcetype", resourseType)
-    request.addParameter("resourceids", resourseId)
-    request.addParameter("tags[0].key", tag.key)
-    request.addParameter("tags[0].value", tag.value)
-    
-    PeriodicRunner.runMethod[String](
-      executeRequest(request),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-    )
+    logger.debug(s"setTagToResourse(resourseId: $resourseId, resourseType: $resourseType)")
+    def task = apacheCloudStackTaskCreator.createSetTagToResourseTask(tag, resourseId, resourseType)
+
+    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
+    logger.debug(s"Tag was set to resourse: $resourseId, $resourseType")
   }
 
   private def getEntityJsonById(id: UUID, idEntity: String, command: String): String = {
-    val request = new ApacheCloudStackRequest(command)
-    request.addParameter("response", "json")
-    request.addParameter(idEntity, id)
+    def task = apacheCloudStackTaskCreator.createGetEntityTask(id, idEntity, command)
 
-    PeriodicRunner.runMethod[String](
-      executeRequest(request),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-    )
+    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
   }
 
   private def getJsonTags(resourceType: String, resourceId: UUID): String = {
-    val tagRequest = new ApacheCloudStackRequest("listTags")
-    tagRequest.addParameter("response", "json")
-    tagRequest.addParameter("resourcetype", resourceType)
-    tagRequest.addParameter("listAll", "true")
-    tagRequest.addParameter("resourceid", resourceId)
+    def task = apacheCloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
 
-    PeriodicRunner.runMethod[String](
-      executeRequest(tagRequest),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-    )
-  }
-
-  private def executeRequest(request: ApacheCloudStackRequest)(): String = {
-    val clientList = threadLocalClientList.get()
-    Try {
-      clientList.head.executeRequest(request)
-    } match {
-      case Success(x) => x
-      case Failure(e) =>
-        if (clientList.tail.isEmpty) {
-          threadLocalClientList.set(apacheCloudStackClientList)
-        } else {
-          threadLocalClientList.set(clientList.tail)
-        }
-        throw e
-    }
+    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
   }
 
 }
