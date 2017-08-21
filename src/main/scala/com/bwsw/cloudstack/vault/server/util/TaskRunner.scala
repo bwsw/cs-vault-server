@@ -7,18 +7,19 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 03.08.17.
   */
-object PeriodicRunner {
+object TaskRunner {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def runMethod[T](triggeredFunction: () => T,
-                     timeBetweenRunning: Int): T = {
+  def tryRunUntilSuccess[T](task: () => T,
+                            retryDelay: Int): T = {
     Try {
-      triggeredFunction()
+      task()
     } match {
       case Success(x) => x
       case Failure(e) =>
-        logger.warn(s"The method execute with an exception: $e, restart function after $timeBetweenRunning seconds")
-        triggeredFunction()
+        logger.warn(s"The method execute with an exception: $e, restart function after $retryDelay seconds")
+        Thread.sleep(retryDelay)
+        tryRunUntilSuccess[T](task, retryDelay)
     }
   }
 }

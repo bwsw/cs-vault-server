@@ -2,12 +2,12 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
-import com.bettercloud.vault.VaultException
 import com.bettercloud.vault.json.Json
-import com.bettercloud.vault.rest.{Rest, RestResponse}
-import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bettercloud.vault.rest.RestResponse
+import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities.{LookupToken, Policy, Token}
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRest
 import org.slf4j.LoggerFactory
 
 /**
@@ -15,22 +15,32 @@ import org.slf4j.LoggerFactory
   */
 class VaultService {
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private val vaultUrl = ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)
+  private val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
+  private val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+  private val tokenPeriod = Converter.daysToSeconds(ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod))
 
   def createToken(policies: List[Policy])(): UUID = {
-    logger.debug(s"Create token with policies: $policies")
+    logger.debug(s"createToken with policies: $policies")
     val jsonSerializer = new JsonSerializer(true)
     policies.foreach(writePolicy)
 
     val tokenParameters = Token.TokenInitParameters(
       policies.map(_.name),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)*24*60*60 //convert days to seconds
+      tokenPeriod
     )
 
-    val request = getRequest(RequestPath.vaultTokenCreate, jsonSerializer.serialize(tokenParameters))
+    def executeRequest = VaultRest.createPostRequest(
+      vaultRootToken,
+      s"$vaultUrl${RequestPath.vaultTokenCreate}",
+      jsonSerializer.serialize(tokenParameters),
+      HttpStatuses.OK_STATUS,
+      "create token"
+    )
 
-    val response = PeriodicRunner.runMethod[RestResponse](
-      executeRequest(request.post, HttpStatuses.OK_STATUS, "create token"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    val response = TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeRequest,
+      vaultRetryDelay
     )
 
     val token = jsonSerializer.deserialize[Token](new String(response.getBody))
@@ -43,20 +53,32 @@ class VaultService {
     val jsonSerializer = new JsonSerializer(true)
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
-    val lookupRequest = getRequest(RequestPath.vaultTokenLookup, jsonTokenId)
+    def executeLookupRequest = VaultRest.createPostRequest(
+      vaultRootToken,
+      s"$vaultUrl${RequestPath.vaultTokenLookup}",
+      jsonTokenId,
+      HttpStatuses.OK_STATUS,
+      "get lookup token"
+    )
 
-    val lookupResponse = PeriodicRunner.runMethod[RestResponse](
-      executeRequest(lookupRequest.post, HttpStatuses.OK_STATUS, "get lookup token"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    val lookupResponse = TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeLookupRequest,
+      vaultRetryDelay
     )
 
     val lookupToken = jsonSerializer.deserialize[LookupToken](new String(lookupResponse.getBody))
 
-    val revokeRequest = getRequest(RequestPath.vaultTokenRevoke, jsonTokenId)
+    def executeRevokeRequest = VaultRest.createPostRequest(
+      vaultRootToken,
+      s"$vaultUrl${RequestPath.vaultTokenRevoke}",
+      jsonTokenId,
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      "revoke token"
+    )
 
-    val revokeResponse = PeriodicRunner.runMethod[RestResponse](
-      executeRequest(revokeRequest.post, HttpStatuses.OK_STATUS_WITH_EMPTY_BODY, "revoke token"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    val revokeResponse = TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeRevokeRequest,
+      vaultRetryDelay
     )
     logger.debug(s"Token was revoked")
 
@@ -69,11 +91,17 @@ class VaultService {
 
   private def deleteSecret(pathToSecret: String): Unit = {
     logger.debug(s"deleteSecret: $pathToSecret")
-    val request = getRequest(s"${RequestPath.vaultSecret}/$pathToSecret", "")
+    def executeRequest = VaultRest.createDeleteRequest(
+      vaultRootToken,
+      s"$vaultUrl${RequestPath.vaultSecret}/$pathToSecret",
+      "",
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      "delete secret"
+    )
 
-    PeriodicRunner.runMethod[RestResponse](
-      executeRequest(request.delete, HttpStatuses.OK_STATUS_WITH_EMPTY_BODY, "delete secret"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeRequest,
+      vaultRetryDelay
     )
 
     logger.debug(s"data from path: $pathToSecret was deleted")
@@ -82,11 +110,17 @@ class VaultService {
   private def writePolicy(policy: Policy) = {
     logger.debug(s"writePolicy: $policy")
 
-    val request = getRequest(s"${RequestPath.vaultPolicy}/${policy.name}", policy.jsonString)
+    def executeRequest = VaultRest.createPutRequest(
+        vaultRootToken,
+        s"$vaultUrl${RequestPath.vaultPolicy}/${policy.name}",
+        policy.jsonString,
+        HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+        "write policy"
+      )
 
-    PeriodicRunner.runMethod[RestResponse](
-      executeRequest(request.put, HttpStatuses.OK_STATUS_WITH_EMPTY_BODY, "write policy"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeRequest,
+      vaultRetryDelay
     )
     logger.debug(s"policy was writed: $policy")
   }
@@ -94,32 +128,19 @@ class VaultService {
   private def deletePolicy(policyName: String) = {
     logger.debug(s"deletePolicy: $policyName")
 
-    val request = getRequest(s"${RequestPath.vaultPolicy}/$policyName", "")
+    def executeRequest = VaultRest.createDeleteRequest(
+      vaultRootToken,
+      s"$vaultUrl${RequestPath.vaultPolicy}/$policyName",
+      "",
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      "delete policy"
+    )
 
-    PeriodicRunner.runMethod[RestResponse](
-      executeRequest(request.delete, HttpStatuses.OK_STATUS_WITH_EMPTY_BODY, "delete policy"),
-      ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    TaskRunner.tryRunUntilSuccess[RestResponse](
+      executeRequest,
+      vaultRetryDelay
     )
 
     logger.debug(s"policy with name: $policyName was deleted")
-  }
-
-  private def executeRequest(method: () => RestResponse,
-                             expectedResponseStatus: Int,
-                             performedAction: String)() = {
-    logger.debug(s"Ececute request for: $performedAction")
-    val response = method()
-
-    if (response.getStatus != expectedResponseStatus) {
-      throw new VaultException(s"Response status: ${response.getStatus} is not expected")
-    }
-    response
-  }
-
-  private def getRequest(requestPath: String, data: String): Rest = {
-    new Rest()
-      .url(s"${ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)}$requestPath")
-      .header("X-Vault-Token", ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken))
-      .body(data.getBytes("UTF-8"))
   }
 }
