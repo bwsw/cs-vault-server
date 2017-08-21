@@ -57,6 +57,8 @@ class Consumer[T](val brokers: String,
 
     eventLatch.await()
 
+    consumer.commitSync()
+
     def checkEvent(eventForCheck: (Future[Unit], T)): Unit = {
       eventForCheck match {
         case (future, event) =>

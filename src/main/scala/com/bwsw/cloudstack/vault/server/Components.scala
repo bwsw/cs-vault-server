@@ -9,10 +9,10 @@ import com.bwsw.cloudstack.vault.server.vault.VaultService
   */
 class Components {
   //services
-  lazy val cloudStackService = new CloudStackService
-  lazy val vaultService = new VaultService
+  val cloudStackService = new CloudStackService
+  val vaultService = new VaultService
 
   //controllers
-  lazy val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService)
+  val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService)
 
 }

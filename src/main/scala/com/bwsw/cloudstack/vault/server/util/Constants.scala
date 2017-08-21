@@ -26,3 +26,17 @@ object ConfigLiterals {
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
   val cloudStackRetryCount = s"$cloudStackDomain.retryCount"
 }
+
+object HttpStatuses {
+  val OK_STATUS = 200
+  val OK_STATUS_WITH_EMPTY_BODY = 204
+}
+
+object RequestPath {
+  val vaultHealthCheckPath = "/v1/sys/health"
+  val vaultTokenCreate     = "/v1/auth/token/create"
+  val vaultTokenLookup     = "/v1/auth/token/lookup"
+  val vaultPolicy          = "/v1/sys/policy"
+  val vaultSecret          = "/v1/secret"
+  val vaultTokenRevoke     = "/v1/auth/token/revoke"
+}
