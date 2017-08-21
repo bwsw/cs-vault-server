@@ -24,6 +24,7 @@ class ApacheCloudStackTaskCreator {
   private val apacheCloudStackClientList = cloudStackUrlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
+
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
   private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
@@ -58,8 +59,8 @@ class ApacheCloudStackTaskCreator {
     executeRequest(request, s"set tags to resourse: ($resourseId, $resourseType)")
   }
 
-  private def executeRequest(request: ApacheCloudStackRequest, performedAction: String)(): String = {
-    logger.debug(s"Request was executed for action: $performedAction")
+  private def executeRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
+    logger.debug(s"Request was executed for action: $requestDescription")
     val clientList = threadLocalClientList.get()
     Try {
       clientList.head.executeRequest(request)
