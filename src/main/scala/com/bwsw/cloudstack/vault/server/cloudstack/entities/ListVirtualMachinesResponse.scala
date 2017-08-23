@@ -11,4 +11,4 @@ case class ListVirtualMachinesResponse(@JsonProperty("listvirtualmachinesrespons
 
 case class VirtualMashineResponse(count: Int, @JsonProperty("virtualmachine") virtualMashines: List[VirtualMashine])
 
-case class VirtualMashine(id: UUID)
+case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String)
