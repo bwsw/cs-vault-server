@@ -27,7 +27,7 @@ object Policy {
     }
   }
 
-  def getVmReadPolicy(account: UUID, vm: UUID): Policy = {
+  def createVmReadPolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
       path = s"secret/cs/vms/$vm",
@@ -35,7 +35,7 @@ object Policy {
     )
   }
 
-  def getVmWritePolicy(account: UUID, vm: UUID): Policy = {
+  def createVmWritePolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
       path = s"secret/cs/vms/$vm",
