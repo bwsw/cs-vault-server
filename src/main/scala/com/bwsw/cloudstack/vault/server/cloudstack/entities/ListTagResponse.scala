@@ -15,9 +15,11 @@ case class ListTagResponse(@JsonProperty("listtagsresponse") tagResponse: TagRes
 case class TagResponse(count: Int, @JsonProperty("tag") tags: List[Tag])
 
 object Tag {
+  def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
+
   class KeySerializer extends JsonSerializer[Key] {
     def serialize(value: Key, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(value.toString.toUpperCase)
+      gen.writeString(Key.toString(value))
     }
   }
 
@@ -28,6 +30,23 @@ object Tag {
         case Some(x) => x
         case None => throw new RuntimeJsonMappingException(s"$value is not valid Tag.Key")
       }
+    }
+  }
+
+  sealed trait Type extends Product with Serializable
+
+  object Type {
+    case object User      extends Type
+    case object UserVM    extends Type
+
+    def fromString: PartialFunction[String, Type] = {
+      case "User"       => Type.User
+      case "UserVM"     => Type.UserVM
+    }
+
+    def toString(x: Type): String = x match {
+      case  Type.User       => "User"
+      case  Type.UserVM     => "UserVM"
     }
   }
 
@@ -54,4 +73,4 @@ object Tag {
   }
 }
 
-case class Tag(key: String, value: String)
+case class Tag(key: Tag.Key, value: String)

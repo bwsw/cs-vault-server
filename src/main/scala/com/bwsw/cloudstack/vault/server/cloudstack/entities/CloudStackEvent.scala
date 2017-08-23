@@ -32,7 +32,7 @@ object CloudStackEvent {
 
   class ActionSerializer extends JsonSerializer[Action] {
     def serialize(value: Action, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(value.toString.toUpperCase)
+      gen.writeString(Action.toString(value))
     }
   }
 
@@ -48,7 +48,7 @@ object CloudStackEvent {
 
   class StatusSerializer extends JsonSerializer[Status] {
     def serialize(value: Status, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(value.toString.toUpperCase)
+      gen.writeString(Status.toString(value))
     }
   }
 

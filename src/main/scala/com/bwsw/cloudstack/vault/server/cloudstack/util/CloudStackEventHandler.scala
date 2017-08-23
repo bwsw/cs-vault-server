@@ -31,11 +31,11 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
     override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
       event.action match {
-        case VMCreate => (Future(controller.handleVmCreate()), event)
+        case VMCreate => (Future(controller.handleVmCreate(event.entityuuid)), event)
         case VMDelete => (Future(controller.handleVmDelete()), event)
-        case AccountCreate => (Future(controller.handleAccountCreate()), event)
+        case AccountCreate => (Future(""), event)
         case AccountDelete => (Future(controller.handleAccountDelete()), event)
-        case UserCreate => (Future(controller.handleUserCreate()), event)
+        case UserCreate => (Future(""), event)
       }
     }
 

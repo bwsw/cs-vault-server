@@ -11,4 +11,4 @@ case class ListUserResponse(@JsonProperty("listusersresponse") userResponse: Use
 
 case class UserResponse(count: Int, @JsonProperty("user") users: List[User])
 
-case class User(id: UUID, accountid: UUID)
+case class User(id: UUID, accountId: UUID)
