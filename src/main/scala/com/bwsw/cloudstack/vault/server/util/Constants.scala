@@ -4,16 +4,20 @@ package com.bwsw.cloudstack.vault.server.util
   * Created by medvedev_vv on 31.07.17.
   */
 object ConfigLiterals {
-  final val applicationDomain = "app"
-  final val kafkaDomain = s"$applicationDomain.kafka"
-  final val vaultDomain = s"$applicationDomain.vault"
-  final val cloudStackDomain = s"$applicationDomain.cloudStack"
+  private final val applicationDomain = "app"
+  private final val kafkaDomain = s"$applicationDomain.kafka"
+  private final val vaultDomain = s"$applicationDomain.vault"
+  private final val zooKeeperDomain = s"$applicationDomain.zookeeper"
+  private final val cloudStackDomain = s"$applicationDomain.cloudStack"
 
   val tokenPeriod = s"$applicationDomain.tokenPeriod"
   val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
 
   val kafkaServerList = s"$kafkaDomain.serverList"
   val kafkaTopic = s"$kafkaDomain.topic"
+
+  val zooKeeperUrl = s"$zooKeeperDomain.url"
+  val zooKeeperRetryDelay = s"$zooKeeperDomain.retryDelay"
 
   val vaultUrl = s"$vaultDomain.url"
   val vaultRootToken = s"$vaultDomain.rootToken"
@@ -37,4 +41,5 @@ object RequestPath {
   val vaultPolicy          = "/v1/sys/policy"
   val vaultSecret          = "/v1/secret"
   val vaultTokenRevoke     = "/v1/auth/token/revoke"
+  val zooKeeperRootNode    = "/cs_vault_server"
 }
