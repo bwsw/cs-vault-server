@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskCreator {
+class ApacheCloudStackTaskWrapper {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
   private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
@@ -30,7 +30,7 @@ class ApacheCloudStackTaskCreator {
   private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
   threadLocalClientList.set(apacheCloudStackClientList)
 
-  def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
+  def getTagTask(resourceType: String, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest("listTags")
     tagRequest.addParameter("response", "json")
     tagRequest.addParameter("resourcetype", resourceType)
@@ -40,15 +40,16 @@ class ApacheCloudStackTaskCreator {
     executeRequest(tagRequest, s"get tag by resourse: ($resourceId, $resourceType)")
   }
 
-  def createGetEntityTask(id: UUID, idEntity: String, command: String): () => String = {
+  def getEntityTask(parameterValue: String, parameterName: String, command: String): () => String = {
     val request = new ApacheCloudStackRequest(command)
     request.addParameter("response", "json")
-    request.addParameter(idEntity, id)
+    request.addParameter("listAll", "true")
+    request.addParameter(parameterName, parameterValue)
 
     executeRequest(request, s"get entity by command: $command")
   }
 
-  def createSetTagToResourseTask(tag: Tag, resourseId: UUID, resourseType: String): () => String = {
+  def setTagToResourseTask(tag: Tag, resourseId: UUID, resourseType: String): () => String = {
     val request = new ApacheCloudStackRequest("createTags")
     request.addParameter("response", "json")
     request.addParameter("resourcetype", resourseType)
