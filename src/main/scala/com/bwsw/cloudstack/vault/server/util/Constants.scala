@@ -42,4 +42,6 @@ object RequestPath {
   val vaultSecret          = "/v1/secret"
   val vaultTokenRevoke     = "/v1/auth/token/revoke"
   val zooKeeperRootNode    = "/cs_vault_server"
+  val vmSecret             = "secret/cs/vms/"
+  val accountSecret        = "secret/cs/accounts/"
 }

@@ -2,11 +2,15 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskWrapper
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.util.exception.CloudStackNoSuchEntityException
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, TaskRunner}
 import org.slf4j.LoggerFactory
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by medvedev_vv on 02.08.17.
@@ -130,9 +134,24 @@ class CloudStackService {
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {
+    logger.debug(s"getEntityJson(parameterValue: $parameterValue, parameterName: $parameterName, command: $command)")
     def task = apacheCloudStackTaskWrapper.getEntityTask(parameterValue, parameterName, command)
 
-    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
+    Try {
+      task()
+    } match {
+      case Success(x) => x
+      case Failure(e: ApacheCloudStackClientRuntimeException) =>
+        logger.warn(s"CloudStack server is unavailable")
+        Thread.sleep(cloudStackRetryDelay)
+        TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
+      case Failure(e: Throwable) =>
+        logger.error(s"The command: $command has not executed, exception was thrown: $e")
+        throw new CloudStackNoSuchEntityException(s"The entity with " +
+          s"parameterName: $parameterName, " +
+          s"parameterValue: $parameterValue " +
+          s"could not been got")
+    }
   }
 
   private def getTagsJson(resourceType: Tag.Type, resourceId: UUID): String = {

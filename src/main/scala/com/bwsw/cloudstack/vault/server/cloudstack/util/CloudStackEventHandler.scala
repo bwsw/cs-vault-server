@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import CloudStackEvent.Action._
+import com.bwsw.cloudstack.vault.server.util.exception.CloudStackNoSuchEntityException
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by medvedev_vv on 02.08.17.
@@ -30,13 +33,22 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
 
   private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
     override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
-      event.action match {
-        case VMCreate => (Future(controller.handleVmCreate(event.entityuuid)), event)
-        case VMDelete => (Future(controller.handleVmDelete()), event)
-        case AccountCreate => (Future(""), event)
-        case AccountDelete => (Future(controller.handleAccountDelete()), event)
-        case UserCreate => (Future(""), event)
+      Try {
+        event.action match {
+          case VMCreate => (Future(controller.handleVmCreate(event.entityuuid)), event)
+          case VMDelete => (Future(controller.handleVmDelete(event.entityuuid)), event)
+          case AccountCreate => (Future(controller.handleAccountCreate(event.entityuuid)), event)
+          case AccountDelete => (Future(controller.handleAccountDelete(event.entityuuid)), event)
+          case UserCreate => (Future(controller.handleUserCreate(event.entityuuid)), event)
+        }
+      } match {
+        case Success(x) => x
+        case Failure(e: CloudStackNoSuchEntityException) =>
+          logger.error(s"Event handle had finished with exception: $e")
+          (Future(), event)
+        case Failure(e: Throwable) => throw e
       }
+
     }
 
     override def isDefinedAt(event: CloudStackEvent): Boolean = {

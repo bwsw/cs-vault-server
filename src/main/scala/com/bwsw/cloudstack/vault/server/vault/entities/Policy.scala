@@ -3,6 +3,7 @@ package com.bwsw.cloudstack.vault.server.vault.entities
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
+import com.bwsw.cloudstack.vault.server.util.RequestPath
 
 /**
   * Created by medvedev_vv on 08.08.17.
@@ -30,7 +31,7 @@ object Policy {
   def createVmReadPolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
-      path = s"secret/cs/vms/$vm",
+      path = s"${RequestPath.vmSecret}$vm",
       acl = Policy.ACL.Read
     )
   }
@@ -38,7 +39,7 @@ object Policy {
   def createVmWritePolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
-      path = s"secret/cs/vms/$vm",
+      path = s"${RequestPath.vmSecret}$vm",
       acl = Policy.ACL.Write
     )
   }
@@ -46,7 +47,7 @@ object Policy {
   def createAccountReadPolicy(account: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_ro",
-      path = s"secret/cs/accounts/$account*",
+      path = s"${RequestPath.accountSecret}$account*",
       acl = Policy.ACL.Read
     )
   }
@@ -54,7 +55,7 @@ object Policy {
   def createAccountWritePolicy(account: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"secret/cs/accounts/$account",
+      path = s"${RequestPath.accountSecret}$account",
       acl = Policy.ACL.Write
     )
   }
