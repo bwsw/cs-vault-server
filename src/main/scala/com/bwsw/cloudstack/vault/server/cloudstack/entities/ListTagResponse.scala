@@ -1,7 +1,5 @@
 package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
-import java.util.UUID
-
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
@@ -10,9 +8,9 @@ import com.fasterxml.jackson.databind._
 /**
   * Created by medvedev_vv on 10.08.17.
   */
-private[cloudstack] case class ListTagResponse(@JsonProperty("listtagsresponse") tagResponse: TagResponse)
+private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tagList: TagList)
 
-private[cloudstack] case class TagResponse(count: Int, @JsonProperty("tag") tags: List[Tag])
+private[cloudstack] case class TagList(count: Int, @JsonProperty("tag") tags: List[Tag])
 
 object Tag {
   def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)

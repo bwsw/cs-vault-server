@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskWrapper {
+class ApacheCloudStackTaskCreator {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
   private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
@@ -30,26 +30,26 @@ class ApacheCloudStackTaskWrapper {
   private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
   threadLocalClientList.set(apacheCloudStackClientList)
 
-  def getTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+  def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest(Command.toString(Command.ListTags))
     tagRequest.addParameter("response", "json")
     tagRequest.addParameter("resourcetype", Tag.Type.toString(resourceType))
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
-    executeRequest(tagRequest, s"get tag by resourse: ($resourceId, $resourceType)")
+    createRequest(tagRequest, s"get tag by resourse: ($resourceId, $resourceType)")
   }
 
-  def getEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+  def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
     request.addParameter("response", "json")
     request.addParameter("listAll", "true")
     request.addParameter(parameterName, parameterValue)
 
-    executeRequest(request, s"get entity by command: $command")
+    createRequest(request, s"get entity by command: $command")
   }
 
-  def setTagToResourseTask(tag: Tag, resourseId: UUID, resourseType: Tag.Type): () => String = {
+  def createSetResourseTagTask(resourseId: UUID, resourseType: Tag.Type, tag: Tag): () => String = {
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
     request.addParameter("resourcetype", Tag.Type.toString(resourseType))
@@ -57,10 +57,10 @@ class ApacheCloudStackTaskWrapper {
     request.addParameter("tags[0].key", tag.key)
     request.addParameter("tags[0].value", tag.value)
 
-    executeRequest(request, s"set tags to resourse: ($resourseId, $resourseType)")
+    createRequest(request, s"set tags to resourse: ($resourseId, $resourseType)")
   }
 
-  private def executeRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
+  private def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
     logger.debug(s"Request was executed for action: $requestDescription")
     val clientList = threadLocalClientList.get()
     Try {
