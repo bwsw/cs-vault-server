@@ -23,7 +23,7 @@ object Tag {
 
   class KeyDeserializer extends JsonDeserializer[Key] {
     def deserialize(parser: JsonParser, context: DeserializationContext): Key = {
-      val value = parser.getValueAsString
+      val value = parser.getValueAsString.toUpperCase
       Option(value).map[Tag.Key](Key.fromString) match {
         case Some(x) => x
         case None => throw new RuntimeJsonMappingException(s"$value is not valid Tag.Key")
@@ -55,18 +55,15 @@ object Tag {
   object Key {
     case object VaultRO      extends Key
     case object VaultRW      extends Key
-    case object Other        extends Key
 
-    def fromString(tagKey: String): Key = tagKey match {
+    def fromString: PartialFunction[String, Key] = {
       case "VAULT_RO"       => Key.VaultRO
       case "VAULT_RW"       => Key.VaultRW
-      case _                => Key.Other
     }
 
     def toString(x: Key): String = x match {
       case  Key.VaultRO       => "VAULT_RO"
       case  Key.VaultRW       => "VAULT_RW"
-      case  Key.Other         => ""
     }
   }
 }

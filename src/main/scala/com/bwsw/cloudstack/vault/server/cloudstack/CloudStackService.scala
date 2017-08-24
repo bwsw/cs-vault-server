@@ -28,7 +28,7 @@ class CloudStackService {
     logger.debug(s"getUserTagsByAccountId(accountId: $accountId)")
     val jsonSerializer = threadLocalJsonSerializer.get()
 
-    val allUsersIdInAccount = getUserIdsForAccount(accountId)
+    val allUsersIdInAccount = getUserIdsByAccountId(accountId)
 
     val tags = allUsersIdInAccount.flatMap { userId =>
       val tagResponse = getTagsJson(Tag.Type.User, userId)
@@ -48,7 +48,7 @@ class CloudStackService {
     ).userList.users
 
     val allUsersIdInAccount: List[UUID] = users.flatMap { x =>
-      getUserIdsForAccount(x.accountId)
+      getUserIdsByAccountId(x.accountId)
     }
 
     val tags = allUsersIdInAccount.flatMap { userId =>
@@ -119,13 +119,13 @@ class CloudStackService {
     accountId
   }
 
-  def getUserIdsForAccount(accountId: UUID): List[UUID] = {
+  def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
     logger.debug(s"getUserIdsForAccount(accountId: $accountId)")
     val jsonSerializer = new JsonSerializer(true)
 
     val listAccountResponse = getEntityJson(accountId.toString, id, Command.ListAccounts)
-    val allUsersIdInAccount = jsonSerializer.deserialize[ListAccountResponse](listAccountResponse)
-      .accountResponse
+    val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](listAccountResponse)
+      .accountList
       .accounts
       .flatMap { x =>
         x.users.map(_.id)

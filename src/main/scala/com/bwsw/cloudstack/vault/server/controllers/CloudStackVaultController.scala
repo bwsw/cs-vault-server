@@ -40,7 +40,7 @@ class CloudStackVaultController(vaultService: VaultService,
     import Tag.Key
     logger.debug(s"handleUserCreate(userId: $userId)")
 
-    val userTags = cloudStackService.getUserTagByUserId(userId)
+    val userTags = cloudStackService.getUserTagsByUserId(userId)
 
     val optionReadToken: Option[UUID] = userTags.find(_.key == Key.VaultRO).map { x =>
       UUID.fromString(x.value)
@@ -57,7 +57,7 @@ class CloudStackVaultController(vaultService: VaultService,
     val tokenWithTagKey: List[(UUID, Tag.Key)] = optionTokenWithTagKeyList.map {
       case (None, key) =>
         logger.info("Tag with token has not existed")
-        val accountId = cloudStackService.getAccountIdForUser(userId)
+        val accountId = cloudStackService.getAccountIdByUserId(userId)
         val pathToData = s"${RequestPath.zooKeeperRootNode}/$accountId/${Key.toString(key)}"
         val isExistNodeWithToken = zooKeeperService.isExistNode(pathToData)
 
@@ -107,7 +107,7 @@ class CloudStackVaultController(vaultService: VaultService,
     ))
     logger.info("Tokens were created by vault")
 
-    val userIdList = cloudStackService.getUserIdListForAccount(accountId)
+    val userIdList = cloudStackService.getUserIdsByAccountId(accountId)
 
     writeTokensToZooKeeperNodes(tokenWithTagKeyList, accountId)
     logger.info("Tokens were wrote into zooKeeper's nodes")
@@ -122,7 +122,7 @@ class CloudStackVaultController(vaultService: VaultService,
     import Tag.Key
     logger.debug(s"handleVmCreate(vmId: $vmId)")
 
-    val accountId = cloudStackService.getAccountIdForVm(vmId)
+    val accountId = cloudStackService.getAccountIdByVmId(vmId)
     val readPolicy = Policy.createVmReadPolicy(accountId, vmId)
     val writePolicy = Policy.createVmWritePolicy(accountId, vmId)
 
@@ -190,7 +190,7 @@ class CloudStackVaultController(vaultService: VaultService,
     }
 
     tagList.foreach { x =>
-      cloudStackService.setTagToResourse(x, entityId, tagType)
+      cloudStackService.setResourseTag(entityId, tagType, x)
     }
   }
 
