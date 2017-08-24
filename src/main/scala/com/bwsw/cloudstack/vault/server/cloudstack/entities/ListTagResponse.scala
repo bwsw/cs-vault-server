@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind._
 /**
   * Created by medvedev_vv on 10.08.17.
   */
-case class ListTagResponse(@JsonProperty("listtagsresponse") tagResponse: TagResponse)
+case class TagResponse(@JsonProperty("listtagsresponse") tagList: TagList)
 
-case class TagResponse(count: Int, @JsonProperty("tag") tags: List[Tag])
+case class TagList(count: Int, @JsonProperty("tag") tags: List[Tag])
 
 object Tag {
   class KeySerializer extends JsonSerializer[Key] {
