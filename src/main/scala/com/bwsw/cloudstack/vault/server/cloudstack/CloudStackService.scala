@@ -19,13 +19,7 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
   def getUserTagsByAccountId(accountId: UUID): List[Tag] = {
     logger.debug(s"getUserTagsByAccountId(accountId: $accountId)")
 
-    val accountResponse = getEntityJson(accountId.toString, "id", "listAccounts")
-    val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
-      .accountList
-      .accounts
-      .flatMap { x =>
-        x.users.map(_.id)
-      }
+    val allUsersIdInAccount = getUserIdsByAccountId(accountId)
 
     val tags = allUsersIdInAccount.flatMap { userId =>
       getUserTagsByUserId(userId)
@@ -85,6 +79,22 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
     logger.debug(s"accountId was got for user: $userId)")
     accountId
+  }
+
+  def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
+    logger.debug(s"getUserIdsForAccount(accountId: $accountId)")
+    val jsonSerializer = new JsonSerializer(true)
+
+    val accountResponse = getEntityJson(accountId.toString, "id", "listAccounts")
+    val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
+      .accountList
+      .accounts
+      .flatMap { x =>
+        x.users.map(_.id)
+      }
+
+    logger.debug(s"Users were got for account: $accountId)")
+    allUsersIdInAccount
   }
 
   def setResourseTag(resourseId: UUID, resourseType: String, tag: Tag): Unit = {
