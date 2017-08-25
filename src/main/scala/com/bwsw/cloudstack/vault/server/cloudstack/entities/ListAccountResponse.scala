@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 /**
   * Created by medvedev_vv on 10.08.17.
   */
-case class AccountResponse(@JsonProperty("listaccountsresponse") accountList: AccountList)
+private[cloudstack] case class AccountResponse(@JsonProperty("listaccountsresponse") accountList: AccountList)
 
-case class AccountList(count: Int, @JsonProperty("account") accounts: List[Account])
+private[cloudstack] case class AccountList(count: Int, @JsonProperty("account") accounts: List[Account])
 
-case class Account(id: UUID, @JsonProperty("user") users: List[User])
+private[cloudstack] case class Account(id: UUID, @JsonProperty("user") users: List[User])

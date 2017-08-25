@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import CloudStackEvent.Action._
+import com.bwsw.cloudstack.vault.server.util.exception.CloudStackNoSuchEntityException
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by medvedev_vv on 02.08.17.
@@ -30,14 +33,22 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
 
   private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
     override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
-      event.action match {
-        case VMCreate => (Future(logger.info("Controller.VMCreate")), event)
-        case VMDelete => (Future(logger.info("Controller.VMDelete")), event)
-        case AccountCreate => (Future(logger.info("Controller.AccountCreate")), event)
-        case AccountDelete => (Future(logger.info("Controller.AccountDelete")), event)
-        case UserCreate => (Future(logger.info("Controller.UserCreate")), event)
-        case UserDelete => (Future(logger.info("Controller.UserDelete")), event)
+      Try {
+        event.action match {
+          case VMCreate => (Future(controller.handleVmCreate(event.entityuuid)), event)
+          case VMDelete => (Future(controller.handleVmDelete(event.entityuuid)), event)
+          case AccountCreate => (Future(controller.handleAccountCreate(event.entityuuid)), event)
+          case AccountDelete => (Future(controller.handleAccountDelete(event.entityuuid)), event)
+          case UserCreate => (Future(controller.handleUserCreate(event.entityuuid)), event)
+        }
+      } match {
+        case Success(x) => x
+        case Failure(e: CloudStackNoSuchEntityException) =>
+          logger.error(s"Event handle had finished with exception: $e")
+          (Future(), event)
+        case Failure(e: Throwable) => throw e
       }
+
     }
 
     override def isDefinedAt(event: CloudStackEvent): Boolean = {
@@ -45,7 +56,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
         false
       } else {
         event.action match {
-          case AccountCreate | AccountDelete | UserCreate | UserDelete | VMCreate | VMDelete =>
+          case AccountCreate | AccountDelete | UserCreate | VMCreate | VMDelete =>
             event.status == CloudStackEvent.Status.Completed && event.entityuuid != null  //Event must be handle when status of event Completed
           case _ =>                                                                       //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
             logger.debug("Unhandled event")                                               //and don't have an entityuuid, so we must to check entityuuid.

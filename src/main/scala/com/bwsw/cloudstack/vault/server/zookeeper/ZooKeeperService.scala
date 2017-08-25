@@ -25,7 +25,7 @@ class ZooKeeperService {
     } match {
       case Success(x) => x
       case Failure(e: NodeExistsException) =>                                           //it need because after check a stat in isExistNode method, node could be created by another thread
-        logger.warn("Node could not been created, bacause already it have been exist")
+        logger.warn("Node could not been created, bacause already it has been exist")
         throw e
       case Failure(e: Throwable) =>
         TaskRunner.tryRunUntilSuccess(ZooKeeperTaskCreator.createNodeCreationTask(zooKeeper, path, data), retryDelay)
@@ -44,7 +44,7 @@ class ZooKeeperService {
         TaskRunner.tryRunUntilSuccess(ZooKeeperTaskCreator.createCloseConnectionTask(zooKeeper), retryDelay)
         stringData
       case Failure(e: NoNodeException) =>                                               //it need because after check a stat in isExistNode method, node could be deleted by another thread
-        logger.warn("Data could not been got, bacause node is have not existed")
+        logger.warn("Data could not been got, bacause node is has not existed")
         throw e
       case Failure(e: Throwable) =>
         TaskRunner.tryRunUntilSuccess(ZooKeeperTaskCreator.createGetDataTask(zooKeeper, path), retryDelay)
