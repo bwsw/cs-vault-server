@@ -15,20 +15,23 @@ import scala.util.{Failure, Success, Try}
   */
 class ApacheCloudStackTaskCreator {
   private val logger = LoggerFactory.getLogger(this.getClass)
+  //cloud stack client config
   private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
   private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
   private val apacheCloudStackUser = new ApacheCloudStackUser(secretKey, apiKey)
   private val cloudStackUrlList: Array[String] = ApplicationConfig
     .getRequiredString(ConfigLiterals.cloudStackApiUrlList)
     .split("[,\\s]+")
-  private val apacheCloudStackClientList = cloudStackUrlList.map { x =>
+  private val apacheCloudStackClientList: List[ApacheCloudStackClient] = cloudStackUrlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
-
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
-  private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
-  threadLocalClientList.set(apacheCloudStackClientList)
+  private var threadLocalClientList = new ThreadLocal[List[ApacheCloudStackClient]](){
+    override protected def initialValue(): List[ApacheCloudStackClient] = {
+      apacheCloudStackClientList
+    }
+  }
 
   def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest("listTags")

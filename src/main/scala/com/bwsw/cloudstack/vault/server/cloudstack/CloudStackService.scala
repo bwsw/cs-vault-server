@@ -11,16 +11,13 @@ import org.slf4j.LoggerFactory
 /**
   * Created by medvedev_vv on 02.08.17.
   */
-class CloudStackService {
+class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator
   private val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-  private val threadLocalJsonSerializer: ThreadLocal[JsonSerializer] = new ThreadLocal
-  threadLocalJsonSerializer.get.setIgnoreUnknown(true)
+  private val jsonSerializer = new JsonSerializer(true)
 
   def getUserTagsByAccountId(accountId: UUID): List[Tag] = {
     logger.debug(s"getUserTagsByAccountId(accountId: $accountId)")
-    val jsonSerializer = threadLocalJsonSerializer.get()
 
     val accountResponse = getEntityJson(accountId.toString, "id", "listAccounts")
     val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
@@ -31,8 +28,7 @@ class CloudStackService {
       }
 
     val tags = allUsersIdInAccount.flatMap { userId =>
-      val tagResponse = getTagsJson("User", userId)
-      jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags
+      getUserTagsByUserId(userId)
     }
 
     logger.debug(s"Tags were got for account: $accountId)")
@@ -41,23 +37,9 @@ class CloudStackService {
 
   def getUserTagsByUserId(userId: UUID): List[Tag] = {
     logger.debug(s"getUserTagsByUserId(userId: $userId)")
-    val jsonSerializer = threadLocalJsonSerializer.get()
 
-    val users = jsonSerializer.deserialize[UserResponse](
-      getEntityJson(userId.toString, "id", "listUsers")
-    ).userList.users
-
-    val allUsersIdInAccount: List[UUID] = users.flatMap { x =>
-      val accountResponse = getEntityJson(x.accountid.toString, "id", "listAccounts")
-      jsonSerializer.deserialize[AccountResponse](accountResponse).accountList.accounts.flatMap { x =>
-        x.users.map(_.id)
-      }
-    }
-
-    val tags = allUsersIdInAccount.flatMap { userId =>
-      val tagResponse = getTagsJson("User", userId)
-      jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags
-    }
+    val tagResponse = getTagsJson("User", userId)
+    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags
 
     logger.debug(s"Tags were got for user: $userId)")
     tags
@@ -65,32 +47,16 @@ class CloudStackService {
 
   def getVmTagsById(vmId: UUID): List[Tag] = {
     logger.debug(s"getVmTagsById(vmId: $vmId)")
-    val jsonSerializer = threadLocalJsonSerializer.get()
 
-    val vmIds = jsonSerializer.deserialize[VirtualMachinesResponse](
-      getEntityJson(vmId.toString, "id", "listVirtualMachines")
-    ).virtualMashineList.virtualMashines.map(_.id)
-
-    val tags = vmIds.flatMap { vmId =>
-      val tagResponse = getTagsJson("UserVM", vmId)
-      jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags
-    }
+    val tagResponse = getTagsJson("UserVM", vmId)
+    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags
 
     logger.debug(s"Tags were got for vm: $vmId)")
     tags
   }
 
-  def setResourseTag(resourseId: UUID, resourseType: String, tag: Tag): Unit = {
-    logger.debug(s"setTagToResourse(resourseId: $resourseId, resourseType: $resourseType)")
-    def task = apacheCloudStackTaskCreator.createSetResourseTagTask(resourseId, resourseType, tag)
-
-    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
-    logger.debug(s"Tag was set to resourse: $resourseId, $resourseType")
-  }
-
   def getAccountIdByVmId(vmId: UUID): UUID = {
-    logger.debug(s"getAccountIdForVm(vmId: $vmId)")
-    val jsonSerializer = threadLocalJsonSerializer.get()
+    logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
 
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(vmId.toString, "id", "listVirtualMachines")
@@ -109,8 +75,7 @@ class CloudStackService {
   }
 
   def getAccountIdByUserId(userId: UUID): UUID = {
-    logger.debug(s"getAccountIdForUser(userId: $userId)")
-    val jsonSerializer = threadLocalJsonSerializer.get()
+    logger.debug(s"getAccountIdByUserId(userId: $userId)")
 
     val accountId = jsonSerializer.deserialize[UserResponse](
       getEntityJson(userId.toString, "id", "listUsers")
@@ -120,6 +85,14 @@ class CloudStackService {
 
     logger.debug(s"accountId was got for user: $userId)")
     accountId
+  }
+
+  def setResourseTag(resourseId: UUID, resourseType: String, tag: Tag): Unit = {
+    logger.debug(s"setResourseTag(resourseId: $resourseId, resourseType: $resourseType)")
+    def task = apacheCloudStackTaskCreator.createSetResourseTagTask(resourseId, resourseType, tag)
+
+    TaskRunner.tryRunUntilSuccess[String](task, cloudStackRetryDelay)
+    logger.debug(s"Tag was set to resourse: $resourseId, $resourseType")
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: String): String = {

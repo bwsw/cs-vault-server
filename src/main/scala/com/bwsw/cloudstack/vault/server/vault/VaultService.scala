@@ -19,12 +19,10 @@ class VaultService {
   private val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
   private val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
   private val tokenPeriod = Converter.daysToSeconds(ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod))
-  private val threadLocalJsonSerializer: ThreadLocal[JsonSerializer] = new ThreadLocal
-  threadLocalJsonSerializer.get.setIgnoreUnknown(true)
+  private val jsonSerializer = new JsonSerializer(true)
 
   def createToken(policies: List[Policy])(): UUID = {
     logger.debug(s"createToken with policies: $policies")
-    val jsonSerializer = threadLocalJsonSerializer.get()
     policies.foreach(writePolicy)
 
     val tokenParameters = Token.TokenInitParameters(
@@ -52,7 +50,6 @@ class VaultService {
 
   def revokeToken(tokenId: UUID)(): Unit = {
     logger.debug(s"revokeToken")
-    val jsonSerializer = threadLocalJsonSerializer.get()
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
     def executeLookupRequest = VaultRest.createPostRequest(
