@@ -40,7 +40,8 @@ class CloudStackVaultController(vaultService: VaultService,
     import Tag.Key
     logger.debug(s"handleUserCreate(userId: $userId)")
 
-    val userTags = cloudStackService.getUserTagsByUserId(userId)
+    val accountId = cloudStackService.getAccountIdByUserId(userId)
+    val userTags = cloudStackService.getUserTagsByAccountId(accountId)
 
     val optionReadToken: Option[UUID] = userTags.find(_.key == Key.VaultRO).map { x =>
       UUID.fromString(x.value)
@@ -57,7 +58,6 @@ class CloudStackVaultController(vaultService: VaultService,
     val tokenWithTagKey: List[(UUID, Tag.Key)] = optionTokenWithTagKeyList.map {
       case (None, key) =>
         logger.info("Tag with token has not existed")
-        val accountId = cloudStackService.getAccountIdByUserId(userId)
         val pathToData = s"${RequestPath.zooKeeperRootNode}/$accountId/${Key.toString(key)}"
         val isExistNodeWithToken = zooKeeperService.isExistNode(pathToData)
 
