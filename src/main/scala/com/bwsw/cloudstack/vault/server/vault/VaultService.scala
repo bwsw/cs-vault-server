@@ -40,15 +40,16 @@ class VaultService {
 
     val response = TaskRunner.tryRunUntilSuccess[RestResponse](
       executeRequest,
+      _ => false,
       vaultRetryDelay
     )
 
     val token = jsonSerializer.deserialize[Token](new String(response.getBody))
-    logger.debug(s"Token was created")
+    logger.debug("Token was created")
     token.tokenId.id
   }
 
-  def revokeToken(tokenId: UUID)(): Unit = {
+  def revokeToken(tokenId: UUID)(): String = {
     logger.debug(s"revokeToken")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
@@ -62,6 +63,7 @@ class VaultService {
 
     val lookupResponse = TaskRunner.tryRunUntilSuccess[RestResponse](
       executeLookupRequest,
+      _ => false,
       vaultRetryDelay
     )
 
@@ -77,6 +79,7 @@ class VaultService {
 
     val revokeResponse = TaskRunner.tryRunUntilSuccess[RestResponse](
       executeRevokeRequest,
+      _ => false,
       vaultRetryDelay
     )
     logger.debug(s"Token was revoked")
@@ -85,10 +88,10 @@ class VaultService {
       x != "default" && x != "root"
     }.foreach(deletePolicy)
 
-    deleteSecret(lookupToken.tokenData.path)
+    lookupToken.tokenData.path
   }
 
-  private def deleteSecret(pathToSecret: String): Unit = {
+  def deleteSecret(pathToSecret: String): Unit = {
     logger.debug(s"deleteSecret: $pathToSecret")
     def executeRequest = VaultRest.createDeleteRequest(
       vaultRootToken,
@@ -100,6 +103,7 @@ class VaultService {
 
     TaskRunner.tryRunUntilSuccess[RestResponse](
       executeRequest,
+      _ => false,
       vaultRetryDelay
     )
 
@@ -119,6 +123,7 @@ class VaultService {
 
     TaskRunner.tryRunUntilSuccess[RestResponse](
       executeRequest,
+      _ => false,
       vaultRetryDelay
     )
     logger.debug(s"policy was writed: $policy")
@@ -137,6 +142,7 @@ class VaultService {
 
     TaskRunner.tryRunUntilSuccess[RestResponse](
       executeRequest,
+      _ => false,
       vaultRetryDelay
     )
 

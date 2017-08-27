@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 /**
   * Created by medvedev_vv on 09.08.17.
   */
-object Token {
+private[vault] object Token {
 
 /**
   * Use for body in token creating request
@@ -37,6 +37,6 @@ object Token {
 
 }
 
-case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
+private[vault] case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
 
-case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)
+private[vault] case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)

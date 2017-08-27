@@ -4,7 +4,9 @@ import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
+import com.bwsw.cloudstack.vault.server.util.exception.CloudStackCriticalException
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import org.slf4j.LoggerFactory
 
@@ -33,18 +35,18 @@ class ApacheCloudStackTaskCreator {
     }
   }
 
-  def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
-    val tagRequest = new ApacheCloudStackRequest("listTags")
+  def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+    val tagRequest = new ApacheCloudStackRequest(Command.toString(Command.ListTags))
     tagRequest.addParameter("response", "json")
-    tagRequest.addParameter("resourcetype", resourceType)
+    tagRequest.addParameter("resourcetype", Tag.Type.toString(resourceType))
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
     createRequest(tagRequest, s"get tag by resourse: ($resourceId, $resourceType)")
   }
 
-  def createGetEntityTask(parameterValue: String, parameterName: String, command: String): () => String = {
-    val request = new ApacheCloudStackRequest(command)
+  def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+    val request = new ApacheCloudStackRequest(Command.toString(command))
     request.addParameter("response", "json")
     request.addParameter("listAll", "true")
     request.addParameter(parameterName, parameterValue)
@@ -52,10 +54,10 @@ class ApacheCloudStackTaskCreator {
     createRequest(request, s"get entity by command: $command")
   }
 
-  def createSetResourseTagTask(resourseId: UUID, resourseType: String, tag: Tag): () => String = {
-    val request = new ApacheCloudStackRequest("createTags")
+  def createSetResourseTagTask(resourseId: UUID, resourseType: Tag.Type, tag: Tag): () => String = {
+    val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
-    request.addParameter("resourcetype", resourseType)
+    request.addParameter("resourcetype", Tag.Type.toString(resourseType))
     request.addParameter("resourceids", resourseId)
     request.addParameter("tags[0].key", tag.key)
     request.addParameter("tags[0].value", tag.value)
@@ -70,13 +72,17 @@ class ApacheCloudStackTaskCreator {
       clientList.head.executeRequest(request)
     } match {
       case Success(x) => x
-      case Failure(e) =>
+      case Failure(e: ApacheCloudStackClientRuntimeException) =>
+        logger.warn(s"CloudStack server is unavailable")
         if (clientList.tail.isEmpty) {
           threadLocalClientList.set(apacheCloudStackClientList)
         } else {
           threadLocalClientList.set(clientList.tail)
         }
         throw e
+      case Failure(e :Throwable) =>
+        logger.error(s"Request execution thrown an critical exception: $e")
+        throw new CloudStackCriticalException(s"The request: $request was not correctly executed")
     }
   }
 }

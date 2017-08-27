@@ -2,7 +2,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
 import org.scalatest.FlatSpec
 
@@ -12,19 +12,19 @@ import org.scalatest.FlatSpec
 class CloudStackServiceSuite extends FlatSpec with TestData {
 
   "getUserTagsByAccountId" should "return user tags by AccountId" in {
-    val key = "key1"
+    val key = Tag.Key.VaultRO
     val value = "value1"
 
     val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: String): () => String = {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
         assert(parameterName == idParameter, "parameterName is wrong")
-        assert(command == listAccountsCommand, "command is wrong")
+        assert(command == Command.ListAccounts, "command is wrong")
         () => getAccountResponseJson(accountId.toString, userId.toString)
       }
 
-      override def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
-        assert(resourceType == userResourseType, "resourceType is wrong")
+      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+        assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
         () => getTagResponseJson(key, value)
       }
@@ -36,12 +36,12 @@ class CloudStackServiceSuite extends FlatSpec with TestData {
   }
 
   "getUserTagsByUserId" should "return user tags by UserId" in {
-    val key = "key2"
-    val value = "value2"
+    val key = Tag.Key.VaultRW
+    val value = "value1"
 
     val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator {
-      override def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
-        assert(resourceType == userResourseType, "resourceType is wrong")
+      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+        assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
         () => getTagResponseJson(key, value)
       }
@@ -54,12 +54,12 @@ class CloudStackServiceSuite extends FlatSpec with TestData {
   }
 
   "getVmTagsById" should "return virtual machines tags by id" in {
-    val key = "key3"
+    val key = Tag.Key.VaultRW
     val value = "value3"
 
     val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator {
-      override def createGetTagTask(resourceType: String, resourceId: UUID): () => String = {
-        assert(resourceType == vmUserResourseType, "resourceType is wrong")
+      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+        assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
         assert(resourceId == vmId, "resourceId is wrong")
         () => getTagResponseJson(key, value)
       }

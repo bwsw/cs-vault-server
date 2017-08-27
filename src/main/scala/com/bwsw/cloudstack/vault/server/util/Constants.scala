@@ -37,4 +37,6 @@ object RequestPath {
   val vaultPolicy          = "/v1/sys/policy"
   val vaultSecret          = "/v1/secret"
   val vaultTokenRevoke     = "/v1/auth/token/revoke"
+  val vmSecret             = "secret/cs/vms/"
+  val accountSecret        = "secret/cs/accounts/"
 }
