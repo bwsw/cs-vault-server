@@ -9,6 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
   */
 private[cloudstack] case class VirtualMachinesResponse(@JsonProperty("listvirtualmachinesresponse")  virtualMashineList: VirtualMashineList)
 
-private[cloudstack] case class VirtualMashineList(count: Int, @JsonProperty("virtualmachine") virtualMashines: List[VirtualMashine])
+private[cloudstack] case class VirtualMashineList(@JsonProperty("virtualmachine") virtualMashines: Option[List[VirtualMashine]])
 
 private[cloudstack] case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String)
