@@ -1,7 +1,7 @@
 package com.bwsw.cloudstack.vault.server.zookeeper.util
 
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
-import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
+import org.apache.zookeeper.KeeperException.{ConnectionLossException, NoNodeException, NodeExistsException}
 import org.apache.zookeeper.data.Stat
 import org.apache.zookeeper._
 import org.slf4j.LoggerFactory
@@ -39,11 +39,11 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
       case Success(x) =>
         logger.debug(s"Node data was successfully got by path: $path")
         x
-      case Failure(e: NoNodeException) =>
-        logger.warn("Data could not been got, because node is have not existed")
-        throw new ZooKeeperCriticalException(e)
-      case Failure(e: Throwable) =>
+      case Failure(e: ConnectionLossException) =>
+        logger.warn("ZooKeeper server is unavailable")
         throw e
+      case Failure(e: Throwable) =>
+        throw new ZooKeeperCriticalException(e)
     }
   }
 
@@ -55,11 +55,11 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
       case Success(x) =>
         logger.debug(s"Node was successfully created by path: $path")
         x
-      case Failure(e: NodeExistsException) =>
-        logger.error("Node could not been created, because already it have been exist")
-        throw new ZooKeeperCriticalException(e)
-      case Failure(e: Throwable) =>
+      case Failure(e: ConnectionLossException) =>
+        logger.warn("ZooKeeper server is unavailable")
         throw e
+      case Failure(e: Throwable) =>
+        throw new ZooKeeperCriticalException(e)
     }
   }
 

@@ -83,7 +83,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
         throw e
       case Failure(e: Throwable) =>
         logger.error(s"Request to vault server is not finish correctly, exception was thrown: $e")
-        throw e
+        throw new VaultCriticalException(e)
     }
 
     if (response.getStatus != expectedResponseStatus) {
