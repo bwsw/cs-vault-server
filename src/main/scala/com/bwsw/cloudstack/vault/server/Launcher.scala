@@ -1,5 +1,6 @@
 package com.bwsw.cloudstack.vault.server
 
+import com.bwsw.cloudstack.vault.server.common.ConfigLoader
 import com.bwsw.cloudstack.vault.server.kafka.ConsumerManager
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.typesafe.scalalogging.StrictLogging
@@ -10,7 +11,7 @@ import com.typesafe.scalalogging.StrictLogging
 object Launcher extends StrictLogging{
 
   def main(args: Array[String]): Unit = {
-    val components = new Components
+    val components = new Components(ConfigLoader.loadConfig())
     val consumerManager = new ConsumerManager(
       ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
       ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList),

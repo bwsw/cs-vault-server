@@ -2,7 +2,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 
 /**
   * Created by medvedev_vv on 25.08.17.

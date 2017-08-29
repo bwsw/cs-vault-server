@@ -7,7 +7,6 @@ import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -15,16 +14,11 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskCreator {
+class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
-  private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
-  private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
-  private val apacheCloudStackUser = new ApacheCloudStackUser(secretKey, apiKey)
-  private val cloudStackUrlList: Array[String] = ApplicationConfig
-    .getRequiredString(ConfigLiterals.cloudStackApiUrlList)
-    .split("[,\\s]+")
-  private val apacheCloudStackClientList: List[ApacheCloudStackClient] = cloudStackUrlList.map { x =>
+  private val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
+  private val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
@@ -93,7 +87,11 @@ class ApacheCloudStackTaskCreator {
         throw e
       case Failure(e :Throwable) =>
         logger.error(s"Request execution thrown an critical exception: $e")
-        throw new CloudStackCriticalException(s"The cloud stack request: $request was not correctly executed")
+        throw new CloudStackCriticalException(e)
     }
   }
+}
+
+object ApacheCloudStackTaskCreator {
+  case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
 }

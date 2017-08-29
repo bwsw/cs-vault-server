@@ -18,7 +18,7 @@ object TaskRunner {
     } match {
       case Success(x) => x
       case Failure(e: CriticalException) =>
-        logger.error(s"The critical exception: $e was thrown")
+        logger.error(s"The critical exception: ${e.exception} was thrown")
         throw e
       case Failure(e) =>
         logger.warn(s"The task execute with an exception: $e, restart function after $retryDelay seconds")

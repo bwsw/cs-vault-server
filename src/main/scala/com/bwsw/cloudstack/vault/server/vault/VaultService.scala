@@ -3,8 +3,7 @@ package com.bwsw.cloudstack.vault.server.vault
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
-import com.bettercloud.vault.rest.RestResponse
-import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
+import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities.{LookupToken, Policy, Token}
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -13,10 +12,9 @@ import org.slf4j.LoggerFactory
 /**
   * Created by medvedev_vv on 02.08.17.
   */
-class VaultService(vaultRest: VaultRestRequestCreator) {
+class VaultService(vaultRest: VaultRestRequestCreator,
+                   settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val tokenPeriod = Converter.daysToSeconds(ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod))
-  private val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
   private val jsonSerializer = new JsonSerializer(true)
 
   /**
@@ -34,14 +32,14 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     val tokenParameters = Token.TokenInitParameters(
       policies.map(_.name),
-      tokenPeriod
+      settings.tokenPeriod
     )
 
     def executeRequest = vaultRest.createTokenCreateRequest(jsonSerializer.serialize(tokenParameters))
 
     val responseString = TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
 
     val token = jsonSerializer.deserialize[Token](responseString)
@@ -66,7 +64,7 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     val lookupResponseString = TaskRunner.tryRunUntilSuccess[String](
       executeLookupRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
 
     val lookupToken = jsonSerializer.deserialize[LookupToken](lookupResponseString)
@@ -75,7 +73,7 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     val revokeResponseString = TaskRunner.tryRunUntilSuccess[String](
       executeRevokeRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
     logger.debug(s"Token was revoked")
 
@@ -99,7 +97,7 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
 
     logger.debug(s"data from path: $pathToSecret was deleted")
@@ -112,7 +110,7 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
     logger.debug(s"policy was writed: $policy")
   }
@@ -124,9 +122,13 @@ class VaultService(vaultRest: VaultRestRequestCreator) {
 
     TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      vaultRetryDelay
+      settings.vaultRetryDelay
     )
 
     logger.debug(s"policy with name: $policyName was deleted")
   }
+}
+
+object VaultService {
+  case class Settings(tokenPeriod: Int, vaultRetryDelay: Int)
 }

@@ -1,6 +1,8 @@
 package com.bwsw.cloudstack.vault.server.vault.util
 
+import com.bettercloud.vault.VaultException
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
+import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator.Settings
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, HttpStatuses, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
 import org.slf4j.LoggerFactory
@@ -10,9 +12,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class VaultRestRequestCreator {
-  private val vaultUrl = ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)
-  private val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
+class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def createTokenCreateRequest(tokenParameters: String):() => String = {
@@ -65,8 +65,8 @@ class VaultRestRequestCreator {
 
   private def createRest(path: String, data: String): Rest = {
     new Rest()
-      .url(s"$vaultUrl$path")
-      .header("X-Vault-Token", vaultRootToken)
+      .url(s"${settings.vaultUrl}$path")
+      .header("X-Vault-Token", settings.vaultRootToken)
       .body(data.getBytes("UTF-8"))
   }
 
@@ -87,8 +87,12 @@ class VaultRestRequestCreator {
     }
 
     if (response.getStatus != expectedResponseStatus) {
-      throw new VaultCriticalException(s"Response status: ${response.getStatus} from vault server is not expected")
+      throw new VaultCriticalException(new VaultException(s"Response status: ${response.getStatus} from vault server is not expected"))
     }
     new String(response.getBody)
   }
+}
+
+object VaultRestRequestCreator {
+  case class Settings(vaultUrl: String, vaultRootToken: String)
 }
