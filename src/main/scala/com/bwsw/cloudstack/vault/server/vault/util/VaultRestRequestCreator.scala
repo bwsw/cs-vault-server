@@ -2,8 +2,7 @@ package com.bwsw.cloudstack.vault.server.vault.util
 
 import com.bettercloud.vault.VaultException
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
-import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator.Settings
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, HttpStatuses, RequestPath}
+import com.bwsw.cloudstack.vault.server.util.{HttpStatuses, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
 import org.slf4j.LoggerFactory
 
@@ -63,7 +62,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
-  private def createRest(path: String, data: String): Rest = {
+  protected def createRest(path: String, data: String): Rest = {
     new Rest()
       .url(s"${settings.vaultUrl}$path")
       .header("X-Vault-Token", settings.vaultRootToken)

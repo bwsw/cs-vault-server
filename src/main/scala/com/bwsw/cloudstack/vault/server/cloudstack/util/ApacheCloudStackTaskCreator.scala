@@ -17,8 +17,8 @@ import scala.util.{Failure, Success, Try}
 class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
-  private val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  private val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
+  protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
+  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))

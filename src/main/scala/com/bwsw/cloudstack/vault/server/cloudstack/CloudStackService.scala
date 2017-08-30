@@ -6,7 +6,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, TaskRunner}
+import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import org.slf4j.LoggerFactory
 
 /**
@@ -19,12 +19,12 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets all tags of account's users which has "User" type.
-    * Throws CloudStackCriticalException if account with specified id does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of account for gets user's tags
     *
     * @return List with Tag
+    * @throws CloudStackCriticalException if account with specified id does not exist.
     */
   def getUserTagsByAccountId(accountId: UUID): List[Tag] = {
     logger.debug(s"getUserTagsByAccountId(accountId: $accountId)")
@@ -41,12 +41,12 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets all tags of users which has "User" type.
-    * Throws CloudStackCriticalException if user with specified id does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets user's tags
     *
     * @return List with Tag
+    * @throws CloudStackCriticalException if user with specified id does not exist.
     */
   def getUserTagsByUserId(userId: UUID): List[Tag] = {
     logger.debug(s"getUserTagsByUserId(userId: $userId)")
@@ -60,12 +60,12 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets all tags of virtual machine which has "UserVM" type.
-    * Throws CloudStackCriticalException if virtual machine with specified id does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual mashine for gets user's tags
     *
     * @return List with Tag
+    * @throws CloudStackCriticalException if virtual machine with specified id does not exist.
     */
   def getVmTagsById(vmId: UUID): List[Tag] = {
     logger.debug(s"getVmTagsById(vmId: $vmId)")
@@ -80,13 +80,13 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets account id for the virtual machine.
-    * Throws CloudStackCriticalException if virtual machine with specified id does not exist.
-    * Throws CloudStackCriticalException if account with specified name in virtual machine does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual machine for gets account name
     *
     * @return UUID of account which name indicate in virtual machine
+    * @throws CloudStackCriticalException if virtual machine with specified id does not exist,
+    *                                     or if account with specified name in virtual machine does not exist.
     */
   def getAccountIdByVmId(vmId: UUID): UUID = {
     logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
@@ -109,12 +109,12 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets account id for the user.
-    * Throws CloudStackCriticalException if user with specified id does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets account id
     *
     * @return UUID of account which include user with indicate id
+    * @throws CloudStackCriticalException if user with specified id does not exist.
     */
   def getAccountIdByUserId(userId: UUID): UUID = {
     logger.debug(s"getAccountIdByUserId(userId: $userId)")
@@ -131,12 +131,12 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
   /**
     * Gets user ids for the account.
-    * Throws CloudStackCriticalException if account with specified id does not exist.
     * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of user for gets account id
     *
     * @return List with UUID of users which are included in account
+    * @throws CloudStackCriticalException if account with specified id does not exist.
     */
   def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
     logger.debug(s"getUserIdsForAccount(accountId: $accountId)")

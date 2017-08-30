@@ -16,7 +16,7 @@ class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
+    val vaultRest = new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings) {
       override def createTokenCreateRequest(tokenParameters: String): () => String  = {
         () => getTokenJsonResponse(token.toString)
       }
@@ -28,7 +28,7 @@ class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
       }
     }
 
-    val vaultService = new VaultService(vaultRest, vaultSettings)
+    val vaultService = new VaultService(vaultRest, settings.vaultServiceSettings)
 
     val expectedToken = vaultService.createToken(policy :: Nil)
     assert(expectedToken == token)
@@ -39,7 +39,7 @@ class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
     val policy = Policy.createAccountWritePolicy(entityId)
     val tokenJson = getTokenJson(entityId.toString)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
+    val vaultRest = new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings) {
       override def createTokenLookupRequest(tokenJsonString: String): () => String  = {
         assert(tokenJson == tokenJsonString, "tokenJsonString is wrong")
         () => getLookupTokenJsonResponse(policy.name, policy.path)
@@ -56,7 +56,7 @@ class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
       }
     }
 
-    val vaultService = new VaultService(vaultRest, vaultSettings)
+    val vaultService = new VaultService(vaultRest, settings.vaultServiceSettings)
 
     val expectedPath = vaultService.revokeToken(entityId)
     assert(expectedPath == policy.path)
@@ -64,14 +64,14 @@ class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
 
   "deleteSecret" should "delete secret in vault by path" in {
     val path = "test/path"
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
+    val vaultRest = new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
         assert(pathToSecret == path, "vaultRest is wrong")
         () => ""
       }
     }
 
-    val vaultService = new VaultService(vaultRest, vaultSettings)
+    val vaultService = new VaultService(vaultRest, settings.vaultServiceSettings)
     assert(vaultService.deleteSecret(path).isInstanceOf[Unit])
   }
 }

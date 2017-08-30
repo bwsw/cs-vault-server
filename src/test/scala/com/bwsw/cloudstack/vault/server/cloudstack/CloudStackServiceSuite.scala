@@ -16,21 +16,21 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
     val key = Tag.Key.VaultRO
     val value = "value1"
 
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings) {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
         assert(parameterName == idParameter, "parameterName is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
-        () => getAccountResponseJson(accountId.toString, userId.toString)
+        () => Response.getAccountResponseJson(accountId.toString, userId.toString)
       }
 
       override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
-        () => getTagResponseJson(key, value)
+        () => Response.getTagResponseJson(key, value)
       }
     }
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val tags = cloudStackService.getUserTagsByAccountId(accountId)
     assert(Tag(key,value) :: Nil == tags)
@@ -40,15 +40,15 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
     val key = Tag.Key.VaultRW
     val value = "value1"
 
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
       override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
-        () => getTagResponseJson(key, value)
+        () => Response.getTagResponseJson(key, value)
       }
     }
 
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val tags = cloudStackService.getUserTagsByUserId(userId)
     assert(Tag(key,value) :: Nil == tags)
@@ -58,15 +58,15 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
     val key = Tag.Key.VaultRW
     val value = "value3"
 
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
       override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
         assert(resourceId == vmId, "resourceId is wrong")
-        () => getTagResponseJson(key, value)
+        () => Response.getTagResponseJson(key, value)
       }
     }
 
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val tags = cloudStackService.getVmTagsById(vmId)
     assert(Tag(key,value) :: Nil == tags)
@@ -75,17 +75,17 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
   "getAccountIdByVmId" should "return account id by virtual machine id" in {
     val accountName = "admin"
 
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         command match {
           case Command.ListVirtualMachines =>
             assert(parameterValue == vmId.toString, "parameterValue is wrong")
             assert(parameterName == idParameter, "parameterName is wrong")
-            () => getVmResponseJson(vmId.toString, accountName)
+            () => Response.getVmResponseJson(vmId.toString, accountName)
           case Command.ListAccounts =>
             assert(parameterValue == accountName, "parameterValue is wrong")
             assert(parameterName == nameParameter, "parameterName is wrong")
-            () => getAccountResponseJson(accountId.toString, userId.toString)
+            () => Response.getAccountResponseJson(accountId.toString, userId.toString)
           case _ =>
             assert(false, "command is wrong")
             () => ""
@@ -93,39 +93,39 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
       }
     }
 
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val expectedAccountId: UUID = cloudStackService.getAccountIdByVmId(vmId)
     assert(expectedAccountId == accountId)
   }
 
   "getAccountIdByUserId" should "return account id by user id" in {
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == userId.toString, "parameterValue is wrong")
         assert(parameterName == idParameter, "parameterName is wrong")
         assert(command == Command.ListUsers, "command is wrong")
-        () => getUserResponseJson(userId.toString, accountId.toString)
+        () => Response.getUserResponseJson(userId.toString, accountId.toString)
       }
     }
 
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val expectedAccountId: UUID = cloudStackService.getAccountIdByUserId(userId)
     assert(expectedAccountId == accountId)
   }
 
   "getUserIdsByAccountId" should "return user ids by account id" in {
-    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
         assert(parameterName == idParameter, "parameterName is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
-        () => getAccountResponseJson(accountId.toString, userId.toString)
+        () => Response.getAccountResponseJson(accountId.toString, userId.toString)
       }
     }
 
-    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, cloudStackSettings)
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
 
     val expectedUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
     assert(expectedUserIds == userId :: Nil)

@@ -1,12 +1,9 @@
 package com.bwsw.cloudstack.vault.server.zookeeper
 
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, TaskRunner}
+import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
-import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
-import org.apache.zookeeper.{CreateMode, ZooDefs, ZooKeeper}
+import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
 import org.slf4j.LoggerFactory
-
-import scala.util.{Failure, Success, Try}
 
 /**
   * Created by medvedev_vv on 21.08.17.
@@ -18,38 +15,31 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
 
   /**
     * Creates zNode in ZooKeeper server.
-    * Throws ZooKeeperCriticalException if zNode already does exist.
     * Will be restarted if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
+    * @throws ZooKeeperCriticalException if zNode already does exist.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
-    val zooKeeper: ZooKeeper = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createConnectionTask, retryDelay)
 
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeCreationTask(zooKeeper, path, data), retryDelay)
-
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCloseConnectionTask(zooKeeper), retryDelay)
+    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeCreationTask(path, data), retryDelay)
   }
 
   /**
     * Gets data from zNode in ZooKeeper server.
-    * Throws ZooKeeperCriticalException if zNode already does not exist.
     * Will be restarted if zookeeper server is unavailable.
     *
     * @param path String with path to zNode data
     *
     * @return String with data stored in the zNode
+    * @throws ZooKeeperCriticalException if zNode already does not exist.
     */
   def getData(path: String): String = {
     logger.debug(s"getData from path: $path")
-    val zooKeeper: ZooKeeper = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createConnectionTask, retryDelay)
 
-    val data = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createGetDataTask(zooKeeper, path), retryDelay)
-
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCloseConnectionTask(zooKeeper), retryDelay)
-    data
+    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createGetDataTask(path), retryDelay)
   }
 
   /**
@@ -60,11 +50,8 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
-    val zooKeeper: ZooKeeper = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createConnectionTask, retryDelay)
 
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeDeletionTask(zooKeeper, path), retryDelay)
-
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCloseConnectionTask(zooKeeper), retryDelay)
+    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeDeletionTask(path), retryDelay)
   }
 
   /**
@@ -75,13 +62,9 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
     */
   def isExistNode(path: String): Boolean = {
     logger.debug(s"isExistNode by path: $path")
-    val zooKeeper: ZooKeeper = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createConnectionTask, retryDelay)
 
-    val isExist = TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCheckExistNodeTask(zooKeeper, path), retryDelay)
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCloseConnectionTask(zooKeeper), retryDelay)
-    isExist
+    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCheckExistNodeTask(path), retryDelay)
   }
-
 }
 
 object ZooKeeperService {

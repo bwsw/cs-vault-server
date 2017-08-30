@@ -2,6 +2,7 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
+import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 
 /**
@@ -17,4 +18,5 @@ trait TestData {
                                  pathToSecret: String): String = "{\"data\":{\"policies\":[\"" + s"$policyName" + "\"], \"path\":\"" + s"$pathToSecret" + "\"}}"
 
   def getTokenJson(token: String): String = "{\"token\":\"" + s"$token" + "\"}"
+
 }

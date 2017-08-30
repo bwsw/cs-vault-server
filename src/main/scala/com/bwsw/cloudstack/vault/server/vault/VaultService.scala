@@ -7,6 +7,7 @@ import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities.{LookupToken, Policy, Token}
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
 import org.slf4j.LoggerFactory
 
 /**
@@ -19,12 +20,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
   /**
     * Creates token with specified policy.
-    * Throws VaultCriticalException if response status is not expected.
     * Will be restarted if vault server is unavailable.
     *
     * @param policies policies for token
     *
     * @return UUID of token
+    * @throws VaultCriticalException if response status is not expected.
     */
   def createToken(policies: List[Policy])(): UUID = {
     logger.debug(s"createToken with policies: $policies")
@@ -49,12 +50,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
   /**
     * Revokes token from vault server.
-    * Throws VaultCriticalException if response status is not expected.
     * Will be restarted if vault server is unavailable.
     *
     * @param tokenId UUID of token for revoke
     *
     * @return String of path to secret of revoked token
+    * @throws VaultCriticalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID)(): String = {
     logger.debug(s"revokeToken")
@@ -86,10 +87,11 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
   /**
     * Deletes secret from vault server by specified path.
-    * Throws VaultCriticalException if response status is not expected.
     * Will be restarted if vault server is unavailable.
     *
     * @param pathToSecret UUID of token for revoke
+    *
+    * @throws VaultCriticalException if response status is not expected.
     */
   def deleteSecret(pathToSecret: String): Unit = {
     logger.debug(s"deleteSecret: $pathToSecret")
