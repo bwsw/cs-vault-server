@@ -5,13 +5,15 @@ import java.util.UUID
 import com.bwsw.cloudstack.vault.server.BaseSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
 import org.scalatest.FlatSpec
 
 /**
   * Created by medvedev_vv on 25.08.17.
   */
-class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
+class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseSuite {
 
+  //Positive tests
   "getUserTagsByAccountId" should "return user tags by AccountId" in {
     val key = Tag.Key.VaultRO
     val value = "value1"
@@ -129,6 +131,119 @@ class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
 
     val expectedUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
     assert(expectedUserIds == userId :: Nil)
+  }
+
+  //Negative tests
+  "getUserTagsByAccountId" should "throw CloudStackCriticalException" in {
+    val key = Tag.Key.VaultRO
+    val value = "value1"
+
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings) {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == accountId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListAccounts, "command is wrong")
+        throw new CloudStackCriticalException(new Exception("test exception"))
+      }
+    }
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getUserTagsByAccountId(accountId)
+    }
+  }
+
+  "getUserTagsByUserId" should "throw CloudStackCriticalException" in {
+    val key = Tag.Key.VaultRW
+    val value = "value1"
+
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
+      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+        assert(resourceType == Tag.Type.User, "resourceType is wrong")
+        assert(resourceId == userId, "resourceId is wrong")
+        throw new CloudStackCriticalException(new Exception("test exception"))
+      }
+    }
+
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getUserTagsByUserId(userId)
+    }
+  }
+
+  "getVmTagsById" should "throw CloudStackCriticalException" in {
+    val key = Tag.Key.VaultRW
+    val value = "value3"
+
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
+      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+        assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
+        assert(resourceId == vmId, "resourceId is wrong")
+        throw new CloudStackCriticalException(new Exception("test exception"))
+      }
+    }
+
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getVmTagsById(vmId)
+    }
+  }
+
+  "getAccountIdByVmId" should "throw CloudStackCriticalException" in {
+    val accountName = "admin"
+
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        command match {
+          case Command.ListVirtualMachines =>
+            assert(parameterValue == vmId.toString, "parameterValue is wrong")
+            assert(parameterName == idParameter, "parameterName is wrong")
+            throw new CloudStackCriticalException(new Exception("test exception"))
+        }
+      }
+    }
+
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getAccountIdByVmId(vmId)
+    }
+  }
+
+  "getAccountIdByUserId" should "throw CloudStackCriticalException" in {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == userId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListUsers, "command is wrong")
+        throw new CloudStackCriticalException(new Exception("test exception"))
+      }
+    }
+
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getAccountIdByUserId(userId)
+    }
+  }
+
+  "getUserIdsByAccountId" should "throw CloudStackCriticalException" in {
+    val apacheCloudStackTaskCreator = new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == accountId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListAccounts, "command is wrong")
+        throw new CloudStackCriticalException(new Exception("test exception"))
+      }
+    }
+
+    val cloudStackService = new CloudStackService(apacheCloudStackTaskCreator, settings.cloudStackServiceSettings)
+
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getUserIdsByAccountId(accountId)
+    }
   }
 
 }

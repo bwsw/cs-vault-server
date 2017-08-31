@@ -13,11 +13,6 @@ trait TestData {
   val accountId: UUID = UUID.randomUUID()
   val vmId: UUID = UUID.randomUUID()
 
-
-  val listUsersCommand = "listUsers"
-  val listVirtualMachines = "listVirtualMachines"
-
-  val vmUserResourseType = "UserVM"
   val idParameter = "id"
   val nameParameter = "name"
 
