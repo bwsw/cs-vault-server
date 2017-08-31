@@ -15,3 +15,4 @@ libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.
 libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.8"
 libraryDependencies += "org.apache.zookeeper" % "zookeeper" % "3.4.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+libraryDependencies += "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
