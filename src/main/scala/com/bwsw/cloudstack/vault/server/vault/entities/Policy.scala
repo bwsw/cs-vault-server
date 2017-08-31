@@ -55,7 +55,7 @@ object Policy {
   def createAccountWritePolicy(account: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"${RequestPath.accountSecret}$account",
+      path = s"${RequestPath.accountSecret}$account*",
       acl = Policy.ACL.Write
     )
   }

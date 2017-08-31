@@ -4,8 +4,9 @@ import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -13,22 +14,22 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskCreator {
+class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val secretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
-  private val apiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
-  private val apacheCloudStackUser = new ApacheCloudStackUser(secretKey, apiKey)
-  private val cloudStackUrlList: Array[String] = ApplicationConfig
-    .getRequiredString(ConfigLiterals.cloudStackApiUrlList)
-    .split("[,\\s]+")
-  private val apacheCloudStackClientList = cloudStackUrlList.map { x =>
+  //cloud stack client config
+  protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
+  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
-
   apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
-  private var threadLocalClientList: ThreadLocal[List[ApacheCloudStackClient]] = new ThreadLocal
-  threadLocalClientList.set(apacheCloudStackClientList)
+  private var threadLocalClientList = new ThreadLocal[List[ApacheCloudStackClient]](){
+    override protected def initialValue(): List[ApacheCloudStackClient] = {
+      apacheCloudStackClientList
+    }
+  }
+  val idParameter = "id"
+  val nameParameter = "name"
 
   def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest(Command.toString(Command.ListTags))
@@ -49,13 +50,22 @@ class ApacheCloudStackTaskCreator {
     createRequest(request, s"get entity by command: $command")
   }
 
-  def createSetResourseTagTask(resourseId: UUID, resourseType: Tag.Type, tag: Tag): () => String = {
+  def createSetResourseTagTask(resourseId: UUID, resourseType: Tag.Type, tagList: List[Tag]): () => String = {
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
     request.addParameter("resourcetype", Tag.Type.toString(resourseType))
     request.addParameter("resourceids", resourseId)
-    request.addParameter("tags[0].key", tag.key)
-    request.addParameter("tags[0].value", tag.value)
+
+    loop(0, tagList)
+
+    def loop(index: Int, tagList: List[Tag]): Unit = {
+      if (tagList.nonEmpty) {
+        val tag = tagList.head
+        request.addParameter(s"tags[$index].key", tag.key)
+        request.addParameter(s"tags[$index].value", tag.value)
+        loop(index + 1, tagList.tail)
+      }
+    }
 
     createRequest(request, s"set tags to resourse: ($resourseId, $resourseType)")
   }
@@ -67,13 +77,21 @@ class ApacheCloudStackTaskCreator {
       clientList.head.executeRequest(request)
     } match {
       case Success(x) => x
-      case Failure(e) =>
+      case Failure(e: ApacheCloudStackClientRuntimeException) =>
+        logger.warn(s"CloudStack server is unavailable")
         if (clientList.tail.isEmpty) {
           threadLocalClientList.set(apacheCloudStackClientList)
         } else {
           threadLocalClientList.set(clientList.tail)
         }
         throw e
+      case Failure(e :Throwable) =>
+        logger.error(s"Request execution thrown an critical exception: $e")
+        throw new CloudStackCriticalException(e)
     }
   }
+}
+
+object ApacheCloudStackTaskCreator {
+  case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
 }

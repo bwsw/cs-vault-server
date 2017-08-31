@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind._
   */
 private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tagList: TagList)
 
-private[cloudstack] case class TagList(count: Int, @JsonProperty("tag") tags: List[Tag])
+private[cloudstack] case class TagList(@JsonProperty("tag") tags: Option[List[Tag]])
 
 object Tag {
   def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
