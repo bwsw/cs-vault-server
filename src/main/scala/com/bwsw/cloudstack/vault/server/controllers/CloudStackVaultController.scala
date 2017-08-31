@@ -189,9 +189,7 @@ class CloudStackVaultController(vaultService: VaultService,
         Tag.createTag(tokenTagKey, tokenId.toString)
     }
 
-    tagList.foreach { x =>
-      cloudStackService.setResourseTag(entityId, tagType, x)
-    }
+    cloudStackService.setResourseTag(entityId, tagType, tagList)
   }
 
   private def writeTokensToZooKeeperNodes(tokenWithTagKeyList: List[(UUID, Tag.Key)], entityId: UUID) = {
@@ -200,14 +198,14 @@ class CloudStackVaultController(vaultService: VaultService,
       s"entityId $entityId)")
 
     if (!zooKeeperService.isExistNode(RequestPath.zooKeeperRootNode)) {
-      zooKeeperService.createNode(RequestPath.zooKeeperRootNode, "")
+      zooKeeperService.createNodeWithData(RequestPath.zooKeeperRootNode, "")
     }
-    zooKeeperService.createNode(s"${RequestPath.zooKeeperRootNode}/$entityId", "")
+    zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$entityId", "")
 
     tokenWithTagKeyList.foreach {
       case (tokenId, tokenTagKey) =>
         Try {
-          zooKeeperService.createNode(s"${RequestPath.zooKeeperRootNode}/$entityId/$tokenTagKey", s"$tokenId")
+          zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$entityId/$tokenTagKey", s"$tokenId")
         } match {
           case Success(_) =>
           case Failure(e: Throwable) =>

@@ -36,6 +36,6 @@ class Components(settings: Components.Settings) {
   )
 
   //controllers
-  val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService)
+  val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService)
 
 }

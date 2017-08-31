@@ -44,6 +44,4 @@ object RequestPath {
   val vmSecret             = "secret/cs/vms/"
   val accountSecret        = "secret/cs/accounts/"
   val zooKeeperRootNode    = "/cs_vault_server"
-  val vmSecret             = "secret/cs/vms/"
-  val accountSecret        = "secret/cs/accounts/"
 }
