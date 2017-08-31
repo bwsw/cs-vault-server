@@ -3,7 +3,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
-import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util.TaskRunner
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 /**
   * Created by medvedev_vv on 02.08.17.
   */
-class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator,
+class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
                         settings: CloudStackService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(true)
@@ -92,13 +92,13 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
 
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
-      getEntityJson(vmId.toString, apacheCloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
+      getEntityJson(vmId.toString, сloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
     ).virtualMashineList.virtualMashines.getOrElse(
       throw new CloudStackCriticalException(new NoSuchElementException(s"Virtual machine with id: $vmId does not exist"))
     ).map(_.accountName).head
 
     val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
-      getEntityJson(accountName, apacheCloudStackTaskCreator.nameParameter, Command.ListAccounts)
+      getEntityJson(accountName, сloudStackTaskCreator.nameParameter, Command.ListAccounts)
     ).accountList.accounts.getOrElse(
       throw new CloudStackCriticalException(new NoSuchElementException(s"The vm: $vmId does not include account with name: $accountName"))
     ).map(_.id).head
@@ -120,7 +120,7 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     logger.debug(s"getAccountIdByUserId(userId: $userId)")
 
     val accountId = jsonSerializer.deserialize[UserResponse](
-      getEntityJson(userId.toString, apacheCloudStackTaskCreator.idParameter, Command.ListUsers)
+      getEntityJson(userId.toString, сloudStackTaskCreator.idParameter, Command.ListUsers)
     ).userList.users.getOrElse(
       throw new CloudStackCriticalException(new NoSuchElementException(s"User with id: $userId does not exist"))
     ).map(_.accountid).head
@@ -144,7 +144,7 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
 
     val accountResponse = getEntityJson(
       accountId.toString,
-      apacheCloudStackTaskCreator.idParameter,
+      сloudStackTaskCreator.idParameter,
       Command.ListAccounts
     )
 
@@ -170,20 +170,20 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     */
   def setResourseTag(resourseId: UUID, resourseType: Tag.Type, tagList: List[Tag]): Unit = {
     logger.debug(s"setResourseTag(resourseId: $resourseId, resourseType: $resourseType)")
-    def task = apacheCloudStackTaskCreator.createSetResourseTagTask(resourseId, resourseType, tagList)
+    def task = сloudStackTaskCreator.createSetResourseTagTask(resourseId, resourseType, tagList)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
     logger.debug(s"Tag was set to resourse: $resourseId, $resourseType")
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {
-    def task = apacheCloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
+    def task = сloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
   }
 
   private def getTagsJson(resourceType: Tag.Type, resourceId: UUID): String = {
-    def task = apacheCloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
+    def task = сloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
   }

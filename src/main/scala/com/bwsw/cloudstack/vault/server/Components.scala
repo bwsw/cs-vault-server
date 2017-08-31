@@ -1,7 +1,7 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -13,7 +13,7 @@ import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
   */
 object Components {
   case class Settings(cloudStackServiceSettings: CloudStackService.Settings,
-                      cloudStackTaskCreatorSettings: ApacheCloudStackTaskCreator.Settings,
+                      cloudStackTaskCreatorSettings: CloudStackTaskCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
@@ -23,7 +23,7 @@ object Components {
 class Components(settings: Components.Settings) {
   //services
   val cloudStackService = new CloudStackService(
-    new ApacheCloudStackTaskCreator(settings.cloudStackTaskCreatorSettings),
+    new CloudStackTaskCreator(settings.cloudStackTaskCreatorSettings),
     settings.cloudStackServiceSettings
   )
   val vaultService = new VaultService(

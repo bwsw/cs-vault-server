@@ -2,8 +2,11 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
+import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 
 /**
   * Created by medvedev_vv on 25.08.17.
@@ -52,11 +55,38 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", vmId)
 
-    def getUserRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listUser")
+    def getUserRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listUsers")
       .addParameter("response", "json")
       .addParameter("listAll", "true")
       .addParameter("id", userId)
+
+    def getSetTagsRequest(resourseId: UUID, resourseType: String, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
+      val request = new ApacheCloudStackRequest("createTags")
+      request.addParameter("response", "json")
+      request.addParameter("resourcetype", resourseType)
+      request.addParameter("resourceids", resourseId)
+      request.addParameter(s"tags[0].key", tagTuple._1.key)
+      request.addParameter(s"tags[0].value", tagTuple._1.value)
+      request.addParameter(s"tags[1].key", tagTuple._2.key)
+      request.addParameter(s"tags[1].value", tagTuple._2.value)
+      request.addParameter(s"tags[2].key", tagTuple._3.key)
+      request.addParameter(s"tags[2].value", tagTuple._3.value)
+    }
   }
 
+  def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
+  : CloudStackTaskCreator = {
+    new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+      override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
+        cloudStackTaskCreatorSettings.urlList.map { x =>
+          new ApacheCloudStackClient(x, apacheCloudStackUser) {
+            override def executeRequest(request: ApacheCloudStackRequest): String = {
+              assert(request.toString == expectedRequest.toString, "request is wrong")
+              response
+            }
+          }
+        }.toList
+    }
+  }
 
 }

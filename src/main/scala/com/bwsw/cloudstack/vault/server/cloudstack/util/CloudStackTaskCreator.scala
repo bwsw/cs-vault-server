@@ -14,14 +14,13 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings) {
+class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
   protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
-  apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
   private var threadLocalClientList = new ThreadLocal[List[ApacheCloudStackClient]](){
     override protected def initialValue(): List[ApacheCloudStackClient] = {
@@ -92,6 +91,6 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
   }
 }
 
-object ApacheCloudStackTaskCreator {
+object CloudStackTaskCreator {
   case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
 }
