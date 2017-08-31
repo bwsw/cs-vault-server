@@ -36,7 +36,6 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
         case AccountCreate => (Future(logger.info("Controller.AccountCreate")), event)
         case AccountDelete => (Future(logger.info("Controller.AccountDelete")), event)
         case UserCreate => (Future(logger.info("Controller.UserCreate")), event)
-        case UserDelete => (Future(logger.info("Controller.UserDelete")), event)
       }
     }
 
@@ -45,12 +44,10 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
         false
       } else {
         event.action match {
-          case AccountCreate | AccountDelete | UserCreate | UserDelete =>
-            event.status == CloudStackEvent.Status.Completed  //Event must be handle when status of event Completed
-          case VMCreate | VMDelete =>
-            event.status == CloudStackEvent.Status.Started    //Srarted status is used here because event with
-          case _ =>                                           //status Complete for VM does not have information about entityuuid
-            logger.debug("Unhandled event")
+          case AccountCreate | AccountDelete | UserCreate | VMCreate | VMDelete =>
+            event.status == CloudStackEvent.Status.Completed && event.entityuuid != null  //Event must be handle when status of event Completed
+          case _ =>                                                                       //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
+            logger.debug("Unhandled event")                                               //and don't have an entityuuid, so we must to check entityuuid.
             false
         }
       }
