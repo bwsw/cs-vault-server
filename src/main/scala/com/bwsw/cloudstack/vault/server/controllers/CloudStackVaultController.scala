@@ -4,7 +4,6 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Key
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
@@ -27,7 +26,6 @@ class CloudStackVaultController(vaultService: VaultService,
 
   def handleAccountDelete(accountId: UUID): Unit = {
     logger.debug(s"handleAccountDelete(accountId: $accountId)")
-
     val defaultSecretPath = s"${RequestPath.accountSecret}$accountId"
     deleteTokenAndAssociatedData(accountId, accountEntityName, defaultSecretPath)
     logger.info(s"Account deletion was processed, accountId: $accountId)")
@@ -41,152 +39,138 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   def handleUserCreate(userId: UUID): Unit = {
-    import Tag.Key
     logger.debug(s"handleUserCreate(userId: $userId)")
 
     val accountId = cloudStackService.getAccountIdByUserId(userId)
-    val userTags = cloudStackService.getUserTagsByAccountId(accountId)
+    val accountTags = cloudStackService.getUserTagsByAccountId(accountId)
 
-    val optionReadToken: Option[UUID] = userTags.find(_.key == Key.VaultRO).map { x =>
-      UUID.fromString(x.value)
+    val newTags = createMissingAccountTokenTags(accountId, accountTags)
+
+    if (newTags.nonEmpty) {
+      cloudStackService.setResourseTag(userId, Tag.Type.User, newTags)
     }
-    val optionWriteToken: Option[UUID] = userTags.find(_.key == Key.VaultRW).map { x =>
-      UUID.fromString(x.value)
-    }
-
-    val optionTokenWithTagKeyList = List(
-      (optionReadToken, Key.VaultRO),
-      (optionWriteToken, Key.VaultRW)
-    )
-
-    val tokenWithTagKey: List[(UUID, Tag.Key)] = optionTokenWithTagKeyList.map {
-      case (None, key) =>
-        logger.info("Tag with token has not existed")
-        val pathToData = s"${RequestPath.zooKeeperRootNode}/$accountId/${Key.toString(key)}"
-        val isExistNodeWithToken = zooKeeperService.isExistNode(pathToData)
-
-        if (isExistNodeWithToken) {
-          val tokenFromNode = UUID.fromString(zooKeeperService.getData(pathToData))
-          logger.info("Token was got from node of zooKeeper")
-          (tokenFromNode, key)
-        } else {
-          logger.info("Node with token has not existed")
-          val tokenWithKey = key match {
-            case Key.VaultRO =>
-              val readPolicy = Policy.createAccountReadPolicy(accountId)
-              val readToken = vaultService.createToken(readPolicy :: Nil)
-              logger.info("readToken was created by vault")
-              (readToken, key)
-            case Key.VaultRW =>
-              val writePolicy = Policy.createAccountWritePolicy(accountId)
-              val writeToken = vaultService.createToken(writePolicy :: Nil)
-              logger.info("writeToken was created by vault")
-              (writeToken, key)
-          }
-
-          //writeTokensToZooKeeperNodes(tokenWithKey :: Nil, accountId)
-          logger.info("Tokens were wrote into node of zooKeeper")
-          tokenWithKey
-        }
-
-      case (Some(entity), key) =>
-        logger.info("Tag with token has existed in cloudStack user tags")
-        (entity, key)
-    }
-
-  //  writeTokensToCloudStackTags(tokenWithTagKey, userId, Tag.Type.User)
-    logger.info("Token was wrote into cloudStack user tag")
   }
 
   def handleAccountCreate(accountId: UUID): Unit = {
     logger.debug(s"handleAccountCreate(accountId: $accountId)")
-    import Tag.Key
 
     val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
     val accountTags = usersIds.flatMap { x =>
       cloudStackService.getUserTagsByUserId(x)
     }
 
-    if(!accountTags.exists(_.key == Key.VaultRO)) {
-      val tag = createAbsentTag(Key.VaultRO)
-      usersIds.foreach { x =>
-        cloudStackService.setResourseTag(x, Tag.Type.User, tag :: Nil)
-      }
-    }
+    val newTags = createMissingAccountTokenTags(accountId, accountTags)
 
-    if(!accountTags.exists(_.key == Key.VaultRW)) {
-      val tag = createAbsentTag(Key.VaultRW)
-      usersIds.foreach { x =>
-        cloudStackService.setResourseTag(x, Tag.Type.User, tag :: Nil)
+    if (newTags.nonEmpty) {
+      usersIds.foreach { userId =>
+        cloudStackService.setResourseTag(userId, Tag.Type.User, newTags)
       }
-    }
-
-    def createAbsentTag(tagKey: Tag.Key) = {
-      val policy = tagKey match {
-        case Key.VaultRO =>
-          Policy.createAccountReadPolicy(accountId)
-        case Key.VaultRW =>
-          Policy.createAccountWritePolicy(accountId)
-      }
-      val token = getToken(accountId, accountEntityName, policy)
-      writeTokenToZooKeeperNode(token, policy.acl, accountId, accountEntityName)
-      Tag.createTag(tagKey, token.toString)
     }
   }
 
   def handleVmCreate(vmId: UUID): Unit = {
     logger.debug(s"handleVmCreate(vmId: $vmId)")
-    import Tag.Key
 
     val accountId = cloudStackService.getAccountIdByVmId(vmId)
 
-    def createAbsentTag(tagKey: Tag.Key) = {
-      val policy = tagKey match {
-        case Key.VaultRO =>
-          Policy.createVmReadPolicy(accountId, vmId)
-        case Key.VaultRW =>
-          Policy.createVmWritePolicy(accountId, vmId)
+    val policyList = List(
+      Policy.createVmReadPolicy(accountId, vmId),
+      Policy.createVmWritePolicy(accountId, vmId)
+    )
+
+    val pathToEntityNode = getPathToZookeeperEntityNode(vmId.toString, vmEntityName)
+    val tokenTagList = if (!zooKeeperService.isExistNode(pathToEntityNode)) {
+      zooKeeperService.createNodeWithData(pathToEntityNode, "")
+      policyList.map { x =>
+        val token = vaultService.createToken(x :: Nil)
+        val tag = Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+        writeTokenToZooKeeperNode(tag, vmId, vmEntityName)
+        tag
       }
-      val token = getToken(vmId, vmEntityName, policy)
-      writeTokenToZooKeeperNode(token, policy.acl, vmId, vmEntityName)
-      Tag.createTag(tagKey, token.toString)
-    }
-
-    val tagTokenRO: Tag = createAbsentTag(Key.VaultRO)
-    val tagTokenRW: Tag = createAbsentTag(Key.VaultRW)
-
-    cloudStackService.setResourseTag(vmId, Tag.Type.UserVM, List(tagTokenRO, tagTokenRW))
-  }
-
-  private def getToken(entityId: UUID, entityName: String, policy: Policy): UUID = {
-    val pathToData = getPathToZookeeperNodeWithToken(entityId.toString, entityName, policy.acl)
-    if(zooKeeperService.isExistNode(pathToData)) {
-      UUID.fromString(zooKeeperService.getData(pathToData))
     } else {
-      vaultService.createToken(policy :: Nil)
-    }
-  }
-
-  private def deleteTokenAndAssociatedData(entityId: UUID, entityName: String, defaultPathToSecret: String): Unit = {
-    val pathsToTokenData = List(Policy.ACL.Read, Policy.ACL.Write).map { x =>
-      getPathToZookeeperNodeWithToken(entityId.toString, entityName, x)
-    }
-    pathsToTokenData.foreach { path =>
-      if (zooKeeperService.isExistNode(path)) {
-        val tokenFromNode = UUID.fromString(zooKeeperService.getData(path))
-        logger.debug("Token was got from node of zooKeeper")
-        val pathToSecretFromToken = vaultService.revokeToken(tokenFromNode)
-        vaultService.deleteSecret(pathToSecretFromToken)
-        zooKeeperService.deleteNode(path)
-      } else {
-        logger.error(s"Token has not exist in zooKeeper by path: $path")
-        vaultService.deleteSecret(defaultPathToSecret)
+      policyList.map { x =>
+        val pathToData = getPathToZookeeperNodeWithToken(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
+        if (zooKeeperService.isExistNode(pathToData)) {
+          val token = UUID.fromString(zooKeeperService.getData(pathToData))
+          Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+        } else {
+          val token = vaultService.createToken(x :: Nil)
+          val tag = Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+          writeTokenToZooKeeperNode(tag, vmId, vmEntityName)
+          tag
+        }
       }
     }
+
+    cloudStackService.setResourseTag(vmId, Tag.Type.UserVM, tokenTagList)
   }
 
-  private def getPathToZookeeperNodeWithToken(entityId: String, entityName: String, policyAcl: Policy.ACL) =
-    s"${RequestPath.zooKeeperRootNode}/$entityName/$entityId/${Policy.ACL.toString(policyAcl)}"
+
+  private def getTagKeyByPolicyACL(acl: Policy.ACL): Tag.Key = {
+    acl match {
+      case Policy.ACL.Read => Tag.Key.VaultRO
+      case Policy.ACL.Write => Tag.Key.VaultRW
+    }
+  }
+
+  private def createMissingAccountTokenTags(accountId: UUID, accountTags: List[Tag]): List[Tag] = {
+    import Tag.Key
+    val absentTagKeyList = List(Key.VaultRW, Key.VaultRO).filterNot { x =>
+      accountTags.exists(_.key == x)
+    }
+
+    val pathToEntityNode = getPathToZookeeperEntityNode(accountId.toString, accountEntityName)
+    val isExistEntityNode = zooKeeperService.isExistNode(pathToEntityNode)
+    if (!isExistEntityNode) {
+      zooKeeperService.createNodeWithData(pathToEntityNode, "")
+    }
+
+    val newTags = absentTagKeyList.map { x =>
+      val pathToToken = getPathToZookeeperNodeWithToken(accountId.toString, vmEntityName, x)
+      if (isExistEntityNode && zooKeeperService.isExistNode(pathToToken)) {
+        val token = UUID.fromString(zooKeeperService.getData(pathToToken))
+        Tag.createTag(x, token.toString)
+      } else {
+        val policy = x match {
+          case Key.VaultRO =>
+            Policy.createAccountReadPolicy(accountId)
+          case Key.VaultRW =>
+            Policy.createAccountWritePolicy(accountId)
+        }
+        val token = vaultService.createToken(policy :: Nil)
+        val tag = Tag.createTag(x, token.toString)
+        writeTokenToZooKeeperNode(tag, accountId, accountEntityName)
+        tag
+      }
+    }
+
+    newTags
+  }
+
+  private def deleteTokenAndAssociatedData(entityId: UUID, entityName: String, defaultSecretPath: String): Unit = {
+    var secretPath = defaultSecretPath
+    val pathToEntityNode = getPathToZookeeperEntityNode(entityId.toString, entityName)
+    if (zooKeeperService.isExistNode(pathToEntityNode)) {
+      val pathsToTokenData = List(Tag.Key.VaultRO, Tag.Key.VaultRW).map { x =>
+        getPathToZookeeperNodeWithToken(entityId.toString, entityName, x)
+      }
+      pathsToTokenData.foreach { path =>
+        if (zooKeeperService.isExistNode(path)) {
+          val tokenFromNode = UUID.fromString(zooKeeperService.getData(path))
+          secretPath = vaultService.revokeToken(tokenFromNode)
+          zooKeeperService.deleteNode(path)
+        }
+      }
+      zooKeeperService.deleteNode(pathToEntityNode)
+    }
+    vaultService.deleteSecret(secretPath)
+  }
+
+  private def getPathToZookeeperNodeWithToken(entityId: String, entityName: String, tagKey: Tag.Key) =
+    s"${getPathToZookeeperEntityNode(entityId, entityName)}/${Tag.Key.toString(tagKey)}"
+
+  private def getPathToZookeeperEntityNode(entityId: String, entityName: String) =
+    s"${RequestPath.zooKeeperRootNode}/$entityName/$entityId"
 /*
   private def createTokenListByPolicies(policiesWithTagKey: List[(Policy, Tag.Key)]): List[(UUID, Tag.Key)] = {
     logger.debug(s"createTokenListByPolicies(policiesWithTagKey: $policiesWithTagKey)")
@@ -222,17 +206,16 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
 
-  private def writeTokenToZooKeeperNode(token: UUID, policyAcl: Policy.ACL, entityId: UUID, entityName: String) = {
+  private def writeTokenToZooKeeperNode(tag: Tag, entityId: UUID, entityName: String) = {
     logger.debug(s"writeTokensToZooKeeperNodes(entityId: $entityId, entityName: $entityName)")
     Try {
-      zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$entityName/$entityId", "")
-      zooKeeperService.createNodeWithData(getPathToZookeeperNodeWithToken(entityId.toString, entityName, policyAcl), s"$token")
+      zooKeeperService.createNodeWithData(getPathToZookeeperNodeWithToken(entityId.toString, entityName, tag.key), s"${tag.value}")
     } match {
       case Success(_) =>
       case Failure(e: ZooKeeperCriticalException) =>
         logger.error(s"Path node could not to create into zooKeeper, exception was thrown: ${e.exception}")
         logger.warn(s"token will be revoked")
-        vaultService.revokeToken(token)
+        vaultService.revokeToken(UUID.fromString(tag.value))
         throw e
     }
   }
