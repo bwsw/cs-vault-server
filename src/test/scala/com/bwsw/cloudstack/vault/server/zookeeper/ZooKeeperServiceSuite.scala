@@ -1,6 +1,6 @@
 package com.bwsw.cloudstack.vault.server.zookeeper
 
-import com.bwsw.cloudstack.vault.server.BaseSuite
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
 import org.apache.zookeeper.ZooKeeper
 import org.scalatest.FlatSpec
@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
 /**
   * Created by medvedev_vv on 29.08.17.
   */
-class ZooKeeperServiceSuite extends FlatSpec with BaseSuite {
+class ZooKeeperServiceSuite extends FlatSpec with BaseTestSuite {
   val expectedPath = "test/path"
   val expectedData = "expectedData"
 

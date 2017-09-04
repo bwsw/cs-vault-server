@@ -2,7 +2,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.BaseSuite
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
 import org.scalatest.FlatSpec
@@ -10,7 +10,7 @@ import org.scalatest.FlatSpec
 /**
   * Created by medvedev_vv on 25.08.17.
   */
-class CloudStackServiceSuite extends FlatSpec with TestData with BaseSuite {
+class CloudStackServiceSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "getUserTagsByAccountId" should "return user tags by AccountId" in {
     val key = Tag.Key.VaultRO

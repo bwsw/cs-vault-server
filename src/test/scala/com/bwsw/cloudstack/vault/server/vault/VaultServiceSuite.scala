@@ -2,7 +2,7 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.BaseSuite
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import org.scalatest.FlatSpec
@@ -10,7 +10,7 @@ import org.scalatest.FlatSpec
 /**
   * Created by medvedev_vv on 28.08.17.
   */
-class VaultServiceSuite extends FlatSpec with TestData with BaseSuite {
+class VaultServiceSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "createToken" should "return new token UUID" in {
     val entityId = UUID.randomUUID()
