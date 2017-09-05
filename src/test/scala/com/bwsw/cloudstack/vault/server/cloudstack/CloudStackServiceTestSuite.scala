@@ -114,8 +114,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val expectedAccountId: UUID = cloudStackService.getAccountIdByUserId(userId)
-    assert(expectedAccountId == accountId)
+    val actualAccountId: UUID = cloudStackService.getAccountIdByUserId(userId)
+    assert(actualAccountId == accountId)
   }
 
   "getUserIdsByAccountId" should "return user ids by account id" in {
@@ -130,12 +130,12 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val expectedUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
-    assert(expectedUserIds == userId :: Nil)
+    val actualUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
+    assert(actualUserIds == userId :: Nil)
   }
 
   //Negative tests
-  "getUserTagsByAccountId" should "throw CloudStackCriticalException" in {
+  "getUserTagsByAccountId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val key = Tag.Key.VaultRO
     val value = "value1"
 
@@ -147,6 +147,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
         throw new CloudStackCriticalException(new Exception("test exception"))
       }
     }
+
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
@@ -154,7 +155,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserTagsByUserId" should "throw CloudStackCriticalException" in {
+  "getUserTagsByUserId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val key = Tag.Key.VaultRW
     val value = "value1"
 
@@ -173,7 +174,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getVmTagsById" should "throw CloudStackCriticalException" in {
+  "getVmTagsById" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val key = Tag.Key.VaultRW
     val value = "value3"
 
@@ -192,7 +193,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByVmId" should "throw CloudStackCriticalException" in {
+  "getAccountIdByVmId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val accountName = "admin"
 
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
@@ -213,7 +214,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByUserId" should "throw CloudStackCriticalException" in {
+  "getAccountIdByUserId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == userId.toString, "parameterValue is wrong")
@@ -230,7 +231,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserIdsByAccountId" should "throw CloudStackCriticalException" in {
+  "getUserIdsByAccountId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")

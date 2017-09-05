@@ -16,3 +16,4 @@ libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.
 libraryDependencies += "org.apache.zookeeper" % "zookeeper" % "3.4.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
+libraryDependencies += "org.mockito" % "mockito-core" % "2.9.0" % "test"

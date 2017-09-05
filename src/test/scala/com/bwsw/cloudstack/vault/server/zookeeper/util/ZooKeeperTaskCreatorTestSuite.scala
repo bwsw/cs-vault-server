@@ -117,7 +117,8 @@ class ZooKeeperTaskCreatorTestSuite extends FlatSpec with BaseTestSuite {
   }
 
   //Negative tests
-  "createGetDataTask" should "throw ZooKeeperCrticalException" in {
+  "createGetDataTask" should "if ZooKeeper throw not same with ConnectionLossException, " +
+    "the exception will wrapped to ZooKeeperCriticalException" in {
     val expectedPath = "test/path"
 
     val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
@@ -133,7 +134,7 @@ class ZooKeeperTaskCreatorTestSuite extends FlatSpec with BaseTestSuite {
     }
   }
 
-  "createNodeCreationTask" should "throw ConnectionLossException" in {
+  "createNodeCreationTask" should  "if ZooKeeper throw ConnectionLossException, exception does not catch" in {
     val expectedPath = "test/path"
     val expectedData = "dataString"
 

@@ -37,7 +37,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
-    createRequest(tagRequest, s"get tag by resourse: ($resourceId, $resourceType)")
+    createRequest(tagRequest, s"get tag by resource: ($resourceId, $resourceType)")
   }
 
   def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
@@ -49,11 +49,11 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     createRequest(request, s"get entity by command: $command")
   }
 
-  def createSetResourseTagTask(resourseId: UUID, resourseType: Tag.Type, tagList: List[Tag]): () => String = {
+  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): () => Unit = {
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
-    request.addParameter("resourcetype", Tag.Type.toString(resourseType))
-    request.addParameter("resourceids", resourseId)
+    request.addParameter("resourcetype", Tag.Type.toString(resourceType))
+    request.addParameter("resourceids", resourceId)
 
     loop(0, tagList)
 
@@ -66,7 +66,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
       }
     }
 
-    createRequest(request, s"set tags to resourse: ($resourseId, $resourseType)")
+    createRequest(request, s"set tags to resource: ($resourceId, $resourceType)")
   }
 
   private def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {

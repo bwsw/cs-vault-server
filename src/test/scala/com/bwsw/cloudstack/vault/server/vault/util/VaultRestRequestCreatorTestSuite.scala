@@ -183,7 +183,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
   }
 
   // Negative tests
-  "createTokenCreateRequest" should "throw VaultCriticalException" in {
+  "createTokenCreateRequest" should "if response status is not equal to expected status, " +
+    "the VaultCriticalException will thrown" in {
 
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
@@ -206,7 +207,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenRevokeRequest" should "throw VaultCriticalException" in {
+  "createTokenRevokeRequest" should "if Rest throw not same with RestException, " +
+    "the exception will wrapped to VaultCriticalException" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
@@ -224,7 +226,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenRevokeRequest" should "throw RestException" in {
+  "createTokenRevokeRequest" should  "if Rest throw RestException, exception does not catch" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {

@@ -60,11 +60,11 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", userId)
 
-    def getSetTagsRequest(resourseId: UUID, resourseType: String, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
+    def getSetTagsRequest(resourceId: UUID, resourceType: Tag.Type, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
       val request = new ApacheCloudStackRequest("createTags")
       request.addParameter("response", "json")
-      request.addParameter("resourcetype", resourseType)
-      request.addParameter("resourceids", resourseId)
+      request.addParameter("resourcetype", Tag.Type.toString(resourceType))
+      request.addParameter("resourceids", resourceId)
       request.addParameter(s"tags[0].key", tagTuple._1.key)
       request.addParameter(s"tags[0].value", tagTuple._1.value)
       request.addParameter(s"tags[1].key", tagTuple._2.key)

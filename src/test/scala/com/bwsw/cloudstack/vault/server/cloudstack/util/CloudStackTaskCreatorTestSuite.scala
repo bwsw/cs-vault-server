@@ -3,7 +3,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack.util
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
 import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
-import com.bwsw.cloudstack.vault.server.{BaseTestSuite, MockConfig}
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
@@ -105,48 +105,46 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     assert(vmResponse == expectedResponse)
   }
 
-  "createSetResourseTagTask" should "create task which sets VM tags" in {
+  "createSetResourceTagTask" should "create task which sets VM tags" in {
     val tagsTuple: Tuple3[Tag, Tag, Tag] = (
       Tag(Tag.Key.VaultRO, "value1"),
       Tag(Tag.Key.VaultRW, "value2"),
       Tag(Tag.Key.VaultRO, "value3")
     )
-    val expectedRequest = Request.getSetTagsRequest(vmId, "UserVM", tagsTuple)
-    val expectedResponse = ""
+    val expectedRequest = Request.getSetTagsRequest(vmId, Tag.Type.UserVM, tagsTuple)
 
-    val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
+    val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourseTagTask(
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagTask(
       vmId,
       Tag.Type.UserVM,
       tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
     )()
 
-    assert(createTagResponse == expectedResponse)
+    assert(createTagResponse.isInstanceOf[Unit])
   }
 
-  "createSetResourseTagTask" should "create task which sets User tags" in {
+  "createSetResourceTagTask" should "create task which sets User tags" in {
     val tagsTuple: Tuple3[Tag, Tag, Tag] = (
       Tag(Tag.Key.VaultRO, "value1"),
       Tag(Tag.Key.VaultRW, "value2"),
       Tag(Tag.Key.VaultRO, "value3")
     )
-    val expectedRequest = Request.getSetTagsRequest(userId, "User", tagsTuple)
-    val expectedResponse = ""
+    val expectedRequest = Request.getSetTagsRequest(userId, Tag.Type.User, tagsTuple)
 
-    val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
+    val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourseTagTask(
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagTask(
       userId,
       Tag.Type.User,
       tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
     )()
 
-    assert(createTagResponse == expectedResponse)
+    assert(createTagResponse.isInstanceOf[Unit])
   }
 
   //Negative tests
-  "createGetTagTask" should "throw ApacheCloudStackClientRuntimeException" in {
+  "createGetTagTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -163,7 +161,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetTagTask" should "throw CloudStackCriticalException" in {
+  "createGetTagTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
+    "the exception will wrapped to CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -180,7 +179,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetEntityTask" should "throw ApacheCloudStackClientRuntimeException" in {
+  "createGetEntityTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -201,7 +200,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetEntityTask" should "throw CloudStackCriticalException" in {
+  "createGetEntityTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
+  "the exception will wrapped to CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -222,7 +222,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourseTagTask" should "throw ApacheCloudStackClientRuntimeException" in {
+  "createSetResourceTagTask" should  "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -235,7 +235,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createSetResourseTagTask(
+      cloudStackTaskCreator.createSetResourceTagTask(
         userId,
         Tag.Type.User,
         List(Tag(Tag.Key.VaultRO, "value"))
@@ -243,7 +243,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourseTagTask" should "throw CloudStackCriticalException" in {
+  "createSetResourceTagTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
+    "the exception will wrapped to CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -256,7 +257,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackTaskCreator.createSetResourseTagTask(
+      cloudStackTaskCreator.createSetResourceTagTask(
         userId,
         Tag.Type.User,
         List(Tag(Tag.Key.VaultRO, "value"))
