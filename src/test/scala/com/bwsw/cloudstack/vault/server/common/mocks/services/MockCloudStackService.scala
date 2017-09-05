@@ -1,4 +1,4 @@
-package com.bwsw.cloudstack.vault.server.controllers.mocks.services
+package com.bwsw.cloudstack.vault.server.common.mocks.services
 
 import java.util.UUID
 
@@ -27,5 +27,5 @@ class MockCloudStackService extends CloudStackService(
 
   override def getUserIdsByAccountId(accountId: UUID): List[UUID] = throw new NotImplementedError("getUserIdsByAccountId not implemented")
 
-  override def setResourseTag(resourseId: UUID, resourseType: Type, tagList: List[Tag]): Unit = throw new NotImplementedError("setResourseTag not implemented")
+  override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 }

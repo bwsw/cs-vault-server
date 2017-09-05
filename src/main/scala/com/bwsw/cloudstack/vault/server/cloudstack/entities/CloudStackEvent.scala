@@ -75,6 +75,7 @@ object CloudStackEvent {
   object Action {
     case object VMCreate      extends Action
     case object UserCreate    extends Action
+    case object UserDelete    extends Action
     case object AccountCreate extends Action
     case object VMDelete      extends Action
     case object AccountDelete extends Action
@@ -84,6 +85,7 @@ object CloudStackEvent {
       case "VM.CREATE"      => Action.VMCreate
       case "VM.DESTROY"     => Action.VMDelete
       case "USER.CREATE"    => Action.UserCreate
+      case "USER.DELETE"    => Action.UserDelete
       case "ACCOUNT.CREATE" => Action.AccountCreate
       case "ACCOUNT.DELETE" => Action.AccountDelete
       case _                => Action.Other
@@ -93,6 +95,7 @@ object CloudStackEvent {
       case Action.VMCreate       => "VM.CREATE"
       case Action.VMDelete       => "VM.DESTROY"
       case Action.UserCreate     => "USER.CREATE"
+      case Action.UserDelete     => "USER.DELETE"
       case Action.AccountCreate  => "ACCOUNT.CREATE"
       case Action.AccountDelete  => "ACCOUNT.DELETE"
       case Action.Other          => ""
@@ -112,18 +115,15 @@ object CloudStackEvent {
 
   object Status {
     case object Completed      extends Status
-    case object Started        extends Status
     case object Other          extends Status
 
     def fromString(statusSting: String): Status = statusSting match {
       case "Completed"      => Status.Completed
-      case "Started"        => Status.Started
       case _                => Status.Other
     }
 
     def toString(x: Status): String = x match {
-      case Status.Completed     => "VM.CREATE"
-      case Status.Started       => "VM.DESTROY"
+      case Status.Completed     => "Completed"
       case Status.Other         => ""
     }
   }

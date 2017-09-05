@@ -164,16 +164,16 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     * Sets tag to specified entity.
     * Will be restarted if cloudstack server is unavailable.
     *
-    * @param resourseId id of entity for set tag
-    * @param resourseType "User" or "UserVM" type of tags
-    * @param tagList List with tags to add to the resourse
+    * @param resourceId id of entity for set tag
+    * @param resourceType "User" or "UserVM" type of tags
+    * @param tagList List with tags to add to the resource
     */
-  def setResourseTag(resourseId: UUID, resourseType: Tag.Type, tagList: List[Tag]): Unit = {
-    logger.debug(s"setResourseTag(resourseId: $resourseId, resourseType: $resourseType)")
-    def task = apacheCloudStackTaskCreator.createSetResourseTagTask(resourseId, resourseType, tagList)
+  def setResourceTag(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): Unit = {
+    logger.debug(s"setResourceTag(resourceId: $resourceId, resourceType: $resourceType)")
+    def task = apacheCloudStackTaskCreator.createSetResourceTagTask(resourceId, resourceType, tagList)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
-    logger.debug(s"Tag was set to resourse: $resourseId, $resourseType")
+    logger.debug(s"Tag was set to resource: $resourceId, $resourceType")
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {

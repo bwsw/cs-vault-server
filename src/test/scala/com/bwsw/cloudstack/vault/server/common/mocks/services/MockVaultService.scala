@@ -1,4 +1,4 @@
-package com.bwsw.cloudstack.vault.server.controllers.mocks.services
+package com.bwsw.cloudstack.vault.server.common.mocks.services
 
 import java.util.UUID
 

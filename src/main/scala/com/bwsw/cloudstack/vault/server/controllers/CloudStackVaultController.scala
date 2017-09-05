@@ -58,7 +58,7 @@ class CloudStackVaultController(vaultService: VaultService,
       List.empty[Tag]
     }
 
-    cloudStackService.setResourseTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
+    cloudStackService.setResourceTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
   }
 
   def handleAccountCreate(accountId: UUID): Unit = {
@@ -77,14 +77,11 @@ class CloudStackVaultController(vaultService: VaultService,
       currentTokenTags.exists(_.key == x)
     }
 
-    val newTags = if (absentTokenTagKeyList.nonEmpty) {
-      createMissingAccountTokenTags(accountId, absentTokenTagKeyList)
-    } else {
-      List.empty[Tag]
-    }
-
-    usersIds.foreach { userId =>
-      cloudStackService.setResourseTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
+    if (absentTokenTagKeyList.nonEmpty) {
+      val newTags = createMissingAccountTokenTags(accountId, absentTokenTagKeyList)
+      usersIds.foreach { userId =>
+        cloudStackService.setResourceTag(userId, Tag.Type.User, newTags)
+      }
     }
   }
 
@@ -122,9 +119,20 @@ class CloudStackVaultController(vaultService: VaultService,
       }
     }
 
-    cloudStackService.setResourseTag(vmId, Tag.Type.UserVM, tokenTagList)
+    cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, tokenTagList)
   }
 
+  protected def initializeZooKeeperNodes(): Unit = {
+    if (!zooKeeperService.isExistNode(RequestPath.zooKeeperRootNode)) {
+      zooKeeperService.createNodeWithData(RequestPath.zooKeeperRootNode, "")
+    }
+    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$accountEntityName")) {
+      zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$accountEntityName", "")
+    }
+    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$vmEntityName")) {
+      zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$vmEntityName", "")
+    }
+  }
 
   private def getTagKeyByPolicyACL(acl: Policy.ACL): Tag.Key = {
     acl match {
@@ -188,19 +196,6 @@ class CloudStackVaultController(vaultService: VaultService,
 
   private def getPathToZookeeperEntityNode(entityId: String, entityName: String) =
     s"${RequestPath.zooKeeperRootNode}/$entityName/$entityId"
-
-  private def initializeZooKeeperNodes(): Unit = {
-    if (!zooKeeperService.isExistNode(RequestPath.zooKeeperRootNode)) {
-      zooKeeperService.createNodeWithData(RequestPath.zooKeeperRootNode, "")
-    }
-    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$accountEntityName")) {
-      zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$accountEntityName", "")
-    }
-    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$vmEntityName")) {
-      zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$vmEntityName", "")
-    }
-  }
-
 
   private def writeTokenToZooKeeperNode(tag: Tag, entityId: UUID, entityName: String) = {
     logger.debug(s"writeTokensToZooKeeperNodes(entityId: $entityId, entityName: $entityName)")
