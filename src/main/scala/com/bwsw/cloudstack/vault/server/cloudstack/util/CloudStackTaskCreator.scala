@@ -49,7 +49,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     createRequest(request, s"get entity by command: $command")
   }
 
-  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): () => Unit = {
+  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
     request.addParameter("resourcetype", Tag.Type.toString(resourceType))
@@ -69,7 +69,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     createRequest(request, s"set tags to resource: ($resourceId, $resourceType)")
   }
 
-  private def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
+  protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
     logger.debug(s"Request was executed for action: $requestDescription")
     val clientList = threadLocalClientList.get()
     Try {

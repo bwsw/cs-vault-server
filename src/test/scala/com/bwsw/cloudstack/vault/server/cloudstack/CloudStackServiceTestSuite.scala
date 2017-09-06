@@ -4,6 +4,7 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
@@ -134,8 +135,25 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     assert(actualUserIds == userId :: Nil)
   }
 
+  "setResourceTag" should "create CloudStack request for creating new tag in vm" in {
+    val key = Tag.Key.VaultRW
+    val value = "value1"
+
+    val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+      override def createSetResourceTagTask(resourceId: UUID, resourceType: Type, tagList: List[Tag]): () => Unit = {
+        assert(resourceId == vmId, "resourceId is wrong")
+        assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
+        assert(tagList == List(Tag.createTag(key, value)), "tagList is wrong")
+        () => Unit
+      }
+    }
+    val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
+
+    assert(cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, Tag.createTag(key, value) :: Nil).isInstanceOf[Unit])
+  }
+
   //Negative tests
-  "getUserTagsByAccountId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getUserTagsByAccountId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be caught" in {
     val key = Tag.Key.VaultRO
     val value = "value1"
 
@@ -155,7 +173,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserTagsByUserId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getUserTagsByUserId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be caught" in {
     val key = Tag.Key.VaultRW
     val value = "value1"
 
@@ -174,7 +192,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getVmTagsById" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getVmTagsById" should "The CloudStackCriticalException in cloudStackTaskCreator must not be caught" in {
     val key = Tag.Key.VaultRW
     val value = "value3"
 
@@ -193,7 +211,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByVmId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getAccountIdByVmId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be not caught" in {
     val accountName = "admin"
 
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
@@ -214,7 +232,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByUserId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getAccountIdByUserId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be not caught" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == userId.toString, "parameterValue is wrong")
@@ -231,7 +249,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserIdsByAccountId" should "The non-CloudStackCriticalException in cloudStackTaskCreator must be caught" in {
+  "getUserIdsByAccountId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be not caught" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
@@ -243,6 +261,76 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getUserIdsByAccountId(accountId)
+    }
+  }
+
+  "getAccountIdByVmId" should "The CloudStackCriticalException must be thrown if vm with specified id does not exist" in {
+    val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == vmId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListVirtualMachines, "command is wrong")
+        () => Response.getResponseWithEmptyVmList
+      }
+    }
+
+    val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getAccountIdByVmId(vmId)
+    }
+  }
+
+  "getAccountIdByVmId" should "The CloudStackCriticalException must be thrown if account with specified name does not exist" in {
+    val accountName = "accountName"
+
+    val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        command match {
+          case Command.ListVirtualMachines =>
+            () => Response.getVmResponseJson(vmId.toString, accountName)
+          case Command.ListAccounts =>
+            assert(parameterValue == accountName, "parameterValue is wrong")
+            assert(parameterName == nameParameter, "parameterName is wrong")
+            () => Response.getResponseWithEmptyAccountList
+        }
+      }
+    }
+
+    val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getAccountIdByVmId(vmId)
+    }
+  }
+
+  "getAccountIdByUserId" should "The CloudStackCriticalException must be thrown if user with specified id does not exist" in {
+    val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == userId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListUsers, "command is wrong")
+        () => Response.getResponseWithEmptyUserList
+      }
+    }
+
+    val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
+    assertThrows[CloudStackCriticalException] {
+      cloudStackService.getAccountIdByUserId(userId)
+    }
+  }
+
+  "getUserIdsByAccountId" should "The CloudStackCriticalException must be thrown if account with specified id does not exist" in {
+    val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
+      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+        assert(parameterValue == accountId.toString, "parameterValue is wrong")
+        assert(parameterName == idParameter, "parameterName is wrong")
+        assert(command == Command.ListAccounts, "command is wrong")
+        () => Response.getResponseWithEmptyAccountList
+      }
+    }
+
+    val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
     assertThrows[CloudStackCriticalException] {
       cloudStackService.getUserIdsByAccountId(accountId)
     }

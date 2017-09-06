@@ -7,12 +7,12 @@ import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 /**
   * Created by medvedev_vv on 31.08.17.
   */
-class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite {
+class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite with PrivateMethodTester {
 
   //Positive tests
   "createGetTagTask" should "create task which returns response with user tags" in {
@@ -141,6 +141,128 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     )()
 
     assert(createTagResponse.isInstanceOf[Unit])
+  }
+
+  "createRequest" should "create request after three count of throw ApacheCloudStackClientRuntimeException" in {
+    var checkedPath = List.empty[String]
+
+    val response = "testResponse"
+    val urlFirstClient = "http://127.0.0.1:8080/client/api/1"
+    val urlSecondClient = "http://127.0.0.1:8080/client/api/2"
+    val urlThirdClient = "http://127.0.0.1:8080/client/api/3"
+    val expectedPathList = List(urlFirstClient, urlSecondClient, urlThirdClient, urlFirstClient)
+
+    var isSecondExecution = false
+
+    val createRequest = PrivateMethod[String]('createRequest)
+
+    val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+      override val apacheCloudStackClientList: List[ApacheCloudStackClient] = List (
+        new ApacheCloudStackClient(urlFirstClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlFirstClient :: Nil
+            if (isSecondExecution) {
+              response
+            } else {
+              isSecondExecution = true
+              throw new ApacheCloudStackClientRuntimeException
+            }
+          }
+        },
+        new ApacheCloudStackClient(urlSecondClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlSecondClient :: Nil
+            throw new ApacheCloudStackClientRuntimeException
+          }
+        },
+        new ApacheCloudStackClient(urlThirdClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlThirdClient :: Nil
+            throw new ApacheCloudStackClientRuntimeException
+          }
+        }
+      )
+
+      override def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String =
+        super.createRequest(request, requestDescription)
+    }
+
+    def requestTask(): String = cloudStackTaskCreator invokePrivate createRequest(Request.getVmRequest(vmId), "request description")
+
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assert(requestTask() == response)
+
+    assert(checkedPath == expectedPathList)
+  }
+
+  "createRequest" should "wrap non-ApacheCloudStackClientRuntimeException into CloudStackCriticalException" in {
+    var checkedPath = List.empty[String]
+
+    val response = "testResponse"
+    val urlFirstClient = "http://127.0.0.1:8080/client/api/1"
+    val urlSecondClient = "http://127.0.0.1:8080/client/api/2"
+    val urlThirdClient = "http://127.0.0.1:8080/client/api/3"
+    val expectedPathList = List(urlFirstClient, urlSecondClient, urlThirdClient, urlFirstClient)
+
+    var isSecondExecution = false
+
+    val createRequest = PrivateMethod[String]('createRequest)
+
+    val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+      override val apacheCloudStackClientList: List[ApacheCloudStackClient] = List (
+        new ApacheCloudStackClient(urlFirstClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlFirstClient :: Nil
+            if (isSecondExecution) {
+              throw new Exception
+            } else {
+              isSecondExecution = true
+              throw new ApacheCloudStackClientRuntimeException
+            }
+          }
+        },
+        new ApacheCloudStackClient(urlSecondClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlSecondClient :: Nil
+            throw new ApacheCloudStackClientRuntimeException
+          }
+        },
+        new ApacheCloudStackClient(urlThirdClient, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            checkedPath = checkedPath ::: urlThirdClient :: Nil
+            throw new ApacheCloudStackClientRuntimeException
+          }
+        }
+      )
+
+      override def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String =
+        super.createRequest(request, requestDescription)
+    }
+
+    def requestTask(): String = cloudStackTaskCreator invokePrivate createRequest(Request.getVmRequest(vmId), "request description")
+
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assertThrows[ApacheCloudStackClientRuntimeException]{
+      requestTask()
+    }
+    assertThrows[CloudStackCriticalException]{
+      requestTask()
+    }
+
+    assert(checkedPath == expectedPathList)
   }
 
   //Negative tests

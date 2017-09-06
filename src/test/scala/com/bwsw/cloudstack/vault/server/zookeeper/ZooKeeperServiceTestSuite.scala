@@ -69,7 +69,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite {
   }
 
   //Negative tests
-  "createNodeWithData" should "throw ZooKeeperCriticalException" in {
+  "createNodeWithData" should "The ZooKeeperCriticalException in ZooKeeperTaskCreator must not be not caught" in {
     val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
       override def createNodeCreationTask(path: String, data: String)(): Unit = {
         assert(path == expectedPath, "path is wrong")
@@ -85,7 +85,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite {
     }
   }
 
-  "getData" should "throw ZooKeeperCriticalException" in {
+  "getData" should "The ZooKeeperCriticalException in ZooKeeperTaskCreator must not be not caught" in {
     val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
       override def createGetDataTask(path: String)(): String = {
         assert(expectedPath == path, "path is wrong")
@@ -100,7 +100,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite {
     }
   }
 
-  "deleteNode" should "throw ZooKeeperCriticalException" in {
+  "deleteNode" should "The ZooKeeperCriticalException in ZooKeeperTaskCreator must not be not caught" in {
     val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
       override def createNodeDeletionTask(path: String)(): Unit = {
         assert(expectedPath == path, "path is wrong")
@@ -115,7 +115,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite {
     }
   }
 
-  "isExistNode" should "throw ZooKeeperCriticalException" in {
+  "isExistNode" should "The ZooKeeperCriticalException in ZooKeeperTaskCreator must not be not caught" in {
     val expectedIsExist = true
 
     val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {

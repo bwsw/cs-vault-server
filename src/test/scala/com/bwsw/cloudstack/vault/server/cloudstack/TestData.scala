@@ -25,6 +25,9 @@ trait TestData {
     def getUserResponseJson(user: String, account: String): String = "{\"listusersresponse\":{\"count\":1,\"user\":[{\"id\":\"" + s"$user" + "\", \"accountid\":\" " + s"$account" + "\"}]}}"
     def getVmResponseJson(vm: String, accountName: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\"}]}}"
 
+    def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
+    def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
+    def getResponseWithEmptyUserList = "{\"listusersresponse\":{}}"
   }
 
   object Request {
