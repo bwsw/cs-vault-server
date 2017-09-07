@@ -59,6 +59,7 @@ class CloudStackVaultController(vaultService: VaultService,
     }
 
     cloudStackService.setResourceTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
+    logger.info(s"User creation was processed, userId: $userId)")
   }
 
   def handleAccountCreate(accountId: UUID): Unit = {
@@ -83,6 +84,7 @@ class CloudStackVaultController(vaultService: VaultService,
         cloudStackService.setResourceTag(userId, Tag.Type.User, newTags)
       }
     }
+    logger.info(s"Account creation was processed, accountId: $accountId)")
   }
 
   def handleVmCreate(vmId: UUID): Unit = {
@@ -120,6 +122,7 @@ class CloudStackVaultController(vaultService: VaultService,
     }
 
     cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, tokenTagList)
+    logger.info(s"VM creation was processed, vmId: $vmId)")
   }
 
   protected def initializeZooKeeperNodes(): Unit = {
@@ -142,6 +145,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   private def createMissingAccountTokenTags(accountId: UUID, absentTagKeyList: List[Tag.Key]): List[Tag] = {
+    logger.debug(s"createMissingAccountTokenTags(accountId: $accountId, absentTagKeyList: $absentTagKeyList)")
     import Tag.Key
 
     val pathToEntityNode = getPathToZookeeperEntityNode(accountId.toString, accountEntityName)
@@ -173,6 +177,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   private def deleteTokenAndAssociatedData(entityId: UUID, entityName: String, defaultSecretPath: String): Unit = {
+    logger.debug(s"deleteTokenAndAssociatedData(entityId: $entityId, entityName: $entityName)")
     var secretPath = defaultSecretPath
     val pathToEntityNode = getPathToZookeeperEntityNode(entityId.toString, entityName)
     if (zooKeeperService.isExistNode(pathToEntityNode)) {
