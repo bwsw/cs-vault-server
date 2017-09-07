@@ -19,6 +19,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
 
   @Override
   def handleEventsFromRecords(records: List[String]): List[(Future[Unit], CloudStackEvent)] = {
+    logger.debug(s"handleEventsFromRecords: $records")
     records.map(jsonSerializer.deserialize[CloudStackEvent]).collect(handleEvent)
   }
 
@@ -30,25 +31,24 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
 
   private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
     override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
-      event.action match {
-        case VMCreate => (Future(controller.handleVmCreate(event.entityuuid)), event)
-        case VMDelete => (Future(controller.handleVmDelete(event.entityuuid)), event)
-        case AccountCreate => (Future(controller.handleAccountCreate(event.entityuuid)), event)
-        case AccountDelete => (Future(controller.handleAccountDelete(event.entityuuid)), event)
-        case UserCreate => (Future(controller.handleUserCreate(event.entityuuid)), event)
+      event.action.get match {
+        case VMCreate => (Future(controller.handleVmCreate(event.entityuuid.get)), event)
+        case VMDelete => (Future(controller.handleVmDelete(event.entityuuid.get)), event)
+        case AccountCreate => (Future(controller.handleAccountCreate(event.entityuuid.get)), event)
+        case AccountDelete => (Future(controller.handleAccountDelete(event.entityuuid.get)), event)
+        case UserCreate => (Future(controller.handleUserCreate(event.entityuuid.get)), event)
       }
     }
 
     override def isDefinedAt(event: CloudStackEvent): Boolean = {
-      if (event.entityuuid == null || event.eventDateTime == null) {
+      if (event.entityuuid.isEmpty) {
         false
       } else {
         event.action match {
-          case AccountCreate | AccountDelete | UserCreate | VMCreate | VMDelete =>
-            event.status == CloudStackEvent.Status.Completed                              //Event must be handle when status of event Completed
-          case _ =>                                                                       //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
-            logger.debug("Unhandled event")                                               //and don't have an entityuuid, so we must to check entityuuid.
-            false
+          case Some(action) if action.oneOf(AccountCreate, AccountDelete, UserCreate, VMCreate, VMDelete) =>
+            event.status.getOrElse(false) == CloudStackEvent.Status.Completed                              //Event must be handle when status of event Completed
+          case _ =>                                                                                        //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
+            false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
         }
       }
     }

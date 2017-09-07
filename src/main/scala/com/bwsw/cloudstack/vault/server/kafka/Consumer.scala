@@ -41,10 +41,12 @@ class Consumer[T](val brokers: String,
     consumer.close()
   }
 
-  def process() {
+  def subscribe(): Unit = {
     logger.info(s"Subscribe to the topic: $topic")
     consumer.subscribe(Collections.singletonList(topic))
+  }
 
+  def process() {
     logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 

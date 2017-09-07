@@ -14,28 +14,6 @@ import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize
   */
 object CloudStackEvent {
 
-  class LocalDateTimeSerializer extends JsonSerializer[LocalDateTime] {
-    def serialize(value: LocalDateTime, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(value.toString.toUpperCase)
-    }
-  }
-
-  class LocalDateTimeDeserializer extends JsonDeserializer[LocalDateTime] {
-    def deserialize(parser: JsonParser, context: DeserializationContext): LocalDateTime = {
-      val value = parser.getValueAsString
-      Option(value).map[LocalDateTime](x => LocalDateTime.parse(x, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss +SSSS") )) match {
-        case Some(x) => x
-        case None => throw new RuntimeJsonMappingException(s"$value is not valid LocalDateTime")
-      }
-    }
-  }
-
-  class ActionSerializer extends JsonSerializer[Action] {
-    def serialize(value: Action, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(Action.toString(value))
-    }
-  }
-
   class ActionDeserializer extends JsonDeserializer[Action] {
     def deserialize(parser: JsonParser, context: DeserializationContext): Action = {
       val value = parser.getValueAsString
@@ -43,12 +21,6 @@ object CloudStackEvent {
         case Some(x) => x
         case None => throw new RuntimeJsonMappingException(s"$value is not valid CloudStackEvent.Action")
       }
-    }
-  }
-
-  class StatusSerializer extends JsonSerializer[Status] {
-    def serialize(value: Status, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(Status.toString(value))
     }
   }
 
@@ -62,7 +34,6 @@ object CloudStackEvent {
     }
   }
 
-  @JsonSerialize(using = classOf[ActionSerializer])
   @JsonDeserialize(using = classOf[ActionDeserializer])
   sealed trait Action extends Product with Serializable {
 
@@ -102,8 +73,6 @@ object CloudStackEvent {
     }
   }
 
-
-  @JsonSerialize(using = classOf[StatusSerializer])
   @JsonDeserialize(using = classOf[StatusDeserializer])
   sealed trait Status extends Product with Serializable {
 
@@ -130,9 +99,6 @@ object CloudStackEvent {
 
 }
 
-final case class CloudStackEvent(@JsonSerialize(using = classOf[CloudStackEvent.LocalDateTimeSerializer])
-                                 @JsonDeserialize(using = classOf[CloudStackEvent.LocalDateTimeDeserializer])
-                                 eventDateTime: LocalDateTime,
-                                 entityuuid: UUID,
-                                 @JsonProperty("event") action: CloudStackEvent.Action,
-                                 status: CloudStackEvent.Status)
+final case class CloudStackEvent(status: Option[CloudStackEvent.Status],
+                                 @JsonProperty("event") action: Option[CloudStackEvent.Action],
+                                 entityuuid: Option[UUID])

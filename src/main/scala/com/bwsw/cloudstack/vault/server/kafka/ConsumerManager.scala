@@ -19,12 +19,15 @@ class ConsumerManager(topic: String, brokers: String, components: Components) {
   def execute(): Unit = {
     val consumer = new Consumer[CloudStackEvent](brokers, topic, groupId, timeout, new CloudStackEventHandler(components.cloudStackVaultController))
     Try {
+      consumer.subscribe()
       while(true) {
         consumer.process()
       }
     } match {
       case Success(x) => x
-      case Failure(e: Throwable) => consumer.shutdown()
+      case Failure(e: Throwable) =>
+        logger.error(s"exception: ${e.getMessage} was thrown in consumer.process()")
+        consumer.shutdown()
     }
   }
 }
