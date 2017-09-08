@@ -16,3 +16,16 @@ libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.
 libraryDependencies += "org.apache.zookeeper" % "zookeeper" % "3.4.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
+
+enablePlugins(JavaAppPackaging)
+
+enablePlugins(DockerPlugin)
+
+dockerBaseImage := "openjdk:8-jre-alpine"
+
+import com.typesafe.sbt.packager.docker.Cmd
+
+dockerCommands := dockerCommands.value.flatMap{
+  case cmd@Cmd("FROM",_) => List(cmd,Cmd("RUN", "apk update && apk add bash"))
+  case other => List(other)
+}
