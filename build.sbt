@@ -20,7 +20,7 @@ libraryDependencies += ("org.apache.curator" % "curator-recipes" % "2.12.0")
   .exclude("org.slf4j", "slf4j-api")
   .exclude("log4j", "log4j")
   .exclude("io.netty", "netty")
-libraryDependencies += ("org.apache.curator" % "curator-test" % "2.12.0")
+libraryDependencies += "org.apache.curator" % "curator-test" % "2.12.0" % "test"
 
 enablePlugins(JavaAppPackaging)
 
