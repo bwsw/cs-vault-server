@@ -5,4 +5,14 @@ scala:
    - 2.12.2
 
 script: "sbt clean coverage test"
+
 after_success: "sbt coverageReport coveralls"
+
+script:
+ - if [ "$TRAVIS_BRANCH" == "CSVS-25" ]; then
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker build -t cs-vault-server:latest .;
+      docker images;
+      docker tag cs-vault-server:latest medvedevbwsw/cs-vault-server:latest;
+      docker push $DOCKER_USERNAME/cs-vault-server:latest;
+    fi
