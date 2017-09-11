@@ -9,7 +9,7 @@ script: "sbt clean coverage test"
 after_success: "sbt coverageReport coveralls"
 
 script:
- - if [ "$TRAVIS_BRANCH" == "CSVS-25" ]; then
+ - if [ "$TRAVIS_BRANCH" == "master" ]; then
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
       docker build -t cs-vault-server:latest .;
       docker images;
