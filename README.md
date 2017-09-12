@@ -26,4 +26,15 @@ For start server in docker container you should:
     * `CS_SECRET_KEY` - secret key for get access to cloudstack server
     * `CS_RETRY_DELAY` - delay after unsuccessful connection attempt to cloudstack before retrying
 2. Execute command:
-    docker run --env-file variables.env medvedevbwsw/cs-vault-server:latest
+    "docker run --env-file variables.env medvedevbwsw/cs-vault-server:latest"
+
+If you need to create local docker container you should execute the next command:
+    "docker build -t REPOSITORY:TAG ."
+     where REPOSITORY - container name, TAG - version of container
+
+If you need creating you docker container in DockerHub with help of Travis,
+when you push project into GitHub (master branch), you should:
+
+1. Authorize your Travis-CI account for access to your GitHub account;
+2. Set the next environment variables in the Travis-CI: "DOCKER_USERNAME", "DOCKER_PASSWORD",
+   where DOCKER_USERNAME - your user name in DockerHub, and DOCKER_PASSWORD - your password in DockerHub
