@@ -79,7 +79,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   }
 
   //Negative tests
-  "createToken" should "The VaultCriticalException in VaultRestRequestCreator must not be not caught" in {
+  "createToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId)
 
@@ -102,7 +102,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "revokeToken" should "The VaultCriticalException in VaultRestRequestCreator must not be not caught" in {
+  "revokeToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId)
     val tokenJson = getTokenJson(entityId.toString)
@@ -121,7 +121,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deleteSecret" should "The VaultCriticalException in VaultRestRequestCreator must not be not caught" in {
+  "deleteSecret" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val path = "test/path"
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
