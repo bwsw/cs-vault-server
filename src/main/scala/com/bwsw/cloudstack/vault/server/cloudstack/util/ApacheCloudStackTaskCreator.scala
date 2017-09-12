@@ -1,12 +1,14 @@
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
+import java.net.NoRouteToHostException
 import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
-import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
+import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCriticalException, CloudStackEntityDoesNotExistException}
+import com.bwsw.cloudstack.vault.server.util.HttpStatuses
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -77,7 +79,7 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
       clientList.head.executeRequest(request)
     } match {
       case Success(x) => x
-      case Failure(e: ApacheCloudStackClientRuntimeException) =>
+      case Failure(e: ApacheCloudStackClientRuntimeException) if e.getCause.isInstanceOf[NoRouteToHostException] =>
         logger.warn(s"CloudStack server is unavailable")
         if (clientList.tail.isEmpty) {
           threadLocalClientList.set(apacheCloudStackClientList)
@@ -85,6 +87,9 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
           threadLocalClientList.set(clientList.tail)
         }
         throw e
+      case Failure(e: ApacheCloudStackClientRequestRuntimeException)
+        if e.getStatusCode == HttpStatuses.REQUEST_HEADER_FIELDS_TOO_LARGE =>                             //Now status 431 means that entity does not exist
+        throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(e.toString))
       case Failure(e :Throwable) =>
         logger.error(s"Request execution thrown an critical exception: $e")
         throw new CloudStackCriticalException(e)

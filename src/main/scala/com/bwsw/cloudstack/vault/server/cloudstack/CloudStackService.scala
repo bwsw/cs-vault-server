@@ -4,7 +4,7 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCriticalException, CloudStackEntityDoesNotExistException}
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import org.slf4j.LoggerFactory
@@ -94,13 +94,13 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(vmId.toString, apacheCloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
     ).virtualMashineList.virtualMashines.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"Virtual machine with id: $vmId does not exist"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Virtual machine with id: $vmId does not exist"))
     ).map(_.accountName).head
 
     val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
       getEntityJson(accountName, apacheCloudStackTaskCreator.nameParameter, Command.ListAccounts)
     ).accountList.accounts.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"The vm: $vmId does not include account with name: $accountName"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with name: $accountName"))
     ).map(_.id).head
 
     logger.debug(s"accountId was got for vm: $vmId)")
@@ -122,7 +122,7 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     val accountId = jsonSerializer.deserialize[UserResponse](
       getEntityJson(userId.toString, apacheCloudStackTaskCreator.idParameter, Command.ListUsers)
     ).userList.users.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"User with id: $userId does not exist"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist"))
     ).map(_.accountid).head
 
     logger.debug(s"accountId was got for user: $userId)")
@@ -151,7 +151,7 @@ class CloudStackService(apacheCloudStackTaskCreator: ApacheCloudStackTaskCreator
     val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
       .accountList
       .accounts.getOrElse(
-        throw new CloudStackCriticalException(new NoSuchElementException(s"Account with id: $accountId does not exist"))
+        throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Account with id: $accountId does not exist"))
       ).flatMap { x =>
         x.users.map(_.id)
       }

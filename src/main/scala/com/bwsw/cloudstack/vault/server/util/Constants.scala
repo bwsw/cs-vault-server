@@ -32,6 +32,7 @@ object ConfigLiterals {
 object HttpStatuses {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
+  val REQUEST_HEADER_FIELDS_TOO_LARGE = 431
 }
 
 object RequestPath {

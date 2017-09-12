@@ -4,6 +4,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.{Collections, Properties}
 
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
+import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.slf4j.LoggerFactory
 
@@ -66,12 +67,19 @@ class Consumer[T](val brokers: String,
         case (future, event) =>
           future.onComplete {
             case Success(x) =>
-              logger.debug(s"The event: $event was successful")
+              logger.info(s"The event: $event was successful")
               eventLatch.countDown()
-            case Failure(e: Throwable) =>
+            case Failure(e: CriticalException) =>
               logger.error(s"An exception occurred during the event processing: $e")
-              val restartedEvent = eventHandler.restartEvent(event)
-              checkEvent(restartedEvent)
+              if (eventHandler.isNonFatalException(e)) {
+                logger.warn(s"The exception: ${e.exception} is not fatal and will be ignored")
+                eventLatch.countDown()
+              } else {
+                logger.warn(s"The exception: ${e.exception} is fatal, the event: $event will be restarted")
+                val restartedEvent = eventHandler.restartEvent(event)
+                checkEvent(restartedEvent)
+              }
+            case Failure(e: Throwable) => throw e
           }
       }
     }

@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import CloudStackEvent.Action._
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRequestRuntimeException
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
+import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 
 /**
   * Created by medvedev_vv on 02.08.17.
@@ -32,11 +35,21 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
     override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
       event.action.get match {
-        case VMCreate => (Future(controller.handleVmCreate(event.entityuuid.get)), event)
-        case VMDelete => (Future(controller.handleVmDelete(event.entityuuid.get)), event)
-        case AccountCreate => (Future(controller.handleAccountCreate(event.entityuuid.get)), event)
-        case AccountDelete => (Future(controller.handleAccountDelete(event.entityuuid.get)), event)
-        case UserCreate => (Future(controller.handleUserCreate(event.entityuuid.get)), event)
+        case VMCreate =>
+          logger.info(s"handle VMCreate event: $event")
+          (Future(controller.handleVmCreate(event.entityuuid.get)), event)
+        case VMDelete =>
+          logger.info(s"handle VMDelete event: $event")
+          (Future(controller.handleVmDelete(event.entityuuid.get)), event)
+        case AccountCreate =>
+          logger.info(s"handle AccountCreate event: $event")
+          (Future(controller.handleAccountCreate(event.entityuuid.get)), event)
+        case AccountDelete =>
+          logger.info(s"handle AccountDelete event: $event")
+          (Future(controller.handleAccountDelete(event.entityuuid.get)), event)
+        case UserCreate =>
+          logger.info(s"handle UserCreate event: $event")
+          (Future(controller.handleUserCreate(event.entityuuid.get)), event)
       }
     }
 
@@ -51,6 +64,18 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
             false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
         }
       }
+    }
+  }
+
+  def isNonFatalException(exception: Throwable): Boolean = {
+    logger.debug(s"isNonFatalException: $exception")
+    exception match {
+      case e: CriticalException =>
+        e.exception match {
+          case nonFatalException: CloudStackEntityDoesNotExistException => true
+          case _ => false
+        }
+      case _ => false
     }
   }
 }
