@@ -266,7 +266,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
   }
 
   //Negative tests
-  "createGetTagTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
+  "createGetTagTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -283,8 +283,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetTagTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
-    "the exception will wrapped to CloudStackCriticalException" in {
+  "createGetTagTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException, " +
+    "the exception will be wrapped into CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -301,7 +301,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetEntityTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
+  "createGetEntityTask" should "if ApacheCloudStackClient throws ApacheCloudStackClientRuntimeException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -322,8 +322,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetEntityTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
-  "the exception will wrapped to CloudStackCriticalException" in {
+  "createGetEntityTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException, " +
+    "the exception will be wrapped into CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -344,7 +344,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourceTagTask" should  "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException, exception does not catch" in {
+  "createSetResourceTagTask" should  "if ApacheCloudStackClient throws ApacheCloudStackClientRuntimeException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
@@ -365,8 +365,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourceTagTask" should "if ApacheCloudStackClient throw not same with ApacheCloudStackClientRuntimeException, " +
-    "the exception will wrapped to CloudStackCriticalException" in {
+  "createSetResourceTagTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException, " +
+    "the exception will be wrapped into CloudStackCriticalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
         cloudStackTaskCreatorSettings.urlList.map { x =>
