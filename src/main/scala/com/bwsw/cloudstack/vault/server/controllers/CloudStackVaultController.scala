@@ -128,12 +128,15 @@ class CloudStackVaultController(vaultService: VaultService,
   protected def initializeZooKeeperNodes(): Unit = {
     if (!zooKeeperService.isExistNode(RequestPath.zooKeeperRootNode)) {
       zooKeeperService.createNodeWithData(RequestPath.zooKeeperRootNode, "")
-    }
-    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$accountEntityName")) {
       zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$accountEntityName", "")
-    }
-    if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$vmEntityName")) {
       zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$vmEntityName", "")
+    } else {
+      if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$accountEntityName")) {
+        zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$accountEntityName", "")
+      }
+      if (!zooKeeperService.isExistNode(s"${RequestPath.zooKeeperRootNode}/$vmEntityName")) {
+        zooKeeperService.createNodeWithData(s"${RequestPath.zooKeeperRootNode}/$vmEntityName", "")
+      }
     }
   }
 
