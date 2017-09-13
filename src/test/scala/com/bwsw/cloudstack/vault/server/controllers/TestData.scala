@@ -29,10 +29,10 @@ trait TestData {
   def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vmSecret}$vmId"
 
   def getVmEntityNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/vm/$entityId"
-  def getVmTokenReadNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/vm/$entityId/VAULT_RO"
-  def getVmTokenWriteNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/vm/$entityId/VAULT_RW"
+  def getVmTokenReadNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/vm/$entityId/vault.ro"
+  def getVmTokenWriteNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/vm/$entityId/vault.rw"
 
   def getAccountEntityNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/account/$entityId"
-  def getAccountTokenReadNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/account/$entityId/VAULT_RO"
-  def getAccountTokenWriteNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/account/$entityId/VAULT_RW"
+  def getAccountTokenReadNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/account/$entityId/vault.ro"
+  def getAccountTokenWriteNodePath(entityId: String) = s"${RequestPath.zooKeeperRootNode}/account/$entityId/vault.rw"
 }

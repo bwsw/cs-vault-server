@@ -63,7 +63,7 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
     def loop(index: Int, tagList: List[Tag]): Unit = {
       if (tagList.nonEmpty) {
         val tag = tagList.head
-        request.addParameter(s"tags[$index].key", tag.key)
+        request.addParameter(s"tags[$index].key", Tag.Key.toString(tag.key))
         request.addParameter(s"tags[$index].value", tag.value)
         loop(index + 1, tagList.tail)
       }

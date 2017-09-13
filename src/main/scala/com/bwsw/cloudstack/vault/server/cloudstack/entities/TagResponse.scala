@@ -58,14 +58,14 @@ object Tag {
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
-      case "VAULT_RO"       => Key.VaultRO
-      case "VAULT_RW"       => Key.VaultRW
+      case "VAULT.RO"       => Key.VaultRO
+      case "VAULT.RW"       => Key.VaultRW
       case _                => Key.Other
     }
 
     def toString(x: Key): String = x match {
-      case  Key.VaultRO       => "VAULT_RO"
-      case  Key.VaultRW       => "VAULT_RW"
+      case  Key.VaultRO       => "vault.ro"
+      case  Key.VaultRW       => "vault.rw"
       case  Key.Other         => ""
     }
   }

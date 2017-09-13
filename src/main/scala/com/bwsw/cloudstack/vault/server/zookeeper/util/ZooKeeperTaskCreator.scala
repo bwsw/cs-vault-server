@@ -75,7 +75,7 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
 
   protected def createConnection(): ZooKeeper = {
     logger.debug(s"createConnection with host: ${settings.host}")
-    new ZooKeeper(settings.host, 5000, null)
+    new ZooKeeper(settings.host, 5000, (event: WatchedEvent) => {})
   }
 
   protected def closeConnection(zooKeeper: ZooKeeper): Unit = {
