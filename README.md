@@ -32,9 +32,9 @@ If you need to create local docker container you should execute the next command
     "docker build -t REPOSITORY:TAG ."
      where REPOSITORY - container name, TAG - version of container
 
-If you need creating you docker container in DockerHub with help of Travis,
-when you push project into GitHub (master branch), you should:
+If you need to create your own docker container with Travis help in DockerHub after project push into GitHub (master branch) you should:
 
-1. Authorize your Travis-CI account for access to your GitHub account;
-2. Set the next environment variables in the Travis-CI: "DOCKER_USERNAME", "DOCKER_PASSWORD",
-   where DOCKER_USERNAME - your user name in DockerHub, and DOCKER_PASSWORD - your password in DockerHub
+1. authorize your Travis-CI account to access to your GitHub account;
+2. set the next environment variables in the Travis-CI: "DOCKER_USERNAME", "DOCKER_PASSWORD",
+   where DOCKER_USERNAME - your user name in DockerHub and DOCKER_PASSWORD - your password in DockerHub
+   
