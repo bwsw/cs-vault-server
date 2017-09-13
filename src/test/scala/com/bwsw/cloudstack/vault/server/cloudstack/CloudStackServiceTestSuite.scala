@@ -153,7 +153,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
   }
 
   //Negative tests
-  "getUserTagsByAccountId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getUserTagsByAccountId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val key = Tag.Key.VaultRO
     val value = "value1"
 
@@ -173,7 +173,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserTagsByUserId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getUserTagsByUserId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val key = Tag.Key.VaultRW
     val value = "value1"
 
@@ -192,7 +192,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getVmTagsById" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getVmTagsById" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val key = Tag.Key.VaultRW
     val value = "value3"
 
@@ -211,7 +211,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByVmId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getAccountIdByVmId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val accountName = "admin"
 
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
@@ -232,7 +232,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByUserId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getAccountIdByUserId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == userId.toString, "parameterValue is wrong")
@@ -249,7 +249,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserIdsByAccountId" should "The CloudStackCriticalException in cloudStackTaskCreator must not be swallowed" in {
+  "getUserIdsByAccountId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
