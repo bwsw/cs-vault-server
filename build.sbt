@@ -16,4 +16,8 @@ libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.
 libraryDependencies += "org.apache.zookeeper" % "zookeeper" % "3.4.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
-libraryDependencies += "org.mockito" % "mockito-core" % "2.9.0" % "test"
+libraryDependencies += ("org.apache.curator" % "curator-recipes" % "2.12.0")
+  .exclude("org.slf4j", "slf4j-api")
+  .exclude("log4j", "log4j")
+  .exclude("io.netty", "netty")
+libraryDependencies += "org.apache.curator" % "curator-test" % "2.12.0" % "test"
