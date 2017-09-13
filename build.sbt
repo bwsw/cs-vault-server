@@ -21,16 +21,3 @@ libraryDependencies += ("org.apache.curator" % "curator-recipes" % "2.12.0")
   .exclude("log4j", "log4j")
   .exclude("io.netty", "netty")
 libraryDependencies += "org.apache.curator" % "curator-test" % "2.12.0" % "test"
-
-enablePlugins(JavaAppPackaging)
-
-enablePlugins(DockerPlugin)
-
-dockerBaseImage := "openjdk:8-jre-alpine"
-
-import com.typesafe.sbt.packager.docker.Cmd
-
-dockerCommands := dockerCommands.value.flatMap{
-  case cmd@Cmd("FROM",_) => List(cmd,Cmd("RUN", "apk update && apk add bash"))
-  case other => List(other)
-}
