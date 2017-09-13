@@ -6,19 +6,83 @@ import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite  with TestData {
+class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite with TestData with PrivateMethodTester {
   var checkedIsExistNodePaths = List.empty[String]
   var checkedDeletionNodePaths = List.empty[String]
   var checkedCreationNodePaths = List.empty[String]
   var checkedRevokedTokens = List.empty[UUID]
   var checkedResourceIds = List.empty[UUID]
   var checkedUserIds = List.empty[UUID]
+
+  "initializeZooKeeperNodes" should "creates account and vm zookeeper nodes if root node does not exist" in {
+    val initializeZooKeeperNodes = PrivateMethod[Unit]('initializeZooKeeperNodes)
+    val expectedPathList = List(
+      rootNodePath,
+      rootNodeAccountPath,
+      rootNodeVmPath
+    )
+
+    checkedCreationNodePaths = List.empty[String]
+
+    val zooKeeperService = new MockZooKeeperService {
+      override def isExistNode(path: String): Boolean = {
+        assert(path == rootNodePath, "path is wrong")
+        false
+      }
+
+      override def createNodeWithData(path: String, data: String): Unit = {
+        checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+      }
+    }
+
+    val controller = new CloudStackVaultController (
+      new MockVaultService,
+      new MockCloudStackService,
+      zooKeeperService
+    )
+
+    assert(expectedPathList == checkedCreationNodePaths)
+  }
+
+  "initializeZooKeeperNodes" should "creates account and vm zookeeper nodes if root node exists" in {
+    val initializeZooKeeperNodes = PrivateMethod[Unit]('initializeZooKeeperNodes)
+
+    val expectedCreationNodePathList = List(rootNodeAccountPath, rootNodeVmPath)
+    val expectedIsExistNodePathList = List(rootNodePath, rootNodeAccountPath, rootNodeVmPath)
+
+    checkedCreationNodePaths = List.empty[String]
+    checkedIsExistNodePaths = List.empty[String]
+
+    val zooKeeperService = new MockZooKeeperService {
+      override def isExistNode(path: String): Boolean = {
+        checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
+        path match {
+          case x if x == rootNodePath => true
+          case _ => false
+        }
+      }
+
+      override def createNodeWithData(path: String, data: String): Unit = {
+        checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+      }
+    }
+
+    val controller = new CloudStackVaultController (
+      new MockVaultService,
+      new MockCloudStackService,
+      zooKeeperService
+    )
+
+    assert(expectedCreationNodePathList == checkedCreationNodePaths)
+    assert(expectedIsExistNodePathList == checkedIsExistNodePaths)
+  }
 
   "handleAccountDelete" should "get token from Zookeeper node, revoke it and delete secret by path in token information" in {
     val entityPath = getAccountEntityNodePath(accountId.toString)
