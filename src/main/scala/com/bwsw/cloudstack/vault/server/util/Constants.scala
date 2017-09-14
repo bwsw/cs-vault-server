@@ -18,7 +18,6 @@ object ConfigLiterals {
 
   val zooKeeperUrl = s"$zooKeeperDomain.url"
   val zooKeeperRetryDelay = s"$zooKeeperDomain.retryDelay"
-  val zooKeeperLeaderLatchCount = s"$zooKeeperDomain.leaderLatchCount"
 
   val vaultUrl = s"$vaultDomain.url"
   val vaultRootToken = s"$vaultDomain.rootToken"

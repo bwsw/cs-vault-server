@@ -16,3 +16,6 @@ project/boot/
 *.csv
 *.iml
 Будет удалено project/project/
+
+# Project specific
+local.conf
