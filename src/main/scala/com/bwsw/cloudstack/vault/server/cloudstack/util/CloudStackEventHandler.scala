@@ -21,9 +21,9 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   @Override
-  def handleEventsFromRecords(records: List[String]): List[(Future[Unit], CloudStackEvent)] = {
+  def handleEventsFromRecords(records: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
     logger.debug(s"handleEventsFromRecords: $records")
-    records.map(jsonSerializer.deserialize[CloudStackEvent]).collect(handleEvent)
+    records.map(jsonSerializer.deserialize[CloudStackEvent]).toSet.collect(handleEvent)
   }
 
   @Override

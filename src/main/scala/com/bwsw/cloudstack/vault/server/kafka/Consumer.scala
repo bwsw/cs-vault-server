@@ -51,7 +51,7 @@ class Consumer[T](val brokers: String,
     logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
-    val futureEvents: List[(Future[Unit], T)] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
+    val futureEvents: Set[(Future[Unit], T)] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
     val eventLatch: CountDownLatch  = new CountDownLatch(futureEvents.size)
 
     futureEvents.foreach { x =>
@@ -70,12 +70,14 @@ class Consumer[T](val brokers: String,
               logger.info(s"The event: $event was successful")
               eventLatch.countDown()
             case Failure(e: CriticalException) =>
-              logger.error(s"An exception occurred during the event processing: $e")
+              logger.error(s"An exception occurred during the event: $event processing: $e")
               if (eventHandler.isNonFatalException(e)) {
-                logger.warn(s"The exception: ${e.exception} is not fatal and will be ignored")
+                logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
+                  s"which was thrown while event: $event was being handle, is not fatal and will be ignored")
                 eventLatch.countDown()
               } else {
-                logger.warn(s"The exception: ${e.exception} is fatal, the event: $event will be restarted")
+                logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
+                  s"is fatal, the event: $event will be restarted")
                 val restartedEvent = eventHandler.restartEvent(event)
                 checkEvent(restartedEvent)
               }

@@ -6,13 +6,13 @@ import com.bwsw.cloudstack.vault.server.MockConfig
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
-import com.bwsw.cloudstack.vault.server.cloudstack.util.ApacheCloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 
 /**
   * Created by medvedev_vv on 04.09.17.
   */
 class MockCloudStackService extends CloudStackService(
-  new ApacheCloudStackTaskCreator(MockConfig.cloudStackTaskCreatorSettings),
+  new CloudStackTaskCreator(MockConfig.cloudStackTaskCreatorSettings),
   MockConfig.cloudStackServiceSettings
 ){
   override def getUserTagsByAccountId(accountId: UUID): List[Tag] = throw new NotImplementedError("getUserTagsByAccountId not implemented")

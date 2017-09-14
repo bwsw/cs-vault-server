@@ -99,7 +99,7 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val cloudStackEventHandler = new CloudStackEventHandler(controller)
     cloudStackEventHandler.handleEventsFromRecords(records)
 
-    countDawnLatch.await(2000, TimeUnit.MILLISECONDS)
+    countDawnLatch.await(3000, TimeUnit.MILLISECONDS)
 
     assert(actualCreationAccountId == expectedCreationAccountId)
     assert(actualCreationUserId == expectedCreationUserId)
