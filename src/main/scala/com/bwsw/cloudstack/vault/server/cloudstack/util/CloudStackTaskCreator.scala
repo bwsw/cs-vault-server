@@ -16,14 +16,13 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by medvedev_vv on 21.08.17.
   */
-class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings) {
+class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
   protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
-  apacheCloudStackClientList.foreach(_.setValidateServerHttpsCertificate(false))
 
   private var threadLocalClientList = new ThreadLocal[List[ApacheCloudStackClient]](){
     override protected def initialValue(): List[ApacheCloudStackClient] = {
@@ -52,7 +51,7 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
     createRequest(request, s"get entity by command: $command")
   }
 
-  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): () => String = {
+  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
     request.addParameter("resourcetype", Tag.Type.toString(resourceType))
@@ -72,7 +71,7 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
     createRequest(request, s"set tags to resource: ($resourceId, $resourceType)")
   }
 
-  private def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
+  protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
     logger.debug(s"Request was executed for action: $requestDescription")
     val clientList = threadLocalClientList.get()
     Try {
@@ -97,6 +96,6 @@ class ApacheCloudStackTaskCreator(settings: ApacheCloudStackTaskCreator.Settings
   }
 }
 
-object ApacheCloudStackTaskCreator {
+object CloudStackTaskCreator {
   case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
 }

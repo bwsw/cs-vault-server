@@ -69,7 +69,6 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
       }
       closeConnection(zooKeeper)
     }
-
     handleZookeeperRequest[Unit](request)
   }
 
