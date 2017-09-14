@@ -2,8 +2,11 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
+import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
+import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 
 /**
   * Created by medvedev_vv on 25.08.17.
@@ -13,11 +16,6 @@ trait TestData {
   val accountId: UUID = UUID.randomUUID()
   val vmId: UUID = UUID.randomUUID()
 
-
-  val listUsersCommand = "listUsers"
-  val listVirtualMachines = "listVirtualMachines"
-
-  val vmUserResourseType = "UserVM"
   val idParameter = "id"
   val nameParameter = "name"
 
@@ -27,6 +25,9 @@ trait TestData {
     def getUserResponseJson(user: String, account: String): String = "{\"listusersresponse\":{\"count\":1,\"user\":[{\"id\":\"" + s"$user" + "\", \"accountid\":\" " + s"$account" + "\"}]}}"
     def getVmResponseJson(vm: String, accountName: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\"}]}}"
 
+    def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
+    def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
+    def getResponseWithEmptyUserList = "{\"listusersresponse\":{}}"
   }
 
   object Request {
@@ -57,11 +58,38 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", vmId)
 
-    def getUserRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listUser")
+    def getUserRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listUsers")
       .addParameter("response", "json")
       .addParameter("listAll", "true")
       .addParameter("id", userId)
+
+    def getSetTagsRequest(resourceId: UUID, resourceType: Tag.Type, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
+      val request = new ApacheCloudStackRequest("createTags")
+      request.addParameter("response", "json")
+      request.addParameter("resourcetype", Tag.Type.toString(resourceType))
+      request.addParameter("resourceids", resourceId)
+      request.addParameter(s"tags[0].key", tagTuple._1.key)
+      request.addParameter(s"tags[0].value", tagTuple._1.value)
+      request.addParameter(s"tags[1].key", tagTuple._2.key)
+      request.addParameter(s"tags[1].value", tagTuple._2.value)
+      request.addParameter(s"tags[2].key", tagTuple._3.key)
+      request.addParameter(s"tags[2].value", tagTuple._3.value)
+    }
   }
 
+  def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
+  : CloudStackTaskCreator = {
+    new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
+      override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
+        cloudStackTaskCreatorSettings.urlList.map { x =>
+          new ApacheCloudStackClient(x, apacheCloudStackUser) {
+            override def executeRequest(request: ApacheCloudStackRequest): String = {
+              assert(request.toString == expectedRequest.toString, "request is wrong")
+              response
+            }
+          }
+        }.toList
+    }
+  }
 
 }

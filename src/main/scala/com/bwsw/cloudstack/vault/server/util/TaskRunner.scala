@@ -18,10 +18,10 @@ object TaskRunner {
     } match {
       case Success(x) => x
       case Failure(e: CriticalException) =>
-        logger.error(s"The critical exception: ${e.exception} was thrown")
+        logger.error(s"The critical exception: ${e.exception.getStackTrace} was thrown")
         throw e
       case Failure(e) =>
-        logger.warn(s"The task execute with an exception: $e, restart function after $retryDelay seconds")
+        logger.warn(s"The task execute with an exception: ${e.getStackTrace}, restart function after $retryDelay seconds")
         Thread.sleep(retryDelay)
         tryRunUntilSuccess[T](task, retryDelay)
     }
