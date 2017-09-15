@@ -24,7 +24,7 @@ class Consumer[T](val brokers: String,
 
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val props: Properties = createConsumerConfig(brokers)
-  private val consumer = new KafkaConsumer[String, String](props)
+  protected val consumer: org.apache.kafka.clients.consumer.Consumer[String, String] = new KafkaConsumer[String, String](props)
 
   def createConsumerConfig(brokers: String): Properties = {
     val props = new Properties()

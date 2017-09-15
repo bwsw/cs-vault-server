@@ -59,7 +59,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       } else {
         event.action match {
           case Some(action) if action.oneOf(AccountCreate, AccountDelete, UserCreate, VMCreate, VMDelete) =>
-            event.status.getOrElse(false) == CloudStackEvent.Status.Completed                              //Event must be handle when status of event Completed
+            event.status.getOrElse(Other) == CloudStackEvent.Status.Completed                              //Event must be handle when status of event Completed
           case _ =>                                                                                        //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
             false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
         }
