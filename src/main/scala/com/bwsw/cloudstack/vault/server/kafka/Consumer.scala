@@ -30,6 +30,9 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
+/**
+  * Class is responsible for getting events from Kafka topic
+  */
 class Consumer[T](val brokers: String,
                   val topic: String,
                   val groupId: String,

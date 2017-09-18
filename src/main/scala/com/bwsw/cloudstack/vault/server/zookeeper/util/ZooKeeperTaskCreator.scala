@@ -26,9 +26,21 @@ import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Class is responsible for wrapping ZooKeeper library methods.
+  *
+  * @param settings contains the settings for interaction with ZooKeeper
+  */
 class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * Creates task for getting data from zNode in ZooKeeper server.
+    *
+    * @param path String with path of zNode
+    * @throws ZooKeeperCriticalException if exception was thrown by ZooKeeper library method
+    * @throws ConnectionLossException if ZooKeeper server is unavailable
+    */
   def createGetDataTask(path: String)(): String = {
     logger.debug(s"createGetDataTask from path: $path")
 
@@ -43,6 +55,14 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
     handleZookeeperRequest[String](request)
   }
 
+  /**
+    * Creates task for creating zNode in ZooKeeper server.
+    *
+    * @param path String with path of zNode
+    * @param data String with data for zNode
+    * @throws ZooKeeperCriticalException if exception was thrown by ZooKeeper library method
+    * @throws ConnectionLossException if ZooKeeper server is unavailable
+    */
   def createNodeCreationTask(path: String, data: String)(): Unit = {
     logger.debug(s"createNodeCreationTask with path: $path")
 
@@ -56,6 +76,13 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
     handleZookeeperRequest[Unit](request)
   }
 
+  /**
+    * Creates task for check existing zNode in ZooKeeper server.
+    *
+    * @param path String with path of zNode
+    * @throws ZooKeeperCriticalException if exception was thrown by ZooKeeper library method
+    * @throws ConnectionLossException if ZooKeeper server is unavailable
+    */
   def createCheckExistNodeTask(path: String)(): Boolean = {
     logger.debug(s"createCheckExistNodeTask from path: $path")
 
@@ -70,6 +97,13 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
     handleZookeeperRequest[Boolean](request)
   }
 
+  /**
+    * Creates task for deletion zNode in ZooKeeper server.
+    *
+    * @param path String with path of zNode
+    * @throws ZooKeeperCriticalException if exception was thrown by ZooKeeper library method
+    * @throws ConnectionLossException if ZooKeeper server is unavailable
+    */
   def createNodeDeletionTask(path: String)(): Unit = {
     logger.debug(s"createNodeDeletionTask by path: $path")
 
@@ -87,11 +121,17 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
     handleZookeeperRequest[Unit](request)
   }
 
+  /**
+    * Creates connection with ZooKeeper server.
+    */
   protected def createConnection(): ZooKeeper = {
     logger.debug(s"createConnection with host: ${settings.host}")
     new ZooKeeper(settings.host, 5000, (event: WatchedEvent) => {})
   }
 
+  /**
+    * Closes connection with ZooKeeper server.
+    */
   protected def closeConnection(zooKeeper: ZooKeeper): Unit = {
     logger.debug("createCloseConnectionTask")
     if (zooKeeper != null) {
@@ -102,6 +142,9 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
     }
   }
 
+  /**
+    * Handles exceptions which might be thrown while request is executing.
+    */
   private def handleZookeeperRequest[T](request:() => T): T  = {
     Try {
       request()

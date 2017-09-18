@@ -29,6 +29,11 @@ import CloudStackEvent.Action._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
 import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 
+/**
+  * Class is responsible for handling cloudstack event.
+  *
+  * @param controller allows for logic executing from event
+  */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
   private val jsonSerializer = new JsonSerializer(true)

@@ -23,7 +23,7 @@ Account creation event processing: <br />
     * 3) recording of  the created Vault Token into Zookeeper node (if token recording throwns an exception, the token will be revoked) <br />
     * 4) Tokens will be recorded into account user tags at CloudStackServer (in case if users exist). <br />
 
-User creation event: <br />
+User creation event processing: <br />
   * a) getting of an user account <br />
   * b) getting of an account users <br />
   * c) getting of a tag list of all users <br />
@@ -33,7 +33,7 @@ User creation event: <br />
     * 3) recording of  the created Vault Token into Zookeeper node (if token recording throwns an exception, the token will be revoked) <br />
   * e) recording of tokens into tags of new user at CloudStackServer <br />
 
-Account or user deletion event: <br />
+Account or VM deletion event processing: <br />
   * a) if account or VM node is in ZooKeeper then go to point "b" otherwise point "e" <br />
   * b) if token nodes ("read" and "write") are in ZooKeeper then go to point "c" otherwise point "e" <br />
   * c) getting of tokens from ZooKeeper node <br />

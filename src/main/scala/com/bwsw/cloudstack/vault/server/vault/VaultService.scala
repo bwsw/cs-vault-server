@@ -28,14 +28,19 @@ import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
 import org.slf4j.LoggerFactory
 
+/**
+  * Class is responsible for interaction with Vault server with help of VaultRestRequestCreator
+  *
+  * @param vaultRest allows for creating task for interaction with Vault
+  * @param settings contains the settings for interaction with Vault
+  */
 class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(true)
 
   /**
-    * Creates token with specified policy.
-    * Will be restarted if vault server is unavailable.
+    * Creates token with specified policy
     *
     * @param policies policies for token
     *
@@ -65,7 +70,6 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
   /**
     * Revokes token from vault server.
-    * Will be restarted if vault server is unavailable.
     *
     * @param tokenId UUID of token for revoke
     *
@@ -102,7 +106,6 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
   /**
     * Deletes secret from vault server by specified path.
-    * Will be restarted if vault server is unavailable.
     *
     * @param pathToSecret UUID of token for revoke
     *
@@ -120,6 +123,13 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     logger.debug(s"data from path: $pathToSecret was deleted")
   }
 
+  /**
+    * Creates policy in Vault server
+    *
+    * @param policy policy for creating
+    *
+    * @throws VaultCriticalException if response status is not expected.
+    */
   private def writePolicy(policy: Policy) = {
     logger.debug(s"writePolicy: $policy")
 
@@ -132,6 +142,13 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     logger.debug(s"policy was writed: $policy")
   }
 
+  /**
+    * deletes policy in Vault server
+    *
+    * @param policyName policyNeme for deletion
+    *
+    * @throws VaultCriticalException if response status is not expected.
+    */
   private def deletePolicy(policyName: String) = {
     logger.debug(s"deletePolicy: $policyName")
 

@@ -23,14 +23,20 @@ import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
 import org.slf4j.LoggerFactory
 
+/**
+  * Class is responsible for launch task which are created by ZooKeeperTaskCreator.
+  *
+  * @param zooKeeperTaskCreator allows for creating task for interaction with ZooKeeper
+  * @param settings contains the settings for interaction with ZooKeeper
+  */
 class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
                        settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val retryDelay = settings.retryDelay
 
   /**
-    * Creates zNode in ZooKeeper server.
-    * Will be restarted if zookeeper server is unavailable.
+    * Launches task for creating zNode in ZooKeeper server.
+    * Will restarts task if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
@@ -43,8 +49,8 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
   }
 
   /**
-    * Gets data from zNode in ZooKeeper server.
-    * Will be restarted if zookeeper server is unavailable.
+    * Launches task for getting data from zNode in ZooKeeper server.
+    * Will restarts task if zookeeper server is unavailable.
     *
     * @param path String with path to zNode data
     *
@@ -58,8 +64,8 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
   }
 
   /**
-    * Deletes data from zNode in ZooKeeper server.
-    * Will be restarted if zookeeper server is unavailable.
+    * Launches task for deletion data from zNode in ZooKeeper server.
+    * Restarts task if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     */
@@ -70,10 +76,12 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
   }
 
   /**
-    * Checks zNode existing
-    * Will be restarted if zookeeper server is unavailable.
+    * Launches task for check zNode existing
+    * Will restarts task if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
+    *
+    * @return boolean flag on the existence zNode
     */
   def isExistNode(path: String): Boolean = {
     logger.debug(s"isExistNode by path: $path")

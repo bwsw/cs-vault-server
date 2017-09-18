@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Class is responsible for start Consumer with specified configuration
+  */
 class ConsumerManager(topic: String, brokers: String, components: Components) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val timeout = 10000

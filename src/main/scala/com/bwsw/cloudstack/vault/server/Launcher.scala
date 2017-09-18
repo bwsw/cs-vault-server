@@ -25,6 +25,13 @@ import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Class is responsible for launching application.
+  * It creating all services needed to start application.
+  * Also it provides support the Leader-Follower registration with help ZooKeeper + Curator
+  *
+  * @author Vladislav Medvedev
+  */
 object Launcher extends StrictLogging {
   private var leaderLatch: Option[LeaderLatch] = None
 

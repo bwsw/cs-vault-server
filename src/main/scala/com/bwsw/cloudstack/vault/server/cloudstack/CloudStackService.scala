@@ -27,6 +27,12 @@ import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import org.slf4j.LoggerFactory
 
+/**
+  * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
+  *
+  * @param сloudStackTaskCreator allows for creating task for interaction with CloudStack
+  * @param settings contains the settings for interaction with CloudStack
+  */
 class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
                         settings: CloudStackService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -34,7 +40,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of account's users which has "User" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of account for gets user's tags
     *
@@ -56,7 +61,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of users which has "User" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets user's tags
     *
@@ -75,7 +79,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of virtual machine which has "UserVM" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual mashine for gets user's tags
     *
@@ -95,7 +98,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets account id for the virtual machine.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual machine for gets account name
     *
@@ -124,7 +126,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets account id for the user.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets account id
     *
@@ -146,7 +147,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets user ids for the account.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of user for gets account id
     *
@@ -177,7 +177,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Sets tag to specified entity.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param resourceId id of entity for set tag
     * @param resourceType "User" or "UserVM" type of tags

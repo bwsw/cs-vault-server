@@ -26,9 +26,22 @@ import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Class is responsible for creating tasks for interaction with Vault server with help of Vault library
+  *
+  * @param settings contains the settings for interaction with Vault
+  */
 class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * Creates request for creating token with specified parameters
+    *
+    * @param tokenParameters parameters for new token
+    *
+    * @return task for creating token
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createTokenCreateRequest(tokenParameters: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenCreate}", tokenParameters).post,
@@ -37,6 +50,14 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates request for revoking token with specified id
+    *
+    * @param jsonTokenId id for token revoking
+    *
+    * @return task for revoking token
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createTokenRevokeRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenRevoke}", jsonTokenId).post,
@@ -45,6 +66,15 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates request for creating policy
+    *
+    * @param policyName name of new Policy
+    * @param policyJson json string with parameters of new Policy
+    *
+    * @return task for creating Policy
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createPolicyCreateRequest(policyName: String, policyJson: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", policyJson).put,
@@ -53,6 +83,14 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates request for deletion policy
+    *
+    * @param policyName name of Policy for deletion
+    *
+    * @return task for deletion Policy
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createPolicyDeleteRequest(policyName: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", "").delete,
@@ -61,6 +99,14 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates request for getting lookup token
+    *
+    * @param jsonTokenId json string with token id
+    *
+    * @return task for getting lookupToken
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createTokenLookupRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenLookup}", jsonTokenId).post,
@@ -69,6 +115,14 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates request for deletion secret by specified path
+    *
+    * @param pathToSecret path to secret
+    *
+    * @return task for deletion secret
+    * @throws VaultCriticalException if response status is not expected.
+    */
   def createDeleteSecretRequest(pathToSecret: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultSecret}/$pathToSecret", "").delete,
@@ -77,6 +131,15 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     )
   }
 
+  /**
+    * Creates Rest object
+    *
+    * @param path specified url path
+    * @param data specified data for request body
+    *
+    * @return Rest object
+    * @throws VaultCriticalException if response status is not expected.
+    */
   protected def createRest(path: String, data: String): Rest = {
     new Rest()
       .url(s"${settings.vaultUrl}$path")
@@ -84,6 +147,9 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
       .body(data.getBytes("UTF-8"))
   }
 
+  /**
+    * Handles request execution
+    */
   private def createRequest(request: () => RestResponse,
                             expectedResponseStatus: Int,
                             requestDescription: String)(): String = {

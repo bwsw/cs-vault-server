@@ -26,6 +26,14 @@ import scala.util.{Failure, Success, Try}
 object TaskRunner {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * Re-runs task while not it will be successfully executed or critical exception will be thrown
+    *
+    * @param task task for execution
+    * @param retryDelay delay between task restarts
+    *
+    * @return object with type parametrized T
+    */
   def tryRunUntilSuccess[T](task: () => T,
                             retryDelay: Int): T = {
     Try {
