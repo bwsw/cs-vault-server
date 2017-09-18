@@ -46,10 +46,17 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
 
     def request() = {
       val zooKeeper = createConnection()
-      val data = new String(zooKeeper.getData(path, false, null), "UTF-8")
-      logger.debug(s"Node data was successfully got by path: $path")
-      closeConnection(zooKeeper)
-      data
+      Try {
+        new String(zooKeeper.getData(path, false, null), "UTF-8")
+      } match {
+        case Success(x) =>
+          logger.debug(s"Node data was successfully got by path: $path")
+          closeConnection(zooKeeper)
+          x
+        case Failure(e) =>
+          closeConnection(zooKeeper)
+          throw e
+      }
     }
 
     handleZookeeperRequest[String](request)
@@ -68,9 +75,16 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
 
     def request() = {
       val zooKeeper = createConnection()
-      zooKeeper.create(path, data.getBytes("UTF-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT)
-      logger.debug(s"Node was successfully created by path: $path")
-      closeConnection(zooKeeper)
+      Try {
+        zooKeeper.create(path, data.getBytes("UTF-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT)
+      } match {
+        case Success(x) =>
+          logger.debug(s"Node was successfully created by path: $path")
+          closeConnection(zooKeeper)
+        case Failure(e) =>
+          closeConnection(zooKeeper)
+          throw e
+      }
     }
 
     handleZookeeperRequest[Unit](request)
@@ -88,10 +102,17 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
 
     def request() = {
       val zooKeeper = createConnection()
-      val isExist = zooKeeper.exists(path, false) != null
-      logger.debug(s"Node is exists: $isExist")
-      closeConnection(zooKeeper)
-      isExist
+      Try {
+        zooKeeper.exists(path, false) != null
+      } match {
+        case Success(x) =>
+          logger.debug(s"Node is exists: $x")
+          closeConnection(zooKeeper)
+          x
+        case Failure(e) =>
+          closeConnection(zooKeeper)
+          throw e
+      }
     }
 
     handleZookeeperRequest[Boolean](request)
@@ -109,14 +130,21 @@ class ZooKeeperTaskCreator(settings: ZooKeeperTaskCreator.Settings) {
 
     def request() = {
       val zooKeeper = createConnection()
-      val stat: Stat = zooKeeper.exists(path, true)
-      if (stat != null) {
-        zooKeeper.delete(path, stat.getVersion)
-        logger.debug(s"Node was successfully deleted by: $path")
-      } else {
-        logger.warn(s"Node does not exist by path: $path")
+      Try {
+        val stat: Stat = zooKeeper.exists(path, true)
+        if (stat != null) {
+          zooKeeper.delete(path, stat.getVersion)
+          logger.debug(s"Node was successfully deleted by: $path")
+        } else {
+          logger.warn(s"Node does not exist by path: $path")
+        }
+      } match {
+        case Success(x) =>
+          closeConnection(zooKeeper)
+        case Failure(e) =>
+          closeConnection(zooKeeper)
+          throw e
       }
-      closeConnection(zooKeeper)
     }
     handleZookeeperRequest[Unit](request)
   }

@@ -28,6 +28,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import CloudStackEvent.Action._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
 import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.fasterxml.jackson.core.JsonParseException
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Class is responsible for handling cloudstack event.
@@ -42,7 +45,19 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   @Override
   def handleEventsFromRecords(records: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
     logger.debug(s"handleEventsFromRecords: $records")
-    records.map(jsonSerializer.deserialize[CloudStackEvent]).toSet.collect(handleEvent)
+    records.map { record =>
+      Try {
+        jsonSerializer.deserialize[CloudStackEvent](record)
+      } match {
+        case Success(x) => x
+        case Failure(e: JsonParseException) =>
+          logger.warn("Can not to parse record json, the empty CloudStackEvent will be return")
+          CloudStackEvent(None, None, None)
+        case Failure(e: Throwable) =>
+          logger.error("Exception was thrown while record was being deserialized")
+          throw e
+      }
+    }.toSet.collect(handleEvent)
   }
 
   @Override
