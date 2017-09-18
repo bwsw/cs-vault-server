@@ -1,6 +1,6 @@
 **Event processing at the level of acceptance by the ‘consumer’.** <br />
 
-If the event is deletion of virtual machine, account or creation of virtual machine, user, account then the method of controller will be executed. Otherwise, events must be ignored. <br />
+If the event with status "Completed" is deletion of virtual machine, account or creation of virtual machine, user, account then the method of controller will be executed. Otherwise, events must be ignored. <br />
 
 An exception thrown during the processing must would rerun the event processing (except in the case, if the absence of entity creation has caused the exception thrown). <br />
 
