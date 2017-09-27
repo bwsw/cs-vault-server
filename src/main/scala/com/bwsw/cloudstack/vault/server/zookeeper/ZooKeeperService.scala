@@ -18,66 +18,75 @@
 */
 package com.bwsw.cloudstack.vault.server.zookeeper
 
-import com.bwsw.cloudstack.vault.server.util.TaskRunner
-import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
-import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.retry.RetryForever
+import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
+import org.apache.zookeeper.{CreateMode, ZooDefs}
 import org.slf4j.LoggerFactory
 
 /**
   * Class is responsible for launch task which are created by ZooKeeperTaskCreator.
   *
-  * @param zooKeeperTaskCreator allows for creating task for interaction with ZooKeeper
   * @param settings contains the settings for interaction with ZooKeeper
   */
-class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
-                       settings: ZooKeeperService.Settings) {
+class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val retryDelay = settings.retryDelay
+  private val retryPolicy = new RetryForever(settings.retryDelay)
+  protected val curatorClient: CuratorFramework = CuratorFrameworkFactory.newClient(settings.host, retryPolicy)
+  initCuratorClient()
 
   /**
-    * Launches task for creating zNode in ZooKeeper server.
-    * Will restarts task if zookeeper server is unavailable.
+    * Creates zNode in ZooKeeper server.
+    * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
-    * @throws ZooKeeperCriticalException if zNode already does exist.
+    * @throws NodeExistsException if zNode already does exist.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
 
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeCreationTask(path, data), retryDelay)
+    curatorClient
+      .create()
+      .creatingParentsIfNeeded()
+      .withMode(CreateMode.PERSISTENT)
+      .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
+      .forPath(path, data.getBytes("UTF-8"))
   }
 
   /**
-    * Launches task for getting data from zNode in ZooKeeper server.
-    * Will restarts task if zookeeper server is unavailable.
+    * Gets data from zNode in ZooKeeper server.
+    * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path to zNode data
     *
     * @return String with data stored in the zNode
-    * @throws ZooKeeperCriticalException if zNode already does not exist.
     */
-  def getData(path: String): String = {
+  def getDataIfNodeExist(path: String): Option[String] = {
     logger.debug(s"getData from path: $path")
-
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createGetDataTask(path), retryDelay)
+    if (curatorClient.checkExists().forPath(path) == null) {
+      None
+    } else {
+      Some(new String(curatorClient.getData.forPath(path), "UTF-8"))
+    }
   }
 
   /**
     * Launches task for deletion data from zNode in ZooKeeper server.
-    * Restarts task if zookeeper server is unavailable.
+    * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
+    * @throws NoNodeException if node does not exist
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
 
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createNodeDeletionTask(path), retryDelay)
+    curatorClient.delete().deletingChildrenIfNeeded().forPath(path)
   }
 
   /**
     * Launches task for check zNode existing
-    * Will restarts task if zookeeper server is unavailable.
+    * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     *
@@ -86,10 +95,18 @@ class ZooKeeperService(zooKeeperTaskCreator: ZooKeeperTaskCreator,
   def isExistNode(path: String): Boolean = {
     logger.debug(s"isExistNode by path: $path")
 
-    TaskRunner.tryRunUntilSuccess(zooKeeperTaskCreator.createCheckExistNodeTask(path), retryDelay)
+    curatorClient.checkExists().forPath(path) != null
+  }
+
+  def close(): Unit = {
+    curatorClient.close()
+  }
+
+  protected def initCuratorClient(): Unit = {
+    curatorClient.start()
   }
 }
 
 object ZooKeeperService {
-  case class Settings(retryDelay: Int)
+  case class Settings(host: String, retryDelay: Int)
 }

@@ -2,133 +2,68 @@ package com.bwsw.cloudstack.vault.server.zookeeper
 
 import com.bwsw.cloudstack.vault.server.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
-import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
-import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
-import org.scalatest.FlatSpec
+import org.apache.curator.CuratorZookeeperClient
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.retry.RetryOneTime
+import org.apache.curator.test.TestingServer
+import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 /**
   * Created by medvedev_vv on 29.08.17.
   */
-class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite {
-  val expectedPath = "test/path"
+class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
+  val server = new TestingServer(true)
+  val connectString = server.getConnectString
+  val client: CuratorFramework = CuratorFrameworkFactory.newClient(connectString, new RetryOneTime(1000))
+  client.start()
+
+  val path = "/test/path"
   val expectedData = "expectedData"
-
-  //Positive tests
-  "createNodeWithData" should "create node with data" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createNodeCreationTask(path: String, data: String)(): Unit = {
-        assert(path == expectedPath, "path is wrong")
-        assert(data == expectedData, "data is wrong")
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assert(zooKeeperService.createNodeWithData(expectedPath, expectedData).isInstanceOf[Unit])
+  val zooKeeperService = new ZooKeeperService(zooKeeperServiceSettings) {
+    override protected val curatorClient: CuratorFramework = client
+    override protected def initCuratorClient(): Unit = {}
   }
 
-  "getData" should "return data from node" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createGetDataTask(path: String)(): String = {
-        assert(expectedPath == path, "path is wrong")
-        expectedData
-      }
+  "createNodeWithData" should "create node with data" in {
+    assert(zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit])
+  }
+
+  "createNodeWithData" should "should throw NodeExistException" in {
+    assertThrows[NodeExistsException] {
+      zooKeeperService.createNodeWithData(path, expectedData)
     }
+  }
 
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-    val actualData = zooKeeperService.getData(expectedPath)
+  "isExistNode" should "return true if node exist" in {
+    assert(zooKeeperService.isExistNode(path))
+  }
 
-    assert(actualData == expectedData)
+  "getDataIfNodeExist" should "get data from node" in {
+    assert(zooKeeperService.getDataIfNodeExist(path).get == expectedData)
   }
 
   "deleteNode" should "delete node" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createNodeDeletionTask(path: String)(): Unit = {
-        assert(expectedPath == path, "path is wrong")
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assert(zooKeeperService.deleteNode(expectedPath).isInstanceOf[Unit])
+    assert(zooKeeperService.deleteNode(path).isInstanceOf[Unit])
   }
 
-  "isExistNode" should "return Boolean value" in {
-    val expectedIsExist = true
-
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createCheckExistNodeTask(path: String)(): Boolean = {
-        assert(expectedPath == path, "path is wrong")
-        expectedIsExist
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assert(zooKeeperService.isExistNode(expectedPath) == expectedIsExist)
-  }
-
-  //Negative tests
-  "createNodeWithData" should "The ZooKeeperCriticalException thrown by ZooKeeperTaskCreator must not be swallowed" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createNodeCreationTask(path: String, data: String)(): Unit = {
-        assert(path == expectedPath, "path is wrong")
-        assert(data == expectedData, "data is wrong")
-        throw new ZooKeeperCriticalException(new Exception("test exception"))
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assertThrows[ZooKeeperCriticalException] {
-      zooKeeperService.createNodeWithData(expectedPath, expectedData)
+  "deleteNode" should "should throw NoNodeException" in {
+    assertThrows[NoNodeException] {
+      zooKeeperService.deleteNode(path)
     }
   }
 
-  "getData" should "The ZooKeeperCriticalException thrown by ZooKeeperTaskCreator must not be swallowed" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createGetDataTask(path: String)(): String = {
-        assert(expectedPath == path, "path is wrong")
-        throw new ZooKeeperCriticalException(new Exception("test exception"))
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assertThrows[ZooKeeperCriticalException] {
-      zooKeeperService.getData(expectedPath)
-    }
+  "getDataIfNodeExist" should "return None if node does not exist" in {
+    val actualData = zooKeeperService.getDataIfNodeExist(path)
+    assert(actualData.isEmpty)
   }
 
-  "deleteNode" should "The ZooKeeperCriticalException thrown by ZooKeeperTaskCreator must not be swallowed" in {
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createNodeDeletionTask(path: String)(): Unit = {
-        assert(expectedPath == path, "path is wrong")
-        throw new ZooKeeperCriticalException(new Exception("test exception"))
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assertThrows[ZooKeeperCriticalException] {
-      zooKeeperService.deleteNode(expectedPath)
-    }
+  "isExistNode" should "return false if node does not exist" in {
+    assert(!zooKeeperService.isExistNode(path))
   }
 
-  "isExistNode" should "The ZooKeeperCriticalException thrown by ZooKeeperTaskCreator must not be swallowed" in {
-    val expectedIsExist = true
-
-    val zooKeeperTaskCreator = new ZooKeeperTaskCreator(zooKeeperTaskCreatorSettings) {
-      override def createCheckExistNodeTask(path: String)(): Boolean = {
-        assert(expectedPath == path, "path is wrong")
-        throw new ZooKeeperCriticalException(new Exception("test exception"))
-      }
-    }
-
-    val zooKeeperService = new ZooKeeperService(zooKeeperTaskCreator, zooKeeperServiceSettings)
-
-    assertThrows[ZooKeeperCriticalException] {
-      zooKeeperService.isExistNode(expectedPath)
-    }
+  override def afterAll(): Unit = {
+    client.close()
+    server.close()
   }
 }

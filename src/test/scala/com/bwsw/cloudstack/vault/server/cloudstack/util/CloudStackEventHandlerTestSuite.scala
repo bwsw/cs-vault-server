@@ -67,8 +67,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
         assert(expectedDeletionVmId == vmId)
         actualDeletionVmId = vmId
       }
-
-      override def initializeZooKeeperNodes(): Unit = {}
     }
 
     val cloudStackEventHandler = new CloudStackEventHandler(controller)
@@ -102,7 +100,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       new MockCloudStackService,
       new MockZooKeeperService
     ){
-      override def initializeZooKeeperNodes(): Unit = {}
     }
 
     val cloudStackEventHandler = new CloudStackEventHandler(controller)

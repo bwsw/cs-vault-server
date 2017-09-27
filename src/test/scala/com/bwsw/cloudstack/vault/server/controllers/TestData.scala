@@ -3,10 +3,6 @@ package com.bwsw.cloudstack.vault.server.controllers
 import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.util.RequestPath
-import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
-import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
-import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
 
 /**
   * Created by medvedev_vv on 04.09.17.

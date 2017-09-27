@@ -54,12 +54,9 @@ object Launcher extends StrictLogging {
     ))
 
     val components = new Components(ConfigLoader.loadConfig())
-    val consumerManager = new ConsumerManager(
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList),
-      components
-    )
+    val consumerManager = new ConsumerManager(components)
     consumerManager.execute()
+    components.close()
 
     leaderLatch.foreach(_.close())
   }

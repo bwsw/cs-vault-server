@@ -19,38 +19,45 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.util.{CloudStackEventHandler, CloudStackTaskCreator}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
-import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Components {
   case class Settings(cloudStackServiceSettings: CloudStackService.Settings,
                       cloudStackTaskCreatorSettings: CloudStackTaskCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
-                      zooKeeperServiceSettings: ZooKeeperService.Settings,
-                      zooKeeperTaskCreatorSettings: ZooKeeperTaskCreator.Settings)
+                      zooKeeperServiceSettings: ZooKeeperService.Settings)
 }
 
 class Components(settings: Components.Settings) {
   //services
-  val cloudStackService = new CloudStackService(
+  lazy val cloudStackService = new CloudStackService(
     new CloudStackTaskCreator(settings.cloudStackTaskCreatorSettings),
     settings.cloudStackServiceSettings
   )
-  val vaultService = new VaultService(
+  lazy val vaultService = new VaultService(
     new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings),
     settings.vaultServiceSettings
   )
-  val zooKeeperService = new ZooKeeperService(
-    new ZooKeeperTaskCreator(settings.zooKeeperTaskCreatorSettings),
+  lazy val zooKeeperService = new ZooKeeperService(
     settings.zooKeeperServiceSettings
   )
 
   //controllers
-  val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService)
+  lazy val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService)
+
+  //handlers
+  lazy val cloudStackEventHandler = new CloudStackEventHandler(cloudStackVaultController)
+
+
+  def close(): Unit = {
+    zooKeeperService.close()
+  }
 
 }

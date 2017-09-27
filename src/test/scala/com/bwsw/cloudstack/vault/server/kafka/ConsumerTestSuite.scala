@@ -36,7 +36,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -61,7 +60,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -87,7 +85,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {

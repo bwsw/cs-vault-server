@@ -25,7 +25,6 @@ import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
-import com.bwsw.cloudstack.vault.server.zookeeper.util.ZooKeeperTaskCreator
 
 object ConfigLoader {
 
@@ -49,8 +48,7 @@ object ConfigLoader {
       CloudStackTaskCreator.Settings(cloudStackUrlList, cloudStackSecretKey, cloudStackApiKey),
       VaultService.Settings(vaultTokenPeriod, vaultRetryDelay),
       VaultRestRequestCreator.Settings(vaultUrl, vaultRootToken),
-      ZooKeeperService.Settings(zooKeeperRetryDelay),
-      ZooKeeperTaskCreator.Settings(zooKeeperUrl)
+      ZooKeeperService.Settings(zooKeeperUrl, zooKeeperRetryDelay)
     )
   }
 }
