@@ -20,30 +20,36 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
 
   val path = "/test/path"
   val expectedData = "expectedData"
-  val zooKeeperService = new ZooKeeperService(zooKeeperServiceSettings) {
-    override protected val curatorClient: CuratorFramework = client
-    override protected def initCuratorClient(): Unit = {}
+  val zooKeeperService = new ZooKeeperService(zooKeeperServiceSettings.copy(connectString)) {
   }
 
   "createNodeWithData" should "create node with data" in {
     assert(zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit])
+    zooKeeperService.deleteNode(path)
   }
 
   "createNodeWithData" should "should throw NodeExistException" in {
+    zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit]
     assertThrows[NodeExistsException] {
       zooKeeperService.createNodeWithData(path, expectedData)
     }
+    zooKeeperService.deleteNode(path)
   }
 
   "isExistNode" should "return true if node exist" in {
-    assert(zooKeeperService.isExistNode(path))
+    zooKeeperService.createNodeWithData(path, expectedData)
+    assert(zooKeeperService.doesNodeExist(path))
+    zooKeeperService.deleteNode(path)
   }
 
   "getDataIfNodeExist" should "get data from node" in {
-    assert(zooKeeperService.getDataIfNodeExist(path).get == expectedData)
+    zooKeeperService.createNodeWithData(path, expectedData)
+    assert(zooKeeperService.getNodeData(path).get == expectedData)
+    zooKeeperService.deleteNode(path)
   }
 
   "deleteNode" should "delete node" in {
+    zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.deleteNode(path).isInstanceOf[Unit])
   }
 
@@ -54,12 +60,12 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
   }
 
   "getDataIfNodeExist" should "return None if node does not exist" in {
-    val actualData = zooKeeperService.getDataIfNodeExist(path)
+    val actualData = zooKeeperService.getNodeData(path)
     assert(actualData.isEmpty)
   }
 
   "isExistNode" should "return false if node does not exist" in {
-    assert(!zooKeeperService.isExistNode(path))
+    assert(!zooKeeperService.doesNodeExist(path))
   }
 
   override def afterAll(): Unit = {

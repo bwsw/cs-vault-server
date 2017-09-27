@@ -60,10 +60,11 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path to zNode data
     *
-    * @return String with data stored in the zNode
+    * @return String with data stored in the zNode if zNode exist
+    *         None if zNode does not exist
     */
-  def getDataIfNodeExist(path: String): Option[String] = {
-    logger.debug(s"getData from path: $path")
+  def getNodeData(path: String): Option[String] = {
+    logger.debug(s"getNodeData from path: $path")
     if (curatorClient.checkExists().forPath(path) == null) {
       None
     } else {
@@ -92,8 +93,8 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @return boolean flag on the existence zNode
     */
-  def isExistNode(path: String): Boolean = {
-    logger.debug(s"isExistNode by path: $path")
+  def doesNodeExist(path: String): Boolean = {
+    logger.debug(s"doesNodeExist by path: $path")
 
     curatorClient.checkExists().forPath(path) != null
   }

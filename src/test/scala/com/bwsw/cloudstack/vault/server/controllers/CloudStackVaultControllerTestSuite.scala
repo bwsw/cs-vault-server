@@ -287,7 +287,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val zooKeeperService = new MockZooKeeperService {
-      override def isExistNode(path: String): Boolean = {
+      override def doesNodeExist(path: String): Boolean = {
         checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
         true
       }
@@ -492,7 +492,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val zooKeeperService = new MockZooKeeperService {
-      override def isExistNode(path: String): Boolean = {
+      override def doesNodeExist(path: String): Boolean = {
         checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
         true
       }
@@ -692,7 +692,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   private def getZooKeeperServiceForTestGetTokenFromZooKeeperNode(readTokenNodePath: String, writeTokenNodePath: String) = {
     val zooKeeperService = new MockZooKeeperService {
-      override def getDataIfNodeExist(path: String): Option[String] = {
+      override def getNodeData(path: String): Option[String] = {
         path match {
           case x if x == readTokenNodePath =>
             checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
@@ -730,7 +730,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val zooKeeperService = new MockZooKeeperService {
-      override def getDataIfNodeExist(path: String): Option[String] = {
+      override def getNodeData(path: String): Option[String] = {
         path match {
           case x if x == readTokenPath =>
             checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
@@ -757,7 +757,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   private def getServicesForTestDeletionEventIfZNodeNotExist(entityPath: String, defaultPath: String) = {
     val zooKeeperService = new MockZooKeeperService {
-      override def isExistNode(path: String): Boolean = {
+      override def doesNodeExist(path: String): Boolean = {
         assert(path == entityPath, "path is wrong")
         checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
         false
@@ -777,7 +777,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
                                                           testSecretPathFromToken: String)
   :(VaultService, ZooKeeperService) = {
     val zooKeeperService = new MockZooKeeperService {
-      override def isExistNode(path: String): Boolean = {
+      override def doesNodeExist(path: String): Boolean = {
         checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
         true
       }
@@ -786,7 +786,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         checkedDeletionNodePaths = checkedDeletionNodePaths ::: path :: Nil
       }
 
-      override def getDataIfNodeExist(path: String): Option[String] = {
+      override def getNodeData(path: String): Option[String] = {
         path match {
           case x if x == tokenReadPath =>
             checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
@@ -832,7 +832,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val zooKeeperService = new MockZooKeeperService {
-      override def getDataIfNodeExist(path: String): Option[String] = {
+      override def getNodeData(path: String): Option[String] = {
         checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
         None
       }

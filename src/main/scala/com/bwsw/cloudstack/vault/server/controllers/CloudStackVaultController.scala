@@ -53,7 +53,7 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleAccountDelete(accountId: UUID): Unit = {
     logger.debug(s"handleAccountDelete(accountId: $accountId)")
     val defaultSecretPath = s"${RequestPath.accountSecret}$accountId"
-    deleteTokenAndAssociatedData(accountId, accountEntityName, defaultSecretPath)
+    deleteTokenAndAppropriateSecret(accountId, accountEntityName, defaultSecretPath)
     logger.info(s"Account deletion was processed, accountId: $accountId)")
   }
 
@@ -66,7 +66,7 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleVmDelete(vmId: UUID): Unit = {
     logger.debug(s"handleVmDelete(vmId: $vmId)")
     val defaultSecretPath = s"${RequestPath.vmSecret}$vmId"
-    deleteTokenAndAssociatedData(vmId, vmEntityName, defaultSecretPath)
+    deleteTokenAndAppropriateSecret(vmId, vmEntityName, defaultSecretPath)
     logger.info(s"Vm deletion was processed, vmId: $vmId)")
   }
 
@@ -148,8 +148,8 @@ class CloudStackVaultController(vaultService: VaultService,
     )
 
     val tokenTagList = policyList.map { x =>
-      val pathToData = getPathToZookeeperNodeWithToken(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
-      zooKeeperService.getDataIfNodeExist(pathToData) match {
+      val pathToData = createTokenEntityNodePath(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
+      zooKeeperService.getNodeData(pathToData) match {
         case Some(token) =>
           Tag.createTag(getTagKeyByPolicyACL(x.acl), token)
         case None =>
@@ -182,8 +182,8 @@ class CloudStackVaultController(vaultService: VaultService,
     import Tag.Key
 
     val newTags = absentTagKeyList.map { x =>
-      val pathToToken = getPathToZookeeperNodeWithToken(accountId.toString, accountEntityName, x)
-      zooKeeperService.getDataIfNodeExist(pathToToken) match {
+      val pathToToken = createTokenEntityNodePath(accountId.toString, accountEntityName, x)
+      zooKeeperService.getNodeData(pathToToken) match {
         case Some(token) =>
           Tag.createTag(x, token)
         case None =>
@@ -204,19 +204,19 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Revokes token and deletes secret in Vault
+    * Revokes token and deletes secret in Vault, and remove entity node from ZooKeeper
     */
-  private def deleteTokenAndAssociatedData(entityId: UUID, entityName: String, defaultSecretPath: String): Unit = {
-    logger.debug(s"deleteTokenAndAssociatedData(entityId: $entityId, entityName: $entityName)")
+  private def deleteTokenAndAppropriateSecret(entityId: UUID, entityName: String, defaultSecretPath: String): Unit = {
+    logger.debug(s"deleteTokenAndAppropriateSecret(entityId: $entityId, entityName: $entityName)")
     var secretPath = defaultSecretPath
-    val pathToEntityNode = getPathToZookeeperEntityNode(entityId.toString, entityName)
+    val pathToEntityNode = createEntityNodePath(entityId.toString, entityName)
 
-    if (zooKeeperService.isExistNode(pathToEntityNode)) {
+    if (zooKeeperService.doesNodeExist(pathToEntityNode)) {
       val pathsToTokenData = List(Tag.Key.VaultRO, Tag.Key.VaultRW).map { x =>
-        getPathToZookeeperNodeWithToken(entityId.toString, entityName, x)
+        createTokenEntityNodePath(entityId.toString, entityName, x)
       }
       pathsToTokenData.foreach { path =>
-        zooKeeperService.getDataIfNodeExist(path) match {
+        zooKeeperService.getNodeData(path) match {
           case Some(token) =>
             secretPath = vaultService.revokeToken(UUID.fromString(token))
           case None =>
@@ -228,10 +228,10 @@ class CloudStackVaultController(vaultService: VaultService,
     vaultService.deleteSecret(secretPath)
   }
 
-  private def getPathToZookeeperNodeWithToken(entityId: String, entityName: String, tagKey: Tag.Key) =
-    s"${getPathToZookeeperEntityNode(entityId, entityName)}/${Tag.Key.toString(tagKey)}"
+  private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: Tag.Key) =
+    s"${createEntityNodePath(entityId, entityName)}/${Tag.Key.toString(tagKey)}"
 
-  private def getPathToZookeeperEntityNode(entityId: String, entityName: String) =
+  private def createEntityNodePath(entityId: String, entityName: String) =
     s"${RequestPath.zooKeeperRootNode}/$entityName/$entityId"
 
   private def writeTokenToZooKeeperNode(path: String, token: UUID) = {
