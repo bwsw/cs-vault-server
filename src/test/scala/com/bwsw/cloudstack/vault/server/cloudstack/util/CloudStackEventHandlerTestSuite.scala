@@ -4,6 +4,7 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import org.scalatest.FlatSpec
@@ -107,4 +108,35 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     assert(cloudStackEventHandler.handleEventsFromRecords(records).isEmpty)
   }
 
+  "restartEvent" should "handle event" in {
+    val expectedUserId = userId
+
+    val event = CloudStackEvent(
+      Some(CloudStackEvent.Status.Completed),
+      Some(CloudStackEvent.Action.UserCreate),
+      Some(expectedUserId)
+    )
+
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService
+    ){
+      override def handleUserCreate(userId: UUID): Unit = {
+        assert(userId == expectedUserId)
+      }
+
+      override def initializeZooKeeperNodes(): Unit = {}
+    }
+
+    val cloudStackEventHandler = new CloudStackEventHandler(controller)
+
+    val resultFuture = cloudStackEventHandler.restartEvent(event) match {
+      case (future, successHandleEvent) =>
+        assert(successHandleEvent == event, "event is wrong")
+        future
+    }
+
+    resultFuture.onComplete(x => assert(x.isSuccess))
+  }
 }
