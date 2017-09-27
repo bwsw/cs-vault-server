@@ -108,4 +108,31 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     assert(consumer.process().isInstanceOf[Unit])
   }
 
+  "process" should "does not swallowed non-CriticalException" in {
+    val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
+
+    mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))
+    val beginningOffsets: util.Map[TopicPartition, java.lang.Long] = new util.HashMap()
+    beginningOffsets.put(new TopicPartition(topic, 0), Long2long(0L))
+    mockConsumer.updateBeginningOffsets(beginningOffsets)
+    mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
+
+    val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
+      override def initializeZooKeeperNodes(): Unit = {}
+    }
+    val cloudStackEventHandler = new CloudStackEventHandler(controller){
+      override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+        assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
+        Set((Future(throw new Exception), expectedEvent))
+      }
+    }
+
+    val consumer = new Consumer[CloudStackEvent]("127.0.0.2:9000", topic, "groupId", 10000, cloudStackEventHandler){
+      override protected val consumer = mockConsumer
+    }
+
+    assertThrows[Exception]{
+      consumer.process()
+    }
+  }
 }

@@ -74,16 +74,6 @@ object CloudStackEvent {
       case "ACCOUNT.DELETE" => Action.AccountDelete
       case _                => Action.Other
     }
-
-    def toString(x: Action): String = x match {
-      case Action.VMCreate       => "VM.CREATE"
-      case Action.VMDelete       => "VM.DESTROY"
-      case Action.UserCreate     => "USER.CREATE"
-      case Action.UserDelete     => "USER.DELETE"
-      case Action.AccountCreate  => "ACCOUNT.CREATE"
-      case Action.AccountDelete  => "ACCOUNT.DELETE"
-      case Action.Other          => ""
-    }
   }
 
   @JsonDeserialize(using = classOf[StatusDeserializer])
@@ -102,11 +92,6 @@ object CloudStackEvent {
     def fromString(statusSting: String): Status = statusSting match {
       case "Completed"      => Status.Completed
       case _                => Status.Other
-    }
-
-    def toString(x: Status): String = x match {
-      case Status.Completed     => "Completed"
-      case Status.Other         => ""
     }
   }
 
