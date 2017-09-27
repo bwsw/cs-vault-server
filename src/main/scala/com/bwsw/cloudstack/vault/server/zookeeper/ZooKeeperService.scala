@@ -18,11 +18,14 @@
 */
 package com.bwsw.cloudstack.vault.server.zookeeper
 
+import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.RetryForever
 import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
 import org.apache.zookeeper.{CreateMode, ZooDefs}
 import org.slf4j.LoggerFactory
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Class is responsible for launch task which are created by ZooKeeperTaskCreator.
@@ -41,17 +44,24 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
-    * @throws NodeExistsException if zNode already does exist.
+    * @throws ZooKeeperCriticalException if zNode already does exist.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
 
-    curatorClient
-      .create()
-      .creatingParentsIfNeeded()
-      .withMode(CreateMode.PERSISTENT)
-      .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
-      .forPath(path, data.getBytes("UTF-8"))
+    Try {
+      curatorClient
+        .create()
+        .creatingParentsIfNeeded()
+        .withMode(CreateMode.PERSISTENT)
+        .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
+        .forPath(path, data.getBytes("UTF-8"))
+    } match {
+      case Success(x) =>
+      case Failure(e: Throwable) =>
+        throw new ZooKeeperCriticalException(e)
+    }
+
   }
 
   /**
@@ -77,12 +87,19 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
-    * @throws NoNodeException if node does not exist
+    * @throws ZooKeeperCriticalException if node does not exist
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
 
-    curatorClient.delete().deletingChildrenIfNeeded().forPath(path)
+    Try {
+      curatorClient.delete().deletingChildrenIfNeeded().forPath(path)
+    } match {
+      case Success(x) =>
+      case Failure(e: Throwable) =>
+        throw new ZooKeeperCriticalException(e)
+    }
+
   }
 
   /**

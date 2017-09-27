@@ -20,7 +20,7 @@ package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.common.{ConfigLoader, LeaderLatch}
 import com.bwsw.cloudstack.vault.server.kafka.ConsumerManager
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, RequestPath}
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, DataPath}
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.{Failure, Success, Try}
@@ -63,7 +63,7 @@ object Launcher extends StrictLogging {
 
   protected def createLeaderLatch(zookeeperServer: String, nodeId: String = ""): LeaderLatch = {
     logger.debug(s"createLeaderLatch(zookeeperServer: $zookeeperServer)")
-    val leader = new LeaderLatch(zookeeperServer, RequestPath.masterLatchNode, nodeId)
+    val leader = new LeaderLatch(zookeeperServer, DataPath.masterLatchNode, nodeId)
     leader.start()
     leader.acquireLeadership(1000)
 

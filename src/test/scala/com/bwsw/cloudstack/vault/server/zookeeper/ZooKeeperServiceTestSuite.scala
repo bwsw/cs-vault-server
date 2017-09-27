@@ -2,21 +2,16 @@ package com.bwsw.cloudstack.vault.server.zookeeper
 
 import com.bwsw.cloudstack.vault.server.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
-import org.apache.curator.CuratorZookeeperClient
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
-import org.apache.curator.retry.RetryOneTime
+import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
 import org.apache.curator.test.TestingServer
-import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 /**
   * Created by medvedev_vv on 29.08.17.
   */
 class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
-  val server = new TestingServer(true)
+  val server = new TestingServer(9000, true)
   val connectString = server.getConnectString
-  val client: CuratorFramework = CuratorFrameworkFactory.newClient(connectString, new RetryOneTime(1000))
-  client.start()
 
   val path = "/test/path"
   val expectedData = "expectedData"
@@ -28,9 +23,9 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     zooKeeperService.deleteNode(path)
   }
 
-  "createNodeWithData" should "should throw NodeExistException" in {
+  "createNodeWithData" should "should throw ZooKeeperCriticalException" in {
     zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit]
-    assertThrows[NodeExistsException] {
+    assertThrows[ZooKeeperCriticalException] {
       zooKeeperService.createNodeWithData(path, expectedData)
     }
     zooKeeperService.deleteNode(path)
@@ -53,8 +48,8 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     assert(zooKeeperService.deleteNode(path).isInstanceOf[Unit])
   }
 
-  "deleteNode" should "should throw NoNodeException" in {
-    assertThrows[NoNodeException] {
+  "deleteNode" should "should throw ZooKeeperCriticalException" in {
+    assertThrows[ZooKeeperCriticalException] {
       zooKeeperService.deleteNode(path)
     }
   }
@@ -69,7 +64,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
   }
 
   override def afterAll(): Unit = {
-    client.close()
+    zooKeeperService.close()
     server.close()
   }
 }

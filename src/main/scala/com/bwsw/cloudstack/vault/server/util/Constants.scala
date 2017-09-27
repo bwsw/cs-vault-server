@@ -55,8 +55,12 @@ object RequestPath {
   val vaultTokenCreate     = "/v1/auth/token/create"
   val vaultTokenLookup     = "/v1/auth/token/lookup"
   val vaultPolicy          = "/v1/sys/policy"
-  val vaultSecret          = "/v1/secret"
+  val vaultSecretVm        = "/v1/secret/cs/vms/"
+  val vaultSecretAccount   = "/v1/secret/cs/accounts/"
   val vaultTokenRevoke     = "/v1/auth/token/revoke"
+}
+
+object DataPath {
   val vmSecret             = "secret/cs/vms/"
   val accountSecret        = "secret/cs/accounts/"
   val zooKeeperRootNode    = "/cs_vault_server"

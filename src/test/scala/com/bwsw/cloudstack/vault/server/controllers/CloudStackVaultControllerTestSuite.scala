@@ -43,8 +43,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString)
   )
 
-  "handleAccountDelete" should "get token from Zookeeper node, revoke it and delete secret by path in token information" in {
-    val testSecretPathFromToken = getTestPathToAccountSecretFromToken(accountId)
+  "handleAccountDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {
+    val testSecretPath = getDefaultAccountSecretPath(accountId)
 
     //exists data
     val tokensForCheck = List(readToken, writeToken)
@@ -56,10 +56,11 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     checkedDeletionNodePaths = List.empty[String]
     checkedRevokedTokens = List.empty[UUID]
 
-    val services = getServicesForTestDeletionEventIfZNodeExist(
+    val services = getServicesForTestDeletionEvent(
       readAccountTokenNodePath,
       writeAccountTokenNodePath,
-      testSecretPathFromToken
+      testSecretPath,
+      expectedAccountReadPolicy.name
     )
 
     val cloudStackVaultController = services match {
@@ -78,7 +79,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathForCheckDeletionNode == checkedDeletionNodePaths, "checkedDeletionNodePaths is wrong")
   }
 
-  "handleAccountDelete" should "delete secret by default path" in {
+
+  "handleAccountDelete" should "delete secret by default path if node with token does not exist" in {
     val defaultPath = getDefaultAccountSecretPath(accountId)
 
     //exists data
@@ -104,7 +106,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
   "handleVmDelete" should "get token from Zookeeper node, revoke it and delete secret by path in token information" in {
-    val testSecretPathFromToken = getTestPathToVmSecretFromToken(vmId)
+    val testSecretPath = getDefaultVmSecretPath(vmId)
 
     //exists data
     val tokensForCheck = List(readToken, writeToken)
@@ -116,10 +118,11 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     checkedDeletionNodePaths = List.empty[String]
     checkedRevokedTokens = List.empty[UUID]
 
-    val services = getServicesForTestDeletionEventIfZNodeExist(
+    val services = getServicesForTestDeletionEvent(
       readVmTokenNodePath,
       writeVmTokenNodePath,
-      testSecretPathFromToken
+      testSecretPath,
+      expectedVmReadPolicy.name
     )
 
     val cloudStackVaultController = services match {
@@ -138,7 +141,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathForCheckDeletionNode == checkedDeletionNodePaths, "checkedDeletionNodePaths is wrong")
   }
 
-  "handleVmDelete" should "delete secret by default path" in {
+  "handleVmDelete" should "delete secret by default path if node with token does not exist" in {
     val defaultPath = getDefaultVmSecretPath(vmId)
 
     //exists data
@@ -690,6 +693,24 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(revokedTokenList == checkedRevokedTokens)
   }
 
+  "createMissingAccountTokenTags" should "trow IllegalArgumentException if tag key does not in (VaultRO, VaultRW)" in {
+    val otherTagKey = Tag.Key.Other
+    val createMissingAccountTokenTags = PrivateMethod[List[Tag]]('createMissingAccountTokenTags)
+
+    val cloudStackVaultController = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService {
+        override def getNodeData(path: String): Option[String] = {
+          None
+        }
+      }
+    )
+    assertThrows[IllegalArgumentException](
+      cloudStackVaultController invokePrivate createMissingAccountTokenTags(accountId, List(otherTagKey))
+    )
+  }
+
   private def getZooKeeperServiceForTestGetTokenFromZooKeeperNode(readTokenNodePath: String, writeTokenNodePath: String) = {
     val zooKeeperService = new MockZooKeeperService {
       override def getNodeData(path: String): Option[String] = {
@@ -714,7 +735,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
                                                                      exeptedPolicy: Policy,
                                                                      expectedToken: UUID) = {
     val vaultService = new MockVaultService {
-      override def createToken(policies: List[Policy])(): UUID = {
+      override def createToken(policies: List[Policy]): UUID = {
         if (policies == List(exeptedPolicy)){
           readToken
         } else {
@@ -722,10 +743,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         }
       }
 
-      override def revokeToken(tokenId: UUID)(): String = {
+      override def revokeToken(tokenId: UUID): List[String] = {
         assert(tokenId == expectedToken)
         checkedRevokedTokens = checkedRevokedTokens ::: tokenId :: Nil
-        ""
+        List(exeptedPolicy.name)
       }
     }
 
@@ -772,9 +793,47 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     (vaultService, zooKeeperService)
   }
 
-  private def getServicesForTestDeletionEventIfZNodeExist(tokenReadPath: String,
-                                                          tokenWritePath: String,
-                                                          testSecretPathFromToken: String)
+  private def getServicesForTestEntityCreationIfTokensDoesNotExist(expectedReadPolicy: Policy,
+                                                                   expectedWritePolicy: Policy,
+                                                                   readTokenNodePath: String,
+                                                                   writeTokenNodePath: String) = {
+    val vaultService = new MockVaultService {
+      override def createToken(policies: List[Policy]): UUID = {
+        if (policies == List(expectedReadPolicy)){
+          readToken
+        } else if (policies == List(expectedWritePolicy)) {
+          writeToken
+        } else {
+          UUID.randomUUID()
+        }
+      }
+    }
+
+    val zooKeeperService = new MockZooKeeperService {
+      override def getNodeData(path: String): Option[String] = {
+        checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
+        None
+      }
+
+      override def createNodeWithData(path: String, data: String): Unit = path match {
+        case x if x == readTokenNodePath =>
+          assert(data == readToken.toString, "read token is wrong")
+          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+        case x if x == writeTokenNodePath =>
+          assert(data == writeToken.toString, "write token is wrong")
+          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+        case _ =>
+          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+      }
+    }
+
+    (vaultService, zooKeeperService)
+  }
+
+  private def getServicesForTestDeletionEvent(tokenReadPath: String,
+                                              tokenWritePath: String,
+                                              defaultPath: String,
+                                              tokenPolicyName: String)
   :(VaultService, ZooKeeperService) = {
     val zooKeeperService = new MockZooKeeperService {
       override def doesNodeExist(path: String): Boolean = {
@@ -802,50 +861,17 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val vaultService = new MockVaultService {
-      override def revokeToken(tokenId: UUID)(): String = {
+      override def revokeToken(tokenId: UUID): List[String] = {
         checkedRevokedTokens = checkedRevokedTokens ::: tokenId :: Nil
-        testSecretPathFromToken
+        List(tokenPolicyName)
       }
 
       override def deleteSecret(pathToSecret: String): Unit = {
-        assert(pathToSecret == testSecretPathFromToken, "pathToSecret is wrong")
-      }
-    }
-
-    (vaultService, zooKeeperService)
-  }
-
-  private def getServicesForTestEntityCreationIfTokensDoesNotExist(expectedReadPolicy: Policy,
-                                                                   expectedWritePolicy: Policy,
-                                                                   readTokenNodePath: String,
-                                                                   writeTokenNodePath: String) = {
-    val vaultService = new MockVaultService {
-      override def createToken(policies: List[Policy])(): UUID = {
-        if (policies == List(expectedReadPolicy)){
-          readToken
-        } else if (policies == List(expectedWritePolicy)) {
-          writeToken
-        } else {
-          UUID.randomUUID()
-        }
-      }
-    }
-
-    val zooKeeperService = new MockZooKeeperService {
-      override def getNodeData(path: String): Option[String] = {
-        checkedIsExistNodePaths = checkedIsExistNodePaths ::: path :: Nil
-        None
+        assert(pathToSecret == defaultPath, "pathToSecret is wrong")
       }
 
-      override def createNodeWithData(path: String, data: String): Unit = path match {
-        case x if x == readTokenNodePath =>
-          assert(data == readToken.toString, "read token is wrong")
-          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
-        case x if x == writeTokenNodePath =>
-          assert(data == writeToken.toString, "write token is wrong")
-          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
-        case _ =>
-          checkedCreationNodePaths = checkedCreationNodePaths ::: path :: Nil
+      override def deletePolicy(policyName: String): Unit = {
+        assert(policyName == tokenPolicyName, "policy name is wrong")
       }
     }
 

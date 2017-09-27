@@ -125,7 +125,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     */
   def createDeleteSecretRequest(pathToSecret: String):() => String = {
     createRequest(
-      createRest(s"${RequestPath.vaultSecret}/$pathToSecret", "").delete,
+      createRest(s"$pathToSecret", "").delete,
       HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
       "delete secret"
     )

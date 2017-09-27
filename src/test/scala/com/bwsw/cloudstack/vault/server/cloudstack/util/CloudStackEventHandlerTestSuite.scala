@@ -79,11 +79,15 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     singleFuture.onComplete(x => assert(x.isSuccess))
 
-    assert(actualCreationAccountId == expectedCreationAccountId)
-    assert(actualCreationUserId == expectedCreationUserId)
-    assert(actualCreationVmId == expectedCreationVmId)
-    assert(actualDeletionAccountId == actualDeletionAccountId)
-    assert(actualDeletionVmId == actualDeletionVmId)
+    for {
+      x <- singleFuture
+    } yield {
+      assert(actualCreationAccountId == expectedCreationAccountId)
+      assert(actualCreationUserId == expectedCreationUserId)
+      assert(actualCreationVmId == expectedCreationVmId)
+      assert(actualDeletionAccountId == actualDeletionAccountId)
+      assert(actualDeletionVmId == actualDeletionVmId)
+    }
   }
 
   "handleEventsFromRecords" should "not handle invalid records" in {
@@ -125,8 +129,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       override def handleUserCreate(userId: UUID): Unit = {
         assert(userId == expectedUserId)
       }
-
-      override def initializeZooKeeperNodes(): Unit = {}
     }
 
     val cloudStackEventHandler = new CloudStackEventHandler(controller)

@@ -14,9 +14,9 @@ class MockVaultService extends VaultService (
   new VaultRestRequestCreator(MockConfig.vaultRestRequestCreatorSettings),
   MockConfig.vaultServiceSettings
 ){
-  override def createToken(policies: List[Policy])(): UUID = throw new NotImplementedError("createToken not implemented")
+  override def createToken(policies: List[Policy]): UUID = throw new NotImplementedError("createToken not implemented")
 
-  override def revokeToken(tokenId: UUID)(): String = throw new NotImplementedError("revokeToken not implemented")
+  override def revokeToken(tokenId: UUID): List[String] = throw new NotImplementedError("revokeToken not implemented")
 
   override def deleteSecret(pathToSecret: String): Unit = throw new NotImplementedError("deleteSecret not implemented")
 }

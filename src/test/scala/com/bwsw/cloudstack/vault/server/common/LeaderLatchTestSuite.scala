@@ -15,7 +15,7 @@ import scala.concurrent.{Await, Future}
 
 class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  val server = new TestingServer(true)
+  val server = new TestingServer(9001, true)
   val connectString = server.getConnectString
   val client = new CuratorZookeeperClient(connectString, 5000, 5000, null, new RetryOneTime(1000))
   client.start()
@@ -25,11 +25,11 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
   val timeLimitPerTest = 4.second
   val halfTimeLimitPerTest = timeLimitPerTest.toMillis / 2
   val updatingTimeout = timeLimitPerTest.toMillis / 10
-
+/*
   override def withFixture(test: NoArgTest): Outcome = {
     // TimeLimitedTest does not work in some cases (e.g. infinite loop)
     Await.result(Future(super.withFixture(test)), timeLimitPerTest)
-  }
+  }*/
 
 
   "LeaderLatch" should "create master node on ZK server" in {
@@ -38,9 +38,10 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
 
     zooKeeper.exists(masterNode, false) shouldBe null
 
-    new LeaderLatch(connectString, masterNode, leaderLatchId)
+    val leaderLatch = new LeaderLatch(connectString, masterNode, leaderLatchId)
 
     zooKeeper.exists(masterNode, false) should not be null
+    leaderLatch.close()
   }
 
   it should "not be a leader if it hasn't been started" in {
@@ -49,6 +50,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     val leaderLatch = new LeaderLatch(connectString, masterNode, leaderLatchId)
 
     leaderLatch.hasLeadership() shouldBe false
+    leaderLatch.close()
   }
 
   it should "acquire leadership if there is only one participant of the master node" in {
@@ -66,6 +68,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     nodeInfo.children.size shouldBe 1
     nodeInfo.children.head.data shouldBe leaderLatchId
     leaderLatch.hasLeadership() shouldBe true
+    leaderLatch.close()
   }
 
   it should "not acquire leadership if it hasn't been started" in {
@@ -79,6 +82,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Thread.sleep(halfTimeLimitPerTest)
 
     future.isCompleted shouldBe false
+    leaderLatch.close()
   }
 
   it should "return its ID if it acquires leadership" in {
@@ -91,6 +95,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.acquireLeadership(delay)
 
     leaderLatch.getLeaderInfo() shouldBe leaderLatchId
+    leaderLatch.close()
   }
 
   it should "delete its node from a server after closing" in {
@@ -126,10 +131,73 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Thread.sleep(halfTimeLimitPerTest)
 
     future.isCompleted shouldBe false
+    leaderLatches.foreach(_._2.close())
+  }
+
+  "LeaderLatch instances" should "return leader ID if it hasn't been started" in {
+    val masterNode = newMasterNode
+    val delay = 10
+    val leaderLatchCount = 3
+    val leaderLatchIds = Seq.fill(leaderLatchCount)(UUID.randomUUID().toString)
+
+    val leaderLatches = leaderLatchIds.map(id => new LeaderLatch(connectString, masterNode, id))
+    leaderLatches.head.start()
+    leaderLatches.head.acquireLeadership(delay)
+
+    leaderLatches.foreach { leaderLatch =>
+      leaderLatch.getLeaderInfo() shouldBe leaderLatchIds.head
+    }
+    leaderLatches.foreach(_.close())
+  }
+
+  it should "return the same leader ID" in {
+    val masterNode = newMasterNode
+    val leaderLatchCount = 3
+    val leaderLatchIds = Seq.fill(leaderLatchCount)(UUID.randomUUID().toString)
+
+    val leaderLatches = leaderLatchIds.map(id => new LeaderLatch(connectString, masterNode, id))
+    leaderLatches.foreach(_.start())
+
+    Thread.sleep(updatingTimeout)
+
+    val leaderIdSet = leaderLatches.map(_.getLeaderInfo()).toSet
+    leaderIdSet.size shouldBe 1
+    leaderIdSet.foreach { leaderId =>
+      leaderLatchIds should contain(leaderId)
+    }
+    leaderLatches.foreach(_.close())
+  }
+
+  it should "select a new leader if current leader has been stopped" in {
+    val masterNode = newMasterNode
+    val delay = 10
+    val leaderLatchCount = 3
+    val leaderLatchIds = Seq.fill(leaderLatchCount)(UUID.randomUUID().toString)
+    val leaderLatches = leaderLatchIds.map(id => id -> new LeaderLatch(connectString, masterNode, id)).toMap
+    leaderLatches.values.head.start()
+    leaderLatches.values.head.acquireLeadership(delay)
+
+    leaderLatches.values.tail.foreach(_.start())
+
+    val oldLeaderId = leaderLatches.values.head.getLeaderInfo()
+    leaderLatches(oldLeaderId).close()
+
+    Thread.sleep(updatingTimeout)
+
+    val leaderLatchesWithoutOldLeader = leaderLatches - oldLeaderId
+    val newLeaderId = leaderLatchesWithoutOldLeader.values.head.getLeaderInfo()
+
+    newLeaderId should not be oldLeaderId
+    leaderLatchIds should contain(newLeaderId)
+    leaderLatchesWithoutOldLeader.values.foreach { leaderLatch =>
+      leaderLatch.getLeaderInfo() shouldBe newLeaderId
+    }
+    leaderLatches.filterNot(_._1 == oldLeaderId).foreach(_._2.close())
   }
 
   override def afterAll(): Unit = {
     client.close()
+    server.close()
   }
 
 
