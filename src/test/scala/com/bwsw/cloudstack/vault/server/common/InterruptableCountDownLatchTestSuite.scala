@@ -8,10 +8,10 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class InterruptableCountDawnLatchTestSuite extends FlatSpec with Matchers {
+class InterruptableCountDownLatchTestSuite extends FlatSpec with Matchers {
 
-  "await" should "successull" in {
-    val interruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(1))
+  "await" should "successful" in {
+    val interruptableCountDawnLatch = new InterruptableCountDownLatch(new CountDownLatch(1))
 
     Future {
       Thread.sleep(1000)
@@ -22,7 +22,7 @@ class InterruptableCountDawnLatchTestSuite extends FlatSpec with Matchers {
   }
 
   "await" should "thrown AbortedException" in {
-    val interruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(1))
+    val interruptableCountDawnLatch = new InterruptableCountDownLatch(new CountDownLatch(1))
 
     Future {
       Thread.sleep(1000)

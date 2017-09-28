@@ -22,7 +22,7 @@ import java.util.concurrent.CountDownLatch
 
 import com.bwsw.cloudstack.vault.server.util.exception.AbortedException
 
-class InterruptableCountDawnLatch(private val latch: CountDownLatch) {
+class InterruptableCountDownLatch(private val latch: CountDownLatch) {
     private var aborted: Boolean = false
 
     def await(): Unit = {
