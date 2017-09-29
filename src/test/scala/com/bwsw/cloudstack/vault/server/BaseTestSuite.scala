@@ -8,9 +8,9 @@ import com.bwsw.cloudstack.vault.server.common.{ConfigLoader, JsonSerializer}
 trait BaseTestSuite {
   val jsonSerializer = new JsonSerializer(true)
   val settings = Components.Settings(MockConfig.cloudStackServiceSettings,
-                                     MockConfig.cloudStackTaskCreatorSettings,
-                                     MockConfig.vaultServiceSettings,
-                                     MockConfig.vaultRestRequestCreatorSettings,
-                                     MockConfig.zooKeeperServiceSettings,
-                                     MockConfig.zooKeeperTaskCreatorSettings)
+    MockConfig.cloudStackTaskCreatorSettings,
+    MockConfig.vaultServiceSettings,
+    MockConfig.vaultRestRequestCreatorSettings,
+    MockConfig.zooKeeperServiceSettings,
+    MockConfig.zooKeeperTaskCreatorSettings)
 }

@@ -18,6 +18,26 @@
 */
 package com.bwsw.cloudstack.vault.server.common
 
-object Converter {
-  def daysToSeconds(dayCount: Int): Int = dayCount*24*60*60
+import java.util.concurrent.CountDownLatch
+
+import com.bwsw.cloudstack.vault.server.util.exception.AbortedException
+
+class InterruptableCountDownLatch(private val latch: CountDownLatch) {
+    private var aborted: Boolean = false
+
+    def await(): Unit = {
+      latch.await()
+      if (aborted) {
+        throw new AbortedException("CountDawnLatch was aborted")
+      }
+    }
+
+    def abort() {
+      aborted = true
+      latch.countDown()
+    }
+
+    def succeed() {
+      latch.countDown()
+    }
 }

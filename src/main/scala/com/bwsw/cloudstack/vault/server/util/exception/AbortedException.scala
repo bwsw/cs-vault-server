@@ -16,8 +16,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common
+package com.bwsw.cloudstack.vault.server.util.exception
 
-object Converter {
-  def daysToSeconds(dayCount: Int): Int = dayCount*24*60*60
+class AbortedException (private val message: String) extends InterruptedException(message) {
 }

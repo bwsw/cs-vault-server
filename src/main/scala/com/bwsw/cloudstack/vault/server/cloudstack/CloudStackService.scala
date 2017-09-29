@@ -1,16 +1,37 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackCriticalException
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCriticalException, CloudStackEntityDoesNotExistException}
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import org.slf4j.LoggerFactory
 
 /**
-  * Created by medvedev_vv on 02.08.17.
+  * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
+  *
+  * @param сloudStackTaskCreator allows for creating task for interaction with CloudStack
+  * @param settings contains the settings for interaction with CloudStack
   */
 class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
                         settings: CloudStackService.Settings) {
@@ -19,7 +40,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of account's users which has "User" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of account for gets user's tags
     *
@@ -41,7 +61,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of users which has "User" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets user's tags
     *
@@ -60,7 +79,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets all tags of virtual machine which has "UserVM" type.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual mashine for gets user's tags
     *
@@ -80,7 +98,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets account id for the virtual machine.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param vmId id of virtual machine for gets account name
     *
@@ -94,13 +111,13 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(vmId.toString, сloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
     ).virtualMashineList.virtualMashines.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"Virtual machine with id: $vmId does not exist"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Virtual machine with id: $vmId does not exist"))
     ).map(_.accountName).head
 
     val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
       getEntityJson(accountName, сloudStackTaskCreator.nameParameter, Command.ListAccounts)
     ).accountList.accounts.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"The vm: $vmId does not include account with name: $accountName"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with name: $accountName"))
     ).map(_.id).head
 
     logger.debug(s"accountId was got for vm: $vmId)")
@@ -109,7 +126,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets account id for the user.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param userId id of user for gets account id
     *
@@ -122,7 +138,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     val accountId = jsonSerializer.deserialize[UserResponse](
       getEntityJson(userId.toString, сloudStackTaskCreator.idParameter, Command.ListUsers)
     ).userList.users.getOrElse(
-      throw new CloudStackCriticalException(new NoSuchElementException(s"User with id: $userId does not exist"))
+      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist"))
     ).map(_.accountid).head
 
     logger.debug(s"accountId was got for user: $userId)")
@@ -131,7 +147,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Gets user ids for the account.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param accountId id of user for gets account id
     *
@@ -151,7 +166,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
       .accountList
       .accounts.getOrElse(
-        throw new CloudStackCriticalException(new NoSuchElementException(s"Account with id: $accountId does not exist"))
+        throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Account with id: $accountId does not exist"))
       ).flatMap { x =>
         x.users.map(_.id)
       }
@@ -162,7 +177,6 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
   /**
     * Sets tag to specified entity.
-    * Will be restarted if cloudstack server is unavailable.
     *
     * @param resourceId id of entity for set tag
     * @param resourceType "User" or "UserVM" type of tags
