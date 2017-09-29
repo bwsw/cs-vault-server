@@ -9,7 +9,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.bwsw.cloudstack.vault.server.util.exception.{AbortedException, CriticalException}
 import org.apache.kafka.clients.consumer.{ConsumerRecord, MockConsumer, OffsetResetStrategy}
 import org.apache.kafka.common.TopicPartition
 import org.scalatest.{FlatSpec, Matchers}
@@ -111,7 +111,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     consumer.shutdown()
   }
 
-  "process" should "does not swallowed non-CriticalException" in {
+  "process" should "throw AbortedException if non-CriticalException has been thrown during event processing" in {
     val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
 
     mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))
@@ -133,7 +133,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
       override protected val consumer = mockConsumer
     }
 
-    assertThrows[Exception]{
+    assertThrows[AbortedException]{
       consumer.process()
     }
 

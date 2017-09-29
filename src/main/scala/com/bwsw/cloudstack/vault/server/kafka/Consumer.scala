@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.kafka
 import java.util.concurrent.CountDownLatch
 import java.util.{Collections, Properties}
 
-import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
+import com.bwsw.cloudstack.vault.server.common.InterruptableCountDownLatch
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
   * Class is responsible for getting events from Kafka topic
@@ -71,7 +71,7 @@ class Consumer[T](val brokers: String,
     val records = consumer.poll(pollTimeout)
 
     val futureEvents: Set[(Future[Unit], T)] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
-    val eventLatch: InterruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
+    val eventLatch: InterruptableCountDownLatch = new InterruptableCountDownLatch(new CountDownLatch(futureEvents.size))
 
     futureEvents.foreach { x =>
       checkEvent(x)
@@ -97,8 +97,8 @@ class Consumer[T](val brokers: String,
               } else {
                 logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
                   s"is fatal, the event: $event will be restarted after 2 seconds")
-                val restartedEvent = eventHandler.restartEvent(event)
                 Thread.sleep(2000)
+                val restartedEvent = eventHandler.restartEvent(event)
                 checkEvent(restartedEvent)
               }
             case Failure(e: Throwable) =>

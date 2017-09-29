@@ -22,14 +22,14 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
   client.blockUntilConnectedOrTimedOut()
   val zooKeeper = client.getZooKeeper
 
-  val timeLimitPerTest = 4.second
+  val timeLimitPerTest = 6.second
   val halfTimeLimitPerTest = timeLimitPerTest.toMillis / 2
   val updatingTimeout = timeLimitPerTest.toMillis / 10
-/*
+
   override def withFixture(test: NoArgTest): Outcome = {
     // TimeLimitedTest does not work in some cases (e.g. infinite loop)
     Await.result(Future(super.withFixture(test)), timeLimitPerTest)
-  }*/
+  }
 
 
   "LeaderLatch" should "create master node on ZK server" in {
