@@ -108,7 +108,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     assert(consumer.process().isInstanceOf[Unit])
   }
 
-  "process" should "throw AbortedException if event processing throw non-CriticalException" in {
+  "process" should "throw AbortedException if non-CriticalException has been thrown during event processing" in {
     val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
 
     mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))
