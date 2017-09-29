@@ -21,7 +21,6 @@ package com.bwsw.cloudstack.vault.server.zookeeper
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.RetryForever
-import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
 import org.apache.zookeeper.{CreateMode, ZooDefs}
 import org.slf4j.LoggerFactory
 
@@ -70,7 +69,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path to zNode data
     *
-    * @return String with data stored in the zNode if zNode exist
+    * @return Data as string stored in zNode if zNode exist
     *         None if zNode does not exist
     */
   def getNodeData(path: String): Option[String] = {

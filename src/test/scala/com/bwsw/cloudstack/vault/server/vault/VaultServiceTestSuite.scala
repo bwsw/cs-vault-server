@@ -37,7 +37,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(expectedToken == token)
   }
 
-  "revokeToken" should "revoke token" in {
+  "revokeToken" should "revoke a token" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId)
     val tokenJson = getTokenJson(entityId.toString)

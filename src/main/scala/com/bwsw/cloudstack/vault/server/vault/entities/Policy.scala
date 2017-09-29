@@ -45,7 +45,7 @@ object Policy {
   def createVmReadPolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
-      path = s"${DataPath.vmSecret}$vm*",
+      path = s"${DataPath.vmSecretDefaultPath}$vm*",
       acl = Policy.ACL.Read
     )
   }
@@ -53,7 +53,7 @@ object Policy {
   def createVmWritePolicy(account: UUID, vm: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
-      path = s"${DataPath.vmSecret}$vm*",
+      path = s"${DataPath.vmSecretDefaultPath}$vm*",
       acl = Policy.ACL.Write
     )
   }
@@ -61,7 +61,7 @@ object Policy {
   def createAccountReadPolicy(account: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_ro*",
-      path = s"${DataPath.accountSecret}$account*",
+      path = s"${DataPath.accountSecretDefaultPath}$account*",
       acl = Policy.ACL.Read
     )
   }
@@ -69,7 +69,7 @@ object Policy {
   def createAccountWritePolicy(account: UUID): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"${DataPath.accountSecret}$account*",
+      path = s"${DataPath.accountSecretDefaultPath}$account*",
       acl = Policy.ACL.Write
     )
   }

@@ -19,8 +19,6 @@ trait TestData {
   val rootNodeAccountPath = s"${DataPath.zooKeeperRootNode}/accounts"
   val rootNodeVmPath = s"${DataPath.zooKeeperRootNode}/vms"
 
-  def getTestPathToAccountSecretFromToken(accountId: UUID) = s"${DataPath.accountSecret}test/path/$accountId"
-  def getTestPathToVmSecretFromToken(vmId: UUID) = s"${DataPath.vmSecret}/test/path/$vmId"
   def getDefaultAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultSecretAccount}$accountId"
   def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vaultSecretVm}$vmId"
 

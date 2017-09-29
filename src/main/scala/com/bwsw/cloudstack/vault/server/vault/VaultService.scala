@@ -74,7 +74,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     *
     * @param tokenId UUID of token for revoke
     *
-    * @return String list of policies name of revoked token
+    * @return List of names of revoked token policies
     * @throws VaultCriticalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {

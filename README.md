@@ -16,7 +16,8 @@ For start server in docker container you should:
 
 1. Required variables.env file with next variables:
     * `TOKEN_PERIOD` - lifetime of vault token in days
-    * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accouts secrets in vault
+    * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accounts' secrets in vault
+    * `VM_VAULT_BASIC_PATH` - path to vms' secrets in vault
     * `KAFKA_SERVER_LIST` - list with kafka urls
     * `KAFKA_TOPIC` - kafka topic with cloudstack events
     * `ZOOKEEPER_URL` - zookeeper url

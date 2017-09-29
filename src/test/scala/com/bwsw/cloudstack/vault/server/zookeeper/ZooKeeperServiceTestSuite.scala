@@ -31,13 +31,13 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     zooKeeperService.deleteNode(path)
   }
 
-  "isExistNode" should "return true if node exist" in {
+  "doesNodeExist" should "return true if node exist" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.doesNodeExist(path))
     zooKeeperService.deleteNode(path)
   }
 
-  "getDataIfNodeExist" should "get data from node" in {
+  "getNodeData" should "get data from node" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.getNodeData(path).get == expectedData)
     zooKeeperService.deleteNode(path)
@@ -54,12 +54,12 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     }
   }
 
-  "getDataIfNodeExist" should "return None if node does not exist" in {
+  "getNodeData" should "return None if node does not exist" in {
     val actualData = zooKeeperService.getNodeData(path)
     assert(actualData.isEmpty)
   }
 
-  "isExistNode" should "return false if node does not exist" in {
+  "doesNodeExist" should "return false if node does not exist" in {
     assert(!zooKeeperService.doesNodeExist(path))
   }
 

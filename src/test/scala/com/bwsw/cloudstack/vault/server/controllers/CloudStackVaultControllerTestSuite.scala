@@ -198,7 +198,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       }
     }
 
-    val services = getServicesForTestEntityCreationIfTokensDoesNotExist(
+    val services = getServicesForTestEntityCreationIfTokensDoNotExist(
       expectedAccountReadPolicy,
       expectedAccountWritePolicy,
       readAccountTokenNodePath,
@@ -396,7 +396,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       }
     }
 
-    val services = getServicesForTestEntityCreationIfTokensDoesNotExist(
+    val services = getServicesForTestEntityCreationIfTokensDoNotExist(
       expectedAccountReadPolicy,
       expectedAccountWritePolicy,
       readAccountTokenNodePath,
@@ -593,7 +593,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       }
     }
 
-    val services = getServicesForTestEntityCreationIfTokensDoesNotExist(
+    val services = getServicesForTestEntityCreationIfTokensDoNotExist(
       expectedVmReadPolicy,
       expectedVmWritePolicy,
       readVmTokenNodePath,
@@ -693,7 +693,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(revokedTokenList == checkedRevokedTokens)
   }
 
-  "createMissingAccountTokenTags" should "trow IllegalArgumentException if tag key does not in (VaultRO, VaultRW)" in {
+  "createMissingAccountTokenTags" should "throw IllegalArgumentException if tag key is not one of (VaultRO, VaultRW)" in {
     val otherTagKey = Tag.Key.Other
     val createMissingAccountTokenTags = PrivateMethod[List[Tag]]('createMissingAccountTokenTags)
 
@@ -793,7 +793,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     (vaultService, zooKeeperService)
   }
 
-  private def getServicesForTestEntityCreationIfTokensDoesNotExist(expectedReadPolicy: Policy,
+  private def getServicesForTestEntityCreationIfTokensDoNotExist(expectedReadPolicy: Policy,
                                                                    expectedWritePolicy: Policy,
                                                                    readTokenNodePath: String,
                                                                    writeTokenNodePath: String) = {
