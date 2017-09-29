@@ -15,14 +15,14 @@ import scala.concurrent.{Await, Future}
 
 class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  val server = new TestingServer(true)
+  val server = new TestingServer(9001, true)
   val connectString = server.getConnectString
   val client = new CuratorZookeeperClient(connectString, 5000, 5000, null, new RetryOneTime(1000))
   client.start()
   client.blockUntilConnectedOrTimedOut()
   val zooKeeper = client.getZooKeeper
 
-  val timeLimitPerTest = 4.second
+  val timeLimitPerTest = 6.second
   val halfTimeLimitPerTest = timeLimitPerTest.toMillis / 2
   val updatingTimeout = timeLimitPerTest.toMillis / 10
 
@@ -30,7 +30,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     // TimeLimitedTest does not work in some cases (e.g. infinite loop)
     Await.result(Future(super.withFixture(test)), timeLimitPerTest)
   }
-
 
   "LeaderLatch" should "create master node on ZK server" in {
     val masterNode = newMasterNode
@@ -41,7 +40,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     val leaderLatch = new LeaderLatch(connectString, masterNode, leaderLatchId)
 
     zooKeeper.exists(masterNode, false) should not be null
-
     leaderLatch.close()
   }
 
@@ -51,7 +49,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     val leaderLatch = new LeaderLatch(connectString, masterNode, leaderLatchId)
 
     leaderLatch.hasLeadership() shouldBe false
-
     leaderLatch.close()
   }
 
@@ -70,7 +67,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     nodeInfo.children.size shouldBe 1
     nodeInfo.children.head.data shouldBe leaderLatchId
     leaderLatch.hasLeadership() shouldBe true
-
     leaderLatch.close()
   }
 
@@ -85,7 +81,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Thread.sleep(halfTimeLimitPerTest)
 
     future.isCompleted shouldBe false
-
     leaderLatch.close()
   }
 
@@ -99,7 +94,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.acquireLeadership(delay)
 
     leaderLatch.getLeaderInfo() shouldBe leaderLatchId
-
     leaderLatch.close()
   }
 
@@ -136,7 +130,6 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Thread.sleep(halfTimeLimitPerTest)
 
     future.isCompleted shouldBe false
-
     leaderLatches.foreach(_._2.close())
   }
 

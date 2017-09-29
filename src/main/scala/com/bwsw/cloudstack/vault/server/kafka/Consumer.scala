@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
   * Class is responsible for getting events from Kafka topic
@@ -89,14 +89,15 @@ class Consumer[T](val brokers: String,
               logger.info(s"The event: $event was successful")
               eventLatch.succeed()
             case Failure(e: CriticalException) =>
-              logger.error(s"An exception occurred during the event: $event processing: $e")
+              logger.warn(s"An exception occurred during the event: $event processing: $e")
               if (eventHandler.isNonFatalException(e)) {
                 logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
                   s"which was thrown while event: $event was being handle, is not fatal and will be ignored")
                 eventLatch.succeed()
               } else {
                 logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
-                  s"is fatal, the event: $event will be restarted")
+                  s"is fatal, the event: $event will be restarted after 2 seconds")
+                Thread.sleep(2000)
                 val restartedEvent = eventHandler.restartEvent(event)
                 checkEvent(restartedEvent)
               }

@@ -36,7 +36,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -49,6 +48,8 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
       override protected val consumer = mockConsumer
     }
     assert(consumer.process().isInstanceOf[Unit])
+
+    consumer.shutdown()
   }
 
   "process" should "handle event successful if CriticalException which includes CloudStackEntityDoesNotExistException was thrown" in {
@@ -61,7 +62,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -75,6 +75,8 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     }
 
     assert(consumer.process().isInstanceOf[Unit])
+
+    consumer.shutdown()
   }
 
   "process" should "restart event handling if CriticalException which includes non-CloudStackEntityDoesNotExistException was thrown" in {
@@ -87,7 +89,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -106,6 +107,8 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     }
 
     assert(consumer.process().isInstanceOf[Unit])
+
+    consumer.shutdown()
   }
 
   "process" should "throw AbortedException if non-CriticalException has been thrown during event processing" in {
@@ -118,7 +121,6 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
     val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-      override def initializeZooKeeperNodes(): Unit = {}
     }
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
@@ -134,5 +136,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     assertThrows[AbortedException]{
       consumer.process()
     }
+
+    consumer.shutdown()
   }
 }

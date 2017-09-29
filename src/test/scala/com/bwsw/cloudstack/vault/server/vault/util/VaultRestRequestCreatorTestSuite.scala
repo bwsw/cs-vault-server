@@ -21,7 +21,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     val period = 1000
     val expectedResponseBody = getTokenJsonResponse(token.toString).getBytes("UTF-8")
     val expectedPath = "/v1/auth/token/create"
-    val expectedData = getTokenInitParametersJson(policyName, period)
+    val expectedData = getTokenInitParametersJson(false, policyName, period)
 
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
@@ -39,7 +39,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       }
     }
 
-    val tokenInitParameters = TokenInitParameters(List(policyName), period)
+    val tokenInitParameters = TokenInitParameters(false, List(policyName), period)
     val resultTokenResponse = vaultRestRequestCreator.createTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))()
 
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
@@ -75,7 +75,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
   "createTokenRevokeRequest" should "create request which return lookup token" in {
     val policyName = "policy"
     val pathToSecret = "path/secret"
-    val expectedResponseBody = getLookupTokenJsonResponse(policyName, pathToSecret).getBytes
+    val expectedResponseBody = getLookupTokenJsonResponse(policyName).getBytes
     val expectedPath = "/v1/auth/token/lookup"
     val expectedData = getTokenJson(token.toString)
 
@@ -157,8 +157,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
 
   "createDeleteSecretRequest" should "create request which deletes secret" in {
     val expectedResponseBody = Array.empty[Byte]
-    val pathToSecret = "test/path"
-    val expectedPath = s"/v1/secret/$pathToSecret"
+    val expectedPath = s"/v1/secret/test/path"
     val expectedData = ""
 
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
@@ -177,7 +176,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       }
     }
 
-    val resultTokenResponse = vaultRestRequestCreator.createDeleteSecretRequest(pathToSecret)()
+    val resultTokenResponse = vaultRestRequestCreator.createDeleteSecretRequest(expectedPath)()
 
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
   }
@@ -200,7 +199,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       }
     }
 
-    val tokenInitParameters = TokenInitParameters(List("name"), 1000)
+    val tokenInitParameters = TokenInitParameters(false, List("name"), 1000)
 
     assertThrows[VaultCriticalException] {
       vaultRestRequestCreator.createTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))()

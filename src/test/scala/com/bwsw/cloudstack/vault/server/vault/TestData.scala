@@ -17,12 +17,11 @@ trait TestData {
 
   def getTokenJsonResponse(tokenId: String): String = "{\"auth\":{\"client_token\":\"" + s"$tokenId" + "\"}}"
 
-  def getLookupTokenJsonResponse(policyName: String,
-                                 pathToSecret: String): String = "{\"data\":{\"policies\":[\"" + s"$policyName" + "\"], \"path\":\"" + s"$pathToSecret" + "\"}}"
+  def getLookupTokenJsonResponse(policyName: String): String = "{\"data\":{\"policies\":[\"" + s"$policyName" + "\"]}}"
 
   def getTokenJson(token: String): String = "{\"token\":\"" + s"$token" + "\"}"
 
-  def getTokenInitParametersJson(policyName: String, period: Int): String = "{\"policies\":[\"" + s"$policyName" + "\"],\"period\":" + s"$period}"
+  def getTokenInitParametersJson(useDefaultPolicy: Boolean, policyName: String, period: Int): String = "{\"no_default_policy\":" + s"$useDefaultPolicy" + ",\"policies\":[\"" + s"$policyName" + "\"],\"period\":" + s"$period}"
 
   def getPolicyJson(policy: Policy): String = "{\"rules\":\"path \\\"" + s"${policy.path}" + "\\\" {\\\"policy\\\"=\\\"" + s"${Policy.ACL.toString(policy.acl)}" + "\\\"}\"}"
 

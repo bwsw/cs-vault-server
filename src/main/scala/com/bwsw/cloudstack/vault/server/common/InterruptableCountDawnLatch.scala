@@ -16,9 +16,28 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.zookeeper.util.exception
+package com.bwsw.cloudstack.vault.server.common
 
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import java.util.concurrent.CountDownLatch
 
-class ZooKeeperCriticalException(override val exception: Throwable) extends CriticalException(exception) {
+import com.bwsw.cloudstack.vault.server.util.exception.AbortedException
+
+class InterruptableCountDawnLatch(private val latch: CountDownLatch) {
+    private var aborted: Boolean = false
+
+    def await(): Unit = {
+      latch.await()
+      if (aborted) {
+        throw new AbortedException("CountDawnLatch was aborted")
+      }
+    }
+
+    def abort() {
+      aborted = true
+      latch.countDown()
+    }
+
+    def succeed() {
+      latch.countDown()
+    }
 }

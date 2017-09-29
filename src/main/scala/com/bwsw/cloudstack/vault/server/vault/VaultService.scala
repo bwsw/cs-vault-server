@@ -47,11 +47,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @return UUID of token
     * @throws VaultCriticalException if response status is not expected.
     */
-  def createToken(policies: List[Policy])(): UUID = {
+  def createToken(policies: List[Policy]): UUID = {
     logger.debug(s"createToken with policies: $policies")
     policies.foreach(writePolicy)
 
     val tokenParameters = Token.TokenInitParameters(
+      noDefaultPolicy = true,
       policies.map(_.name),
       settings.tokenPeriod
     )
@@ -73,10 +74,10 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     *
     * @param tokenId UUID of token for revoke
     *
-    * @return String of path to secret of revoked token
+    * @return List of names of revoked token policies
     * @throws VaultCriticalException if response status is not expected.
     */
-  def revokeToken(tokenId: UUID)(): String = {
+  def revokeToken(tokenId: UUID): List[String] = {
     logger.debug(s"revokeToken")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
@@ -99,9 +100,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     lookupToken.tokenData.policies.filter { x =>
       x != "default" && x != "root"
-    }.foreach(deletePolicy)
-
-    lookupToken.tokenData.path
+    }
   }
 
   /**
@@ -124,6 +123,26 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   }
 
   /**
+    * deletes policy in Vault server
+    *
+    * @param policyName policyNeme for deletion
+    *
+    * @throws VaultCriticalException if response status is not expected.
+    */
+  def deletePolicy(policyName: String): Unit = {
+    logger.debug(s"deletePolicy: $policyName")
+
+    def executeRequest = vaultRest.createPolicyDeleteRequest(policyName)
+
+    TaskRunner.tryRunUntilSuccess[String](
+      executeRequest,
+      settings.vaultRetryDelay
+    )
+
+    logger.debug(s"policy with name: $policyName was deleted")
+  }
+
+  /**
     * Creates policy in Vault server
     *
     * @param policy policy for creating
@@ -140,26 +159,6 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.vaultRetryDelay
     )
     logger.debug(s"policy was writed: $policy")
-  }
-
-  /**
-    * deletes policy in Vault server
-    *
-    * @param policyName policyNeme for deletion
-    *
-    * @throws VaultCriticalException if response status is not expected.
-    */
-  private def deletePolicy(policyName: String) = {
-    logger.debug(s"deletePolicy: $policyName")
-
-    def executeRequest = vaultRest.createPolicyDeleteRequest(policyName)
-
-    TaskRunner.tryRunUntilSuccess[String](
-      executeRequest,
-      settings.vaultRetryDelay
-    )
-
-    logger.debug(s"policy with name: $policyName was deleted")
   }
 }
 

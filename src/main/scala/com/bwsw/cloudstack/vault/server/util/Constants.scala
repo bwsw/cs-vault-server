@@ -27,6 +27,7 @@ object ConfigLiterals {
 
   val tokenPeriod = s"$applicationDomain.tokenPeriod"
   val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
+  val vmsVaultBasicPath = s"$applicationDomain.vmsVaultBasicPath"
 
   val kafkaServerList = s"$kafkaDomain.serverList"
   val kafkaTopic = s"$kafkaDomain.topic"
@@ -55,10 +56,16 @@ object RequestPath {
   val vaultTokenCreate     = "/v1/auth/token/create"
   val vaultTokenLookup     = "/v1/auth/token/lookup"
   val vaultPolicy          = "/v1/sys/policy"
-  val vaultSecret          = "/v1/secret"
+  val vaultSecretVm        = s"/v1/${DataPath.vmSecretDefaultPath}"
+  val vaultSecretAccount   = s"/v1/${DataPath.accountSecretDefaultPath}"
   val vaultTokenRevoke     = "/v1/auth/token/revoke"
-  val vmSecret             = "secret/cs/vms/"
-  val accountSecret        = "secret/cs/accounts/"
-  val zooKeeperRootNode    = "/cs_vault_server"
-  val masterLatchNode      = "/cs_vault_server_latch"
+}
+
+object DataPath {
+  private val accountSecret = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
+  private val vmSecret = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
+  val vmSecretDefaultPath: String       = vmSecret
+  val accountSecretDefaultPath: String  = accountSecret
+  val zooKeeperRootNode                 = "/cs_vault_server"
+  val masterLatchNode                   = "/cs_vault_server_latch"
 }

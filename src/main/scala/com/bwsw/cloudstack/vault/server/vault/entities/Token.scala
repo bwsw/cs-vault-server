@@ -31,7 +31,9 @@ private[vault] object Token {
   *
   * @param period time of life for token in seconds
   */
-  case class TokenInitParameters(policies: List[String], period: Int)
+  case class TokenInitParameters(@JsonProperty("no_default_policy") noDefaultPolicy: Boolean,
+                                 policies: List[String],
+                                 period: Int)
 
 /**
   * Use for deserialize body in token create response
@@ -44,11 +46,8 @@ private[vault] object Token {
   * Use for deserialize body in token lookup response
   *
   * @param policies names of policies from vault server
-  *
-  * @param path path to secret
   */
-  case class TokenData(policies: List[String],
-                       @JsonProperty("path") path: String)
+  case class TokenData(policies: List[String])
 
 }
 

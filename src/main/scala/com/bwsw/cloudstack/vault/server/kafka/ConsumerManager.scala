@@ -20,7 +20,7 @@ package com.bwsw.cloudstack.vault.server.kafka
 
 import com.bwsw.cloudstack.vault.server.Components
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,13 +29,15 @@ import scala.util.{Failure, Success, Try}
 /**
   * Class is responsible for start Consumer with specified configuration
   */
-class ConsumerManager(topic: String, brokers: String, components: Components) {
+class ConsumerManager(components: Components) {
+  private val topic: String = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic)
+  private val brokers: String = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList)
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val timeout = 10000
   private val groupId = "group01"
 
   def execute(): Unit = {
-    val consumer = new Consumer[CloudStackEvent](brokers, topic, groupId, timeout, new CloudStackEventHandler(components.cloudStackVaultController))
+    val consumer = new Consumer[CloudStackEvent](brokers, topic, groupId, timeout, components.cloudStackEventHandler)
     Try {
       consumer.subscribe()
       while(true) {
