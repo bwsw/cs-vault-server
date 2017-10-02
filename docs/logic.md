@@ -15,8 +15,8 @@ The processing of VM creation event consists of the following steps: <br />
   * a) get the appropriate account ID via CloudStackService <br />
   * b) try to retrieve tokens from zookeeper. Token can have 'RO' or 'RW' policy <br />
   * c) if the tokens don't exist: <br />
-    * 1) the tokens will be created in vault. 
-    * 2) zookeeper nodes will be created for keeping VM tokens. 
+    * 1) the tokens will be created in vault <br />
+    * 2) zookeeper nodes will be created for keeping VM tokens <br />
     * 3) write the vault tokens to zookeeper (In case of an exception, the tokens will be revoked) <br />
   * d) write the tokens in CloudStack as UserVM tags <br />
 
