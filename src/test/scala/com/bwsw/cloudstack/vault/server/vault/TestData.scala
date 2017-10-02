@@ -25,4 +25,5 @@ trait TestData {
 
   def getPolicyJson(policy: Policy): String = "{\"rules\":\"path \\\"" + s"${policy.path}" + "\\\" {\\\"policy\\\"=\\\"" + s"${Policy.ACL.toString(policy.acl)}" + "\\\"}\"}"
 
+  def getSubSecretPathsJson(firstSecretPaths: String, secondSecretPaths:String): String = "{\"data\":{\"keys\": [\"" + s"$firstSecretPaths" + "\", \"" + s"$secondSecretPaths" + "\"]}}"
 }

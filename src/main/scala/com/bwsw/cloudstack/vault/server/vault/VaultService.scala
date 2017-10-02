@@ -19,11 +19,12 @@
 package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
+import java.util.regex.Pattern
 
 import com.bettercloud.vault.json.Json
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util._
-import com.bwsw.cloudstack.vault.server.vault.entities.{LookupToken, Policy, Token}
+import com.bwsw.cloudstack.vault.server.vault.entities._
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
 import org.slf4j.LoggerFactory
@@ -106,20 +107,52 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   /**
     * Deletes secret from vault server by specified path.
     *
-    * @param pathToSecret UUID of token for revoke
+    * @param pathToRootSecret path to root secret for deletion, tree of sub-secret will be deleted too
     *
     * @throws VaultCriticalException if response status is not expected.
     */
-  def deleteSecret(pathToSecret: String): Unit = {
-    logger.debug(s"deleteSecret: $pathToSecret")
-    def executeRequest = vaultRest.createDeleteSecretRequest(pathToSecret)
+  def deleteSecretsRecursive(pathToRootSecret: String): Unit = {
+    logger.debug(s"deleteSecretsRecursive: $pathToRootSecret")
+    var pathsForDeletion = List(pathToRootSecret)
 
-    TaskRunner.tryRunUntilSuccess[String](
-      executeRequest,
-      settings.vaultRetryDelay
-    )
+    def loop(pathToSecret: String, pathsWithSubPaths: List[String]): Unit = {
+      if (pathsWithSubPaths.nonEmpty) {
+        getPathListPair(s"$pathToSecret/${pathsWithSubPaths.head.substring(0, pathsWithSubPaths.head.length - 1)}") match {
+          case (newPathsWithSubPaths, pathsWithData) =>
+            pathsForDeletion = pathsForDeletion ::: pathsWithData.map { path =>
+              s"$pathToSecret/${pathsWithSubPaths.head}$path"
+            }
+            if (newPathsWithSubPaths.nonEmpty) {
+              loop(s"$pathToSecret/${pathsWithSubPaths.head.substring(0, pathsWithSubPaths.head.length - 1)}", newPathsWithSubPaths)
+            }
+        }
+        loop(pathToSecret, pathsWithSubPaths.tail)
+      }
+    }
 
-    logger.debug(s"data from path: $pathToSecret was deleted")
+    def getPathListPair(pathToSecret: String): (List[String], List[String]) = {
+      jsonSerializer.deserialize[SecretResponse](TaskRunner.tryRunUntilSuccess[String](
+        vaultRest.createGetSubSecretPathsRequest(pathToSecret),
+        settings.vaultRetryDelay
+      )).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
+        Pattern.compile(".+/").matcher(x).matches()
+      }
+    }
+
+    val subPathsOfRootPath = {
+      getPathListPair(pathToRootSecret) match {
+        case (pathsWithSubPaths, pathsWithData) =>
+          pathsForDeletion = pathsForDeletion ::: pathsWithData.map { path =>
+            s"$pathToRootSecret/$path"
+          }
+          pathsWithSubPaths
+      }
+    }
+    loop(pathToRootSecret, subPathsOfRootPath)
+    pathsForDeletion.reverse.foreach { x =>
+      TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.vaultRetryDelay)
+      logger.debug(s"data from path: $x was deleted")
+    }
   }
 
   /**

@@ -76,17 +76,72 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(vaultService.deletePolicy(policy.name).isInstanceOf[Unit])
   }
 
-  "deleteSecret" should "delete secret in vault by path" in {
-    val path = "test/path"
+  "deleteSecretRecursive" should "delete secret in vault by path and sub-paths" in {
+    val firstRootPath = "/test!1"
+    val secondRootPath = "test!!2/"
+    val secondPath = "test!!2"
+    val thirdPath = "test!!!3"
+    val fourthPath = "test!!!!4"
+
+    val expectedGetPaths = List(s"$firstRootPath", s"$firstRootPath/$secondPath")
+    var actualGetPaths = List.empty[String]
+
+    val expectedDeletionPaths = List(
+      s"$firstRootPath/$secondRootPath$fourthPath",
+      s"$firstRootPath/$secondRootPath$thirdPath",
+      s"$firstRootPath/$secondPath", s"$firstRootPath"
+    )
+    var actualDeletionPaths = List.empty[String]
+
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
-        assert(pathToSecret == path, "vaultRest is wrong")
+        actualDeletionPaths = actualDeletionPaths ::: pathToSecret :: Nil
         () => ""
+      }
+
+      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
+        if (pathToRootSecret == firstRootPath) {
+          actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+          () => getSubSecretPathsJson(secondRootPath, secondPath)
+        } else {
+          actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+          () => getSubSecretPathsJson(thirdPath, fourthPath)
+        }
       }
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
-    assert(vaultService.deleteSecret(path).isInstanceOf[Unit])
+    assert(vaultService.deleteSecretsRecursive(firstRootPath).isInstanceOf[Unit])
+    assert(actualDeletionPaths == expectedDeletionPaths)
+    assert(actualGetPaths == expectedGetPaths)
+  }
+
+  "deleteSecretRecursive" should "delete secret in vault by path if sub-path does not exist" in {
+    val firstPath = "test1"
+    val responseWithEmptySubThree = "{\"errors\":[]}"
+
+    val expectedGetPaths = List(s"$firstPath")
+    var actualGetPaths = List.empty[String]
+
+    val expectedDeletionPaths = List(s"$firstPath")
+    var actualDeletionPaths = List.empty[String]
+
+    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
+      override def createDeleteSecretRequest(pathToSecret: String): () => String = {
+        actualDeletionPaths = actualDeletionPaths ::: pathToSecret :: Nil
+        () => ""
+      }
+
+      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
+        actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+        () => responseWithEmptySubThree
+      }
+    }
+
+    val vaultService = new VaultService(vaultRest, vaultServiceSettings)
+    assert(vaultService.deleteSecretsRecursive(firstPath).isInstanceOf[Unit])
+    assert(actualDeletionPaths == expectedDeletionPaths)
+    assert(actualGetPaths == expectedGetPaths)
   }
 
   //Negative tests
@@ -132,19 +187,25 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deleteSecret" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
-    val path = "test/path"
+  "deleteSecretRecursive" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
+    val path = "/test/path"
+    val responseWithEmptySubThree = "{\"errors\":[]}"
+
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
         assert(pathToSecret == path, "vaultRest is wrong")
         throw new VaultCriticalException(new Exception("test exception"))
+      }
+
+      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
+        () => responseWithEmptySubThree
       }
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
     assertThrows[VaultCriticalException] {
-      vaultService.deleteSecret(path)
+      vaultService.deleteSecretsRecursive(path)
     }
   }
 

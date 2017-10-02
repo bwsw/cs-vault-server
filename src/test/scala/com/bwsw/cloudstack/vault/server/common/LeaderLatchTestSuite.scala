@@ -15,7 +15,7 @@ import scala.concurrent.{Await, Future}
 
 class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  val server = new TestingServer(9001, true)
+  val server = new TestingServer(true)
   val connectString = server.getConnectString
   val client = new CuratorZookeeperClient(connectString, 5000, 5000, null, new RetryOneTime(1000))
   client.start()

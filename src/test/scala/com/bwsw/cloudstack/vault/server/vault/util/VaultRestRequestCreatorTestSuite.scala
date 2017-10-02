@@ -72,7 +72,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
   }
 
-  "createTokenRevokeRequest" should "create request which return lookup token" in {
+  "createTokenLookUpRequest" should "create request which return lookup token" in {
     val policyName = "policy"
     val pathToSecret = "path/secret"
     val expectedResponseBody = getLookupTokenJsonResponse(policyName).getBytes
@@ -181,6 +181,33 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
   }
 
+  "createGetSubSecretPathsRequest" should "return json with sub secrets paths" in {
+    val firstPath = "data"
+    val secondPath = "subDataRoot"
+    val expectedRequestPath = s"/$firstPath"
+    val expectedResponseBody = "{\"data\":{\"keys\": [\"" + s"$firstPath" + "\", \"" + s"$secondPath" + "\"]}}"
+
+    val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
+      override protected def createRest(path: String, data: String): Rest = {
+        assert(path == s"$expectedRequestPath?list=true", "path is wrong")
+        assert(data == "", "data is wrong")
+        new Rest() {
+          override def get(): RestResponse = new RestResponse(
+            200,
+            "application/json",
+            expectedResponseBody.getBytes("UTF-8")
+          )
+        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+          .body(data.getBytes("UTF-8"))
+      }
+    }
+
+    val resultTokenResponse = vaultRestRequestCreator.createGetSubSecretPathsRequest(s"/$firstPath")()
+
+    assert(resultTokenResponse == expectedResponseBody)
+  }
+
   // Negative tests
   "createTokenCreateRequest" should "if response status is not equal to expected status, " +
     "the VaultCriticalException will thrown" in {
@@ -225,7 +252,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenRevokeRequest" should  "if Rest throw RestException, exception does not catch" in {
+  "createTokenLookupRequest" should  "if Rest throw RestException, exception does not catch" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
