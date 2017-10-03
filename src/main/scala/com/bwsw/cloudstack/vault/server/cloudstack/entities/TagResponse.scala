@@ -73,19 +73,24 @@ object Tag {
   sealed trait Key extends Product with Serializable
 
   object Key {
+    private val lowerCaseVaultRoString = s"${prefix}vault.ro"
+    private val lowerCaseVaultRwString = s"${prefix}vault.rw"
+    private val upperCaseVaultRoString = lowerCaseVaultRoString.toUpperCase
+    private val upperCaseVaultRwString = lowerCaseVaultRwString.toUpperCase
+
     case object VaultRO      extends Key
     case object VaultRW      extends Key
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
-      case x if x == s"${prefix.toUpperCase}VAULT.RO"       => Key.VaultRO
-      case x if x == s"${prefix.toUpperCase}VAULT.RW"       => Key.VaultRW
-      case _                                                => Key.Other
+      case `upperCaseVaultRoString`       => Key.VaultRO
+      case `upperCaseVaultRwString`       => Key.VaultRW
+      case _                              => Key.Other
     }
 
     def toString(x: Key): String = x match {
-      case  Key.VaultRO       => s"${prefix}vault.ro"
-      case  Key.VaultRW       => s"${prefix}vault.rw"
+      case  Key.VaultRO       => lowerCaseVaultRoString
+      case  Key.VaultRW       => lowerCaseVaultRwString
       case  Key.Other         => ""
     }
   }
