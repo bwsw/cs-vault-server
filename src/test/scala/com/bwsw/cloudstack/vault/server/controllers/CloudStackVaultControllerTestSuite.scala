@@ -2,11 +2,11 @@ package com.bwsw.cloudstack.vault.server.controllers
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
+import com.bwsw.cloudstack.vault.server.{BaseTestSuite, MockConfig}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
-import com.bwsw.cloudstack.vault.server.util.{DataPath, URL}
+import com.bwsw.cloudstack.vault.server.util.DataPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
@@ -43,7 +43,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
     Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath),
-    Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl)
+    Tag.createTag(Tag.Key.VaultHost, MockConfig.vaultRestRequestCreatorSettings.vaultUrl)
   )
 
   "handleAccountDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {

@@ -73,10 +73,4 @@ object DataPath {
   val accountSecretDefaultPath: String  = accountSecret
   val zooKeeperRootNode: String         = configZooKeeperRootNode
   val masterLatchNode: String           = configMasterLatchNode
-
-}
-
-object URL {
-  private val configVaultUrl          = ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)
-  val vaultUrl: String                = configVaultUrl
 }

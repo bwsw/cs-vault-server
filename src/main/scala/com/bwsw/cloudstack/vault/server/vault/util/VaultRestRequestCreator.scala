@@ -33,6 +33,7 @@ import scala.util.{Failure, Success, Try}
   */
 class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private[vault] val vaultUrl: String = settings.vaultUrl
 
   /**
     * Creates request for creating token with specified parameters

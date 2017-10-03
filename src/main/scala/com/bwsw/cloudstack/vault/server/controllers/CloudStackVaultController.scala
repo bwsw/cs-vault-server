@@ -22,7 +22,7 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
-import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath, URL}
+import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
@@ -85,7 +85,7 @@ class CloudStackVaultController(vaultService: VaultService,
     val currentTokenTags = accountTags.filter { tag =>
       tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
     }.toSet ++ Set(
-      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
       Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
     )
 
@@ -120,7 +120,7 @@ class CloudStackVaultController(vaultService: VaultService,
     val currentTokenTags = accountTags.filter { tag =>
       tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
     }.toSet ++ Set(
-      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
       Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
     )
 
@@ -165,7 +165,7 @@ class CloudStackVaultController(vaultService: VaultService,
           tag
       }
     } ::: List(
-      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
       Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
     )
 

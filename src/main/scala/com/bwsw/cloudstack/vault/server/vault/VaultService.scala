@@ -38,6 +38,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(true)
+  val vaultUrl: String = vaultRest.vaultUrl
 
   /**
     * Creates token with specified policy
