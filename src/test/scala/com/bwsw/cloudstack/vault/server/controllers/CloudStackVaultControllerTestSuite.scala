@@ -6,6 +6,7 @@ import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.util.{DataPath, URL}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
@@ -40,7 +41,9 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   val expectedTagsWithTokens = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
-    Tag.createTag(Tag.Key.VaultRW, writeToken.toString)
+    Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
+    Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath),
+    Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl)
   )
 
   "handleAccountDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {
@@ -194,7 +197,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedUserId, "resource id is wrong")
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
@@ -243,7 +246,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedUserId, "resource id is wrong")
         assert(resourceType == Type.User, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
@@ -392,7 +395,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
@@ -450,7 +453,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
@@ -589,7 +592,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
@@ -633,7 +636,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
       }
     }
 
