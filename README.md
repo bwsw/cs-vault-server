@@ -18,6 +18,7 @@ To start a server in Docker container you should:
     * `TOKEN_PERIOD` - lifetime of vault token in days
     * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accounts' secrets in vault
     * `VM_VAULT_BASIC_PATH` - path to vms' secrets in vault
+    * `TAG_NAME_PREFIX` - prefix for token name tag
     * `KAFKA_SERVER_LIST` - list of kafka urls
     * `KAFKA_TOPIC` - kafka topic containing cloudstack events
     * `ZOOKEEPER_URL` - zookeeper url

@@ -28,6 +28,7 @@ object ConfigLiterals {
   val tokenPeriod = s"$applicationDomain.tokenPeriod"
   val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
   val vmsVaultBasicPath = s"$applicationDomain.vmsVaultBasicPath"
+  val tagNamePrefix = s"$applicationDomain.tagNamePrefix"
 
   val kafkaServerList = s"$kafkaDomain.serverList"
   val kafkaTopic = s"$kafkaDomain.topic"
