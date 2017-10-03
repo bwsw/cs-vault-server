@@ -73,6 +73,11 @@ object Tag {
   sealed trait Key extends Product with Serializable
 
   object Key {
+    private val lowerCaseVaultRoString = s"${prefix}vault.ro"
+    private val lowerCaseVaultRwString = s"${prefix}vault.rw"
+    private val upperCaseVaultRoString = lowerCaseVaultRoString.toUpperCase
+    private val upperCaseVaultRwString = lowerCaseVaultRwString.toUpperCase
+
     case object VaultRO      extends Key
     case object VaultRW      extends Key
     case object VaultHost    extends Key
@@ -85,6 +90,9 @@ object Tag {
       case x if x == s"${prefix.toUpperCase}VAULT.HOST"           => Key.VaultHost
       case x if x == s"${prefix.toUpperCase}VAULT.PREFIX"         => Key.VaultPrefix
       case _                                                      => Key.Other
+      case `upperCaseVaultRoString`       => Key.VaultRO
+      case `upperCaseVaultRwString`       => Key.VaultRW
+      case _                              => Key.Other
     }
 
     def toString(x: Key): String = x match {
@@ -92,6 +100,8 @@ object Tag {
       case  Key.VaultRW       => s"${prefix}vault.rw.token"
       case  Key.VaultPrefix   => s"${prefix}vault.prefix"
       case  Key.VaultHost     => s"${prefix}vault.host"
+      case  Key.VaultRO       => lowerCaseVaultRoString
+      case  Key.VaultRW       => lowerCaseVaultRwString
       case  Key.Other         => ""
     }
   }
