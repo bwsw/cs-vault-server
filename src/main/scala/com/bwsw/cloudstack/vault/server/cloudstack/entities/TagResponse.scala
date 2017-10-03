@@ -18,6 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
@@ -28,6 +29,10 @@ private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tag
 private[cloudstack] case class TagList(@JsonProperty("tag") tags: Option[List[Tag]])
 
 object Tag {
+  val prefix: String = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix) match {
+    case "" => ""
+    case x => s"$x."
+  }
   def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
 
   class KeySerializer extends JsonSerializer[Key] {
@@ -68,19 +73,24 @@ object Tag {
   sealed trait Key extends Product with Serializable
 
   object Key {
+    private val lowerCaseVaultRoString = s"${prefix}vault.ro"
+    private val lowerCaseVaultRwString = s"${prefix}vault.rw"
+    private val upperCaseVaultRoString = lowerCaseVaultRoString.toUpperCase
+    private val upperCaseVaultRwString = lowerCaseVaultRwString.toUpperCase
+
     case object VaultRO      extends Key
     case object VaultRW      extends Key
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
-      case "VAULT.RO"       => Key.VaultRO
-      case "VAULT.RW"       => Key.VaultRW
-      case _                => Key.Other
+      case `upperCaseVaultRoString`       => Key.VaultRO
+      case `upperCaseVaultRwString`       => Key.VaultRW
+      case _                              => Key.Other
     }
 
     def toString(x: Key): String = x match {
-      case  Key.VaultRO       => "vault.ro"
-      case  Key.VaultRW       => "vault.rw"
+      case  Key.VaultRO       => lowerCaseVaultRoString
+      case  Key.VaultRW       => lowerCaseVaultRwString
       case  Key.Other         => ""
     }
   }

@@ -211,7 +211,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
-          override def post(): RestResponse = throw new Exception("test exceprion")
+          override def post(): RestResponse = throw new Exception("test exception")
         }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
           .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
           .body(data.getBytes("UTF-8"))
