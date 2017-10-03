@@ -22,7 +22,7 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
-import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
+import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath, URL}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
@@ -84,7 +84,10 @@ class CloudStackVaultController(vaultService: VaultService,
 
     val currentTokenTags = accountTags.filter { tag =>
       tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
-    }.toSet
+    }.toSet ++ Set(
+      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
+    )
 
     val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
       currentTokenTags.exists(_.key == x)
@@ -116,7 +119,10 @@ class CloudStackVaultController(vaultService: VaultService,
 
     val currentTokenTags = accountTags.filter { tag =>
       tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
-    }.toSet
+    }.toSet ++ Set(
+      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
+    )
 
     val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
       currentTokenTags.exists(_.key == x)
@@ -125,7 +131,7 @@ class CloudStackVaultController(vaultService: VaultService,
     if (absentTokenTagKeyList.nonEmpty) {
       val newTags = createMissingAccountTokenTags(accountId, absentTokenTagKeyList)
       usersIds.foreach { userId =>
-        cloudStackService.setResourceTag(userId, Tag.Type.User, newTags)
+        cloudStackService.setResourceTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
       }
     }
     logger.info(s"Account creation was processed, accountId: $accountId)")
@@ -147,7 +153,7 @@ class CloudStackVaultController(vaultService: VaultService,
       Policy.createVmWritePolicy(accountId, vmId)
     )
 
-    val tokenTagList = policyList.map { x =>
+    val tagList = policyList.map { x =>
       val pathToData = createTokenEntityNodePath(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
       zooKeeperService.getNodeData(pathToData) match {
         case Some(token) =>
@@ -158,9 +164,12 @@ class CloudStackVaultController(vaultService: VaultService,
           writeTokenToZooKeeperNode(pathToData, token)
           tag
       }
-    }
+    } ::: List(
+      Tag.createTag(Tag.Key.VaultHost, URL.vaultUrl),
+      Tag.createTag(Tag.Key.VaultPrefix, DataPath.accountSecretDefaultPath)
+    )
 
-    cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, tokenTagList)
+    cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, tagList)
     logger.info(s"VM creation was processed, vmId: $vmId)")
   }
 
