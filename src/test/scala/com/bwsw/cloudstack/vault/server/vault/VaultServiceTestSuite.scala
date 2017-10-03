@@ -111,7 +111,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
-    assert(vaultService.deleteSecretsRecursive(firstRootPath).isInstanceOf[Unit])
+    assert(vaultService.deleteSecretsRecursively(firstRootPath).isInstanceOf[Unit])
     assert(actualDeletionPaths == expectedDeletionPaths)
     assert(actualGetPaths == expectedGetPaths)
   }
@@ -139,7 +139,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
-    assert(vaultService.deleteSecretsRecursive(firstPath).isInstanceOf[Unit])
+    assert(vaultService.deleteSecretsRecursively(firstPath).isInstanceOf[Unit])
     assert(actualDeletionPaths == expectedDeletionPaths)
     assert(actualGetPaths == expectedGetPaths)
   }
@@ -189,7 +189,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "deleteSecretRecursive" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val path = "/test/path"
-    val responseWithEmptySubThree = "{\"errors\":[]}"
+    val responseWithEmptySubTree = "{\"errors\":[]}"
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
@@ -198,14 +198,14 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
       }
 
       override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
-        () => responseWithEmptySubThree
+        () => responseWithEmptySubTree
       }
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
     assertThrows[VaultCriticalException] {
-      vaultService.deleteSecretsRecursive(path)
+      vaultService.deleteSecretsRecursively(path)
     }
   }
 

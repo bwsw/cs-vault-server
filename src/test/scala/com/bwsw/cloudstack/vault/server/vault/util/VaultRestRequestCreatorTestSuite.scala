@@ -252,7 +252,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenLookupRequest" should  "if Rest throw RestException, exception does not catch" in {
+  "createTokenLookupRequest" should "if Rest throws RestException, the exception will not be caught" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {

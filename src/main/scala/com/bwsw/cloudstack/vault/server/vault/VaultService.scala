@@ -111,13 +111,14 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     *
     * @throws VaultCriticalException if response status is not expected.
     */
-  def deleteSecretsRecursive(pathToRootSecret: String): Unit = {
-    logger.debug(s"deleteSecretsRecursive: $pathToRootSecret")
+  def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
+    logger.debug(s"deleteSecretsRecursively: $pathToRootSecret")
+    val stringPattern = Pattern.compile(".+/")
     var pathsForDeletion = List(pathToRootSecret)
 
     def loop(pathToSecret: String, pathsWithSubPaths: List[String]): Unit = {
       if (pathsWithSubPaths.nonEmpty) {
-        getPathListPair(s"$pathToSecret/${pathsWithSubPaths.head.substring(0, pathsWithSubPaths.head.length - 1)}") match {
+        getPathListPair(s"$pathToSecret/${pathsWithSubPaths.head.dropRight(1)}") match {
           case (newPathsWithSubPaths, pathsWithData) =>
             pathsForDeletion = pathsForDeletion ::: pathsWithData.map { path =>
               s"$pathToSecret/${pathsWithSubPaths.head}$path"
@@ -125,6 +126,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
             if (newPathsWithSubPaths.nonEmpty) {
               loop(s"$pathToSecret/${pathsWithSubPaths.head.substring(0, pathsWithSubPaths.head.length - 1)}", newPathsWithSubPaths)
             }
+          case _ => List.empty[String]
         }
         loop(pathToSecret, pathsWithSubPaths.tail)
       }
@@ -135,7 +137,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
         vaultRest.createGetSubSecretPathsRequest(pathToSecret),
         settings.vaultRetryDelay
       )).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
-        Pattern.compile(".+/").matcher(x).matches()
+        stringPattern.matcher(x).matches()
       }
     }
 
@@ -146,6 +148,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
             s"$pathToRootSecret/$path"
           }
           pathsWithSubPaths
+        case _ => List.empty[String]
       }
     }
     loop(pathToRootSecret, subPathsOfRootPath)

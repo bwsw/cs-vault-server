@@ -227,7 +227,7 @@ class CloudStackVaultController(vaultService: VaultService,
       }
       zooKeeperService.deleteNode(pathToEntityNode)
     }
-    vaultService.deleteSecretsRecursive(secretPath)
+    vaultService.deleteSecretsRecursively(secretPath)
     policyNames.foreach(vaultService.deletePolicy)
   }
 
