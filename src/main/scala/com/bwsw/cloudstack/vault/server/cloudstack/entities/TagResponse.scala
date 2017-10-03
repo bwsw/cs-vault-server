@@ -73,10 +73,14 @@ object Tag {
   sealed trait Key extends Product with Serializable
 
   object Key {
-    private val lowerCaseVaultRoString = s"${prefix}vault.ro"
-    private val lowerCaseVaultRwString = s"${prefix}vault.rw"
-    private val upperCaseVaultRoString = lowerCaseVaultRoString.toUpperCase
-    private val upperCaseVaultRwString = lowerCaseVaultRwString.toUpperCase
+    private val lowerCaseVaultRoString     = s"${prefix}vault.ro"
+    private val lowerCaseVaultRwString     = s"${prefix}vault.rw"
+    private val lowerCaseVaultHostString   = s"${prefix}vault.host"
+    private val lowerCaseVaultPrefixString = s"${prefix}vault.prefix"
+    private val upperCaseVaultRoString     = lowerCaseVaultRoString.toUpperCase
+    private val upperCaseVaultRwString     = lowerCaseVaultRwString.toUpperCase
+    private val upperCaseVaultHostString   = lowerCaseVaultHostString.toUpperCase
+    private val upperCaseVaultPrefixString = lowerCaseVaultPrefixString.toUpperCase
 
     case object VaultRO      extends Key
     case object VaultRW      extends Key
@@ -85,23 +89,18 @@ object Tag {
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
-      case x if x == s"${prefix.toUpperCase}VAULT.RO.TOKEN"       => Key.VaultRO
-      case x if x == s"${prefix.toUpperCase}VAULT.RW.TOKEN"       => Key.VaultRW
-      case x if x == s"${prefix.toUpperCase}VAULT.HOST"           => Key.VaultHost
-      case x if x == s"${prefix.toUpperCase}VAULT.PREFIX"         => Key.VaultPrefix
-      case _                                                      => Key.Other
       case `upperCaseVaultRoString`       => Key.VaultRO
       case `upperCaseVaultRwString`       => Key.VaultRW
+      case `upperCaseVaultHostString`     => Key.VaultHost
+      case `upperCaseVaultPrefixString`   => Key.VaultPrefix
       case _                              => Key.Other
     }
 
     def toString(x: Key): String = x match {
-      case  Key.VaultRO       => s"${prefix}vault.ro.token"
-      case  Key.VaultRW       => s"${prefix}vault.rw.token"
-      case  Key.VaultPrefix   => s"${prefix}vault.prefix"
-      case  Key.VaultHost     => s"${prefix}vault.host"
       case  Key.VaultRO       => lowerCaseVaultRoString
       case  Key.VaultRW       => lowerCaseVaultRwString
+      case  Key.VaultPrefix   => lowerCaseVaultPrefixString
+      case  Key.VaultHost     => lowerCaseVaultHostString
       case  Key.Other         => ""
     }
   }
