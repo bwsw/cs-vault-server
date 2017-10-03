@@ -35,6 +35,8 @@ object ConfigLiterals {
 
   val zooKeeperUrl = s"$zooKeeperDomain.url"
   val zooKeeperRetryDelay = s"$zooKeeperDomain.retryDelay"
+  val zooKeeperRootNode = s"$zooKeeperDomain.zooKeeperRootNode"
+  val zooKeeperMasterLatchNode = s"$zooKeeperDomain.masterLatchNode"
 
   val vaultUrl = s"$vaultDomain.url"
   val vaultRootToken = s"$vaultDomain.rootToken"
@@ -65,8 +67,10 @@ object RequestPath {
 object DataPath {
   private val accountSecret = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
   private val vmSecret = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
+  private val configZooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
+  private val configMasterLatchNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
   val vmSecretDefaultPath: String       = vmSecret
   val accountSecretDefaultPath: String  = accountSecret
-  val zooKeeperRootNode                 = "/cs_vault_server"
-  val masterLatchNode                   = "/cs_vault_server_latch"
+  val zooKeeperRootNode                 = configZooKeeperRootNode
+  val masterLatchNode                   = configMasterLatchNode
 }

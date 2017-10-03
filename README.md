@@ -23,6 +23,8 @@ To start a server in Docker container you should:
     * `KAFKA_TOPIC` - kafka topic containing cloudstack events
     * `ZOOKEEPER_URL` - zookeeper url
     * `ZOOKEEPER_RETRY_DELAY` - a delay between unsuccessful connection attempt to zookeeper and repeated attempt
+    * `ZOOKEEPER_CS_VAULT_ROOT_NODE` - a root node for keeping application data in zookeeper
+    * `ZOOKEEPER_CS_VAULT_MASTER_LATCH_NODE` - a node for master latch keeping
     * `VAULT_URL` - vault url
     * `VAULT_ROOT_TOKEN` - root token providing an access to a vault server
     * `VAULT_RETRY_DELAY` -  a delay between unsuccessful connection attempt to vault and repeated attempt

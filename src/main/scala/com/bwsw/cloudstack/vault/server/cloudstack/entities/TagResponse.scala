@@ -75,17 +75,23 @@ object Tag {
   object Key {
     case object VaultRO      extends Key
     case object VaultRW      extends Key
+    case object VaultHost    extends Key
+    case object VaultPrefix  extends Key
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
-      case x if x == s"${prefix.toUpperCase}VAULT.RO"       => Key.VaultRO
-      case x if x == s"${prefix.toUpperCase}VAULT.RW"       => Key.VaultRW
-      case _                                                => Key.Other
+      case x if x == s"${prefix.toUpperCase}VAULT.RO.TOKEN"       => Key.VaultRO
+      case x if x == s"${prefix.toUpperCase}VAULT.RW.TOKEN"       => Key.VaultRW
+      case x if x == s"${prefix.toUpperCase}VAULT.HOST"           => Key.VaultHost
+      case x if x == s"${prefix.toUpperCase}VAULT.PREFIX"         => Key.VaultPrefix
+      case _                                                      => Key.Other
     }
 
     def toString(x: Key): String = x match {
-      case  Key.VaultRO       => s"${prefix}vault.ro"
-      case  Key.VaultRW       => s"${prefix}vault.rw"
+      case  Key.VaultRO       => s"${prefix}vault.ro.token"
+      case  Key.VaultRW       => s"${prefix}vault.rw.token"
+      case  Key.VaultPrefix   => s"${prefix}vault.prefix"
+      case  Key.VaultHost     => s"${prefix}vault.host"
       case  Key.Other         => ""
     }
   }
