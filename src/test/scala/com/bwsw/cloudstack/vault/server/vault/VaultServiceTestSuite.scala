@@ -79,17 +79,25 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   "deleteSecretRecursive" should "delete secret in vault by path and sub-paths" in {
     val firstRootPath = "/test!1"
     val secondRootPath = "test!!2/"
+    val fullSecondRootPath = s"$firstRootPath/${secondRootPath.dropRight(1)}"
+    val thirdRootPath = "test!!!3/"
     val secondPath = "test!!2"
     val thirdPath = "test!!!3"
     val fourthPath = "test!!!!4"
 
-    val expectedGetPaths = List(s"$firstRootPath", s"$firstRootPath/$secondPath")
+    val expectedGetPaths = List(
+      s"$firstRootPath",
+      s"$firstRootPath/$secondPath",
+      s"$firstRootPath/$secondRootPath$thirdPath"
+    )
     var actualGetPaths = List.empty[String]
 
     val expectedDeletionPaths = List(
+      s"$firstRootPath/$secondRootPath$thirdRootPath$fourthPath",
+      s"$firstRootPath/$secondRootPath$thirdRootPath$thirdPath",
       s"$firstRootPath/$secondRootPath$fourthPath",
-      s"$firstRootPath/$secondRootPath$thirdPath",
-      s"$firstRootPath/$secondPath", s"$firstRootPath"
+      s"$firstRootPath/$secondPath",
+      s"$firstRootPath"
     )
     var actualDeletionPaths = List.empty[String]
 
@@ -100,12 +108,16 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
       }
 
       override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
-        if (pathToRootSecret == firstRootPath) {
-          actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-          () => getSubSecretPathsJson(secondRootPath, secondPath)
-        } else {
-          actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-          () => getSubSecretPathsJson(thirdPath, fourthPath)
+        pathToRootSecret match {
+          case `firstRootPath` =>
+            actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+            () => getSubSecretPathsJson(secondRootPath, secondPath)
+          case `fullSecondRootPath` =>
+            actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+            () => getSubSecretPathsJson(fourthPath, thirdRootPath)
+          case _ =>
+            actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
+            () => getSubSecretPathsJson(thirdPath, fourthPath)
         }
       }
     }
