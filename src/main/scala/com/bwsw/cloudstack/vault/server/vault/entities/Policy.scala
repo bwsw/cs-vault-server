@@ -21,7 +21,6 @@ package com.bwsw.cloudstack.vault.server.vault.entities
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
-import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
 
 object Policy {
 
@@ -42,34 +41,34 @@ object Policy {
     }
   }
 
-  def createVmReadPolicy(account: UUID, vm: UUID): Policy = {
+  def createVmReadPolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
-      path = s"${DataPath.vmSecretDefaultPath}$vm*",
+      path = s"$path$vm*",
       acl = Policy.ACL.Read
     )
   }
 
-  def createVmWritePolicy(account: UUID, vm: UUID): Policy = {
+  def createVmWritePolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
-      path = s"${DataPath.vmSecretDefaultPath}$vm*",
+      path = s"$path$vm*",
       acl = Policy.ACL.Write
     )
   }
 
-  def createAccountReadPolicy(account: UUID): Policy = {
+  def createAccountReadPolicy(account: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_ro*",
-      path = s"${DataPath.accountSecretDefaultPath}$account*",
+      path = s"$path$account*",
       acl = Policy.ACL.Read
     )
   }
 
-  def createAccountWritePolicy(account: UUID): Policy = {
+  def createAccountWritePolicy(account: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"${DataPath.accountSecretDefaultPath}$account*",
+      path = s"$path$account*",
       acl = Policy.ACL.Write
     )
   }

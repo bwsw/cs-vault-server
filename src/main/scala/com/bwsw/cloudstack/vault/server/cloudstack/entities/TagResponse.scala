@@ -18,7 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, OtherConstant}
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
@@ -29,7 +29,7 @@ private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tag
 private[cloudstack] case class TagList(@JsonProperty("tag") tags: Option[List[Tag]])
 
 object Tag {
-  val prefix: String = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix) match {
+  val prefix: String = OtherConstant.tagPrefix match {
     case "" => ""
     case x => s"$x."
   }
@@ -56,11 +56,6 @@ object Tag {
   object Type {
     case object User      extends Type
     case object UserVM    extends Type
-
-    def fromString: PartialFunction[String, Type] = {
-      case "User"       => Type.User
-      case "UserVM"     => Type.UserVM
-    }
 
     def toString(x: Type): String = x match {
       case  Type.User       => "User"

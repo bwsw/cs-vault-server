@@ -42,7 +42,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val controller = new CloudStackVaultController(
       new MockVaultService,
       new MockCloudStackService,
-      new MockZooKeeperService
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
     ){
       override def handleAccountCreate(accountId: UUID): Unit = {
         assert(expectedCreationAccountId == accountId)
@@ -103,7 +104,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val controller = new CloudStackVaultController(
       new MockVaultService,
       new MockCloudStackService,
-      new MockZooKeeperService
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
     ){
     }
 
@@ -124,7 +126,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val controller = new CloudStackVaultController(
       new MockVaultService,
       new MockCloudStackService,
-      new MockZooKeeperService
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
     ){
       override def handleUserCreate(userId: UUID): Unit = {
         assert(userId == expectedUserId)

@@ -18,9 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.kafka
 
-import com.bwsw.cloudstack.vault.server.Components
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
+import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,15 +27,14 @@ import scala.util.{Failure, Success, Try}
 /**
   * Class is responsible for start Consumer with specified configuration
   */
-class ConsumerManager(components: Components) {
-  private val topic: String = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic)
-  private val brokers: String = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList)
+class ConsumerManager[T](eventHandler: EventHandler[T],
+                         settings: ConsumerManager.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val timeout = 10000
   private val groupId = "group01"
 
   def execute(): Unit = {
-    val consumer = new Consumer[CloudStackEvent](brokers, topic, groupId, timeout, components.cloudStackEventHandler)
+    val consumer = new Consumer[T](settings.brokers, settings.topic, groupId, timeout, eventHandler)
     Try {
       consumer.subscribe()
       while(true) {
@@ -50,4 +47,8 @@ class ConsumerManager(components: Components) {
         consumer.shutdown()
     }
   }
+}
+
+object ConsumerManager {
+  case class Settings(topic: String, brokers: String)
 }

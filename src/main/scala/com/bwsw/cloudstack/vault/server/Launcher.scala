@@ -53,8 +53,12 @@ object Launcher extends StrictLogging {
       ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperUrl)
     ))
 
+    val consumerManagerSettings = ConsumerManager.Settings(
+      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
+      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList)
+    )
     val components = new Components(ConfigLoader.loadConfig())
-    val consumerManager = new ConsumerManager(components)
+    val consumerManager = new ConsumerManager(components.cloudStackEventHandler, consumerManagerSettings)
     consumerManager.execute()
     components.close()
 

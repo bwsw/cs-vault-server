@@ -55,22 +55,20 @@ object HttpStatuses {
 }
 
 object RequestPath {
-  val vaultHealthCheckPath = "/v1/sys/health"
-  val vaultTokenCreate     = "/v1/auth/token/create"
-  val vaultTokenLookup     = "/v1/auth/token/lookup"
-  val vaultPolicy          = "/v1/sys/policy"
-  val vaultSecretVm        = s"/v1/${DataPath.vmSecretDefaultPath}"
-  val vaultSecretAccount   = s"/v1/${DataPath.accountSecretDefaultPath}"
-  val vaultTokenRevoke     = "/v1/auth/token/revoke"
+  val vaultRoot            = "/v1/"
+  val vaultHealthCheckPath = s"${vaultRoot}sys/health"
+  val vaultTokenCreate     = s"${vaultRoot}auth/token/create"
+  val vaultTokenLookup     = s"${vaultRoot}auth/token/lookup"
+  val vaultPolicy          = s"${vaultRoot}sys/policy"
+  val vaultTokenRevoke     = s"${vaultRoot}auth/token/revoke"
 }
 
 object DataPath {
-  private val accountSecret           = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
-  private val vmSecret                = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
-  private val configZooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
   private val configMasterLatchNode   = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
-  val vmSecretDefaultPath: String       = vmSecret
-  val accountSecretDefaultPath: String  = accountSecret
-  val zooKeeperRootNode: String         = configZooKeeperRootNode
-  val masterLatchNode: String           = configMasterLatchNode
+  val masterLatchNode: String         = configMasterLatchNode
+}
+
+object OtherConstant {
+  private val configTagPrefix = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix)
+  val tagPrefix: String = configTagPrefix
 }
