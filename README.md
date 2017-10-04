@@ -15,16 +15,16 @@ Quick start
 To start a server in Docker container you should:
 
 1. Provide a file 'variables.env' containing the following required variables:
-    * `TOKEN_PERIOD` - lifetime of vault token in days
-    * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accounts' secrets in vault
-    * `VM_VAULT_BASIC_PATH` - path to vms' secrets in vault
+    * `TOKEN_PERIOD` - lifetime of vault token in days (3562 days by default)
+    * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accounts' secrets in vault ("secret/cs/accounts/" by default)
+    * `VM_VAULT_BASIC_PATH` - path to vms' secrets in vault ("secret/cs/vms/" by default)
     * `TAG_NAME_PREFIX` - prefix for token name tag
     * `KAFKA_SERVER_LIST` - list of kafka urls
     * `KAFKA_TOPIC` - kafka topic containing cloudstack events
     * `ZOOKEEPER_URL` - zookeeper url
     * `ZOOKEEPER_RETRY_DELAY` - a delay between unsuccessful connection attempt to zookeeper and repeated attempt
-    * `ZOOKEEPER_CS_VAULT_ROOT_NODE` - a root node for keeping application data in zookeeper
-    * `ZOOKEEPER_CS_VAULT_MASTER_LATCH_NODE` - a node for master latch keeping
+    * `ZOOKEEPER_CS_VAULT_ROOT_NODE` - a root node for keeping application data in zookeeper ("/cs_vault_server" by default)
+    * `ZOOKEEPER_CS_VAULT_MASTER_LATCH_NODE` - a node for master latch keeping ("/cs_vault_server_latch" by default)
     * `VAULT_URL` - vault url
     * `VAULT_ROOT_TOKEN` - root token providing an access to a vault server
     * `VAULT_RETRY_DELAY` -  a delay between unsuccessful connection attempt to vault and repeated attempt

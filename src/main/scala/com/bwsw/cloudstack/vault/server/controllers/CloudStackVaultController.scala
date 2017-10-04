@@ -44,6 +44,7 @@ class CloudStackVaultController(vaultService: VaultService,
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val accountEntityName = "accounts"
   private val vmEntityName = "vms"
+  private val vaultApiPath = s"${vaultService.vaultUrl}${RequestPath.vaultRoot}"
 
   /**
     * Revoke token and delete secret in Vault server.
@@ -53,8 +54,8 @@ class CloudStackVaultController(vaultService: VaultService,
     */
   def handleAccountDelete(accountId: UUID): Unit = {
     logger.debug(s"handleAccountDelete(accountId: $accountId)")
-    val defaultSecretPath = s"${RequestPath.vaultRoot}${settings.accountSecretPath}$accountId"
-    deleteTokenAndAppropriateSecret(accountId, accountEntityName, defaultSecretPath)
+    val requestSecretPath = s"${RequestPath.vaultRoot}${getAccountEntitySecretPath(accountId)}"
+    deleteTokenAndAppropriateSecret(accountId, accountEntityName, requestSecretPath)
     logger.info(s"Account deletion was processed, accountId: $accountId)")
   }
 
@@ -66,8 +67,8 @@ class CloudStackVaultController(vaultService: VaultService,
     */
   def handleVmDelete(vmId: UUID): Unit = {
     logger.debug(s"handleVmDelete(vmId: $vmId)")
-    val defaultSecretPath = s"${RequestPath.vaultRoot}${settings.vmSecretPath}$vmId"
-    deleteTokenAndAppropriateSecret(vmId, vmEntityName, defaultSecretPath)
+    val requestSecretPath = s"${RequestPath.vaultRoot}${getVmEntitySecretPath(vmId)}"
+    deleteTokenAndAppropriateSecret(vmId, vmEntityName, requestSecretPath)
     logger.info(s"Vm deletion was processed, vmId: $vmId)")
   }
 
@@ -80,27 +81,35 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleUserCreate(userId: UUID): Unit = {
     logger.debug(s"handleUserCreate(userId: $userId)")
 
+    def getTokenTags(entityId: UUID, tags: List[Tag]) = {
+      val currentTokenTags = tags.filter { tag =>
+        tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
+      }.toSet
+
+      val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
+        currentTokenTags.exists(_.key == x)
+      }
+
+      val newTags = if (absentTokenTagKeyList.nonEmpty) {
+        createMissingAccountTokenTags(entityId, absentTokenTagKeyList)
+      } else {
+        List.empty[Tag]
+      }
+
+      currentTokenTags.toList ::: newTags
+    }
+
     val accountId = cloudStackService.getAccountIdByUserId(userId)
     val accountTags = cloudStackService.getUserTagsByAccountId(accountId)
 
-    val currentTokenTags = accountTags.filter { tag =>
-      tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
-    }.toSet ++ Set(
-      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
-      Tag.createTag(Tag.Key.VaultPrefix, settings.accountSecretPath)
+    val vaultKeyspaceTags = List(
+      Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
+      Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
     )
 
-    val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
-      currentTokenTags.exists(_.key == x)
-    }
+    val allTags = getTokenTags(accountId, accountTags) ::: vaultKeyspaceTags
 
-    val newTags = if (absentTokenTagKeyList.nonEmpty) {
-      createMissingAccountTokenTags(accountId, absentTokenTagKeyList)
-    } else {
-      List.empty[Tag]
-    }
-
-    cloudStackService.setResourceTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
+    cloudStackService.setResourceTags(userId, Tag.Type.User, allTags)
     logger.info(s"User creation was processed, userId: $userId)")
   }
 
@@ -118,23 +127,35 @@ class CloudStackVaultController(vaultService: VaultService,
       cloudStackService.getUserTagsByUserId(x)
     }
 
-    val currentTokenTags = accountTags.filter { tag =>
-      tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
-    }.toSet ++ Set(
-      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
-      Tag.createTag(Tag.Key.VaultPrefix, settings.accountSecretPath)
-    )
+    val currentAllVaultTags = accountTags.filter { tag =>
+      tag.key.oneOf(Tag.Key.VaultRO, Tag.Key.VaultRW, Tag.Key.VaultHost, Tag.Key.VaultPrefix)
+    }.toSet
 
-    val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
-      currentTokenTags.exists(_.key == x)
+    val absentVaultTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
+      currentAllVaultTags.exists(_.key == x)
     }
 
-    if (absentTokenTagKeyList.nonEmpty) {
-      val newTags = createMissingAccountTokenTags(accountId, absentTokenTagKeyList)
+    val absentVaultKeyspaceTagKeyList = List(Tag.Key.VaultHost, Tag.Key.VaultPrefix).filterNot { x =>
+      currentAllVaultTags.exists(_.key == x)
+    }
+
+    if (absentVaultTokenTagKeyList.nonEmpty) {
+      val newTags = createMissingAccountTokenTags(accountId, absentVaultTokenTagKeyList)
       usersIds.foreach { userId =>
-        cloudStackService.setResourceTag(userId, Tag.Type.User, currentTokenTags.toList ::: newTags)
+        cloudStackService.setResourceTags(userId, Tag.Type.User, currentAllVaultTags.toList ::: newTags)
       }
     }
+
+    if (absentVaultKeyspaceTagKeyList.nonEmpty) {
+      val newVaultKeyspaceTags = absentVaultKeyspaceTagKeyList.collect {
+        case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
+        case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
+      }
+      usersIds.foreach { userId =>
+        cloudStackService.setResourceTags(userId, Tag.Type.User, newVaultKeyspaceTags)
+      }
+    }
+
     logger.info(s"Account creation was processed, accountId: $accountId)")
   }
 
@@ -154,7 +175,7 @@ class CloudStackVaultController(vaultService: VaultService,
       Policy.createVmWritePolicy(accountId, vmId, settings.vmSecretPath)
     )
 
-    val tagList = policyList.map { x =>
+    val vaultTokenTags = policyList.map { x =>
       val pathToData = createTokenEntityNodePath(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
       zooKeeperService.getNodeData(pathToData) match {
         case Some(token) =>
@@ -165,12 +186,14 @@ class CloudStackVaultController(vaultService: VaultService,
           writeTokenToZooKeeperNode(pathToData, token)
           tag
       }
-    } ::: List(
-      Tag.createTag(Tag.Key.VaultHost, vaultService.vaultUrl),
-      Tag.createTag(Tag.Key.VaultPrefix, settings.vmSecretPath)
+    }
+
+    val vaultKeyspaceTags = List(
+      Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
+      Tag.createTag(Tag.Key.VaultPrefix, getVmEntitySecretPath(vmId))
     )
 
-    cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, tagList)
+    cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ::: vaultKeyspaceTags)
     logger.info(s"VM creation was processed, vmId: $vmId)")
   }
 
@@ -245,6 +268,14 @@ class CloudStackVaultController(vaultService: VaultService,
 
   private def createEntityNodePath(entityId: String, entityName: String) =
     s"${settings.zooKeeperRootNode}/$entityName/$entityId"
+
+  private def getVmEntitySecretPath(vmId: UUID): String = {
+    s"${settings.vmSecretPath}$vmId"
+  }
+
+  private def getAccountEntitySecretPath(accountId: UUID): String = {
+    s"${settings.accountSecretPath}$accountId"
+  }
 
   private def writeTokenToZooKeeperNode(path: String, token: UUID) = {
     logger.debug(s"writeTokensToZooKeeperNode(path: $path)")

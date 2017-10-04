@@ -182,9 +182,9 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @param resourceType "User" or "UserVM" type of tags
     * @param tagList List with tags to add to the resource
     */
-  def setResourceTag(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): Unit = {
-    logger.debug(s"setResourceTag(resourceId: $resourceId, resourceType: $resourceType)")
-    def task = сloudStackTaskCreator.createSetResourceTagTask(resourceId, resourceType, tagList)
+  def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): Unit = {
+    logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
+    def task = сloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagList)
 
     TaskRunner.tryRunUntilSuccess[Unit](task, settings.cloudStackRetryDelay)
     logger.debug(s"Tag was set to resource: $resourceId, $resourceType")

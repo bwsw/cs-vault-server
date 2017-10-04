@@ -64,11 +64,5 @@ object RequestPath {
 }
 
 object DataPath {
-  private val configMasterLatchNode   = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
-  val masterLatchNode: String         = configMasterLatchNode
-}
-
-object OtherConstant {
-  private val configTagPrefix = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix)
-  val tagPrefix: String = configTagPrefix
+  val masterLatchNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
 }

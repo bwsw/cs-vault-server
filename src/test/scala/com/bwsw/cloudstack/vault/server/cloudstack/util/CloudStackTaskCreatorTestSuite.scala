@@ -119,7 +119,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourceTagTask(
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(
       vmId,
       Tag.Type.UserVM,
       tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
@@ -138,7 +138,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourceTagTask(
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(
       userId,
       Tag.Type.User,
       tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
@@ -383,7 +383,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createSetResourceTagTask(
+      cloudStackTaskCreator.createSetResourceTagsTask(
         userId,
         Tag.Type.User,
         List(Tag(Tag.Key.VaultRO, "value"))
@@ -405,7 +405,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackTaskCreator.createSetResourceTagTask(
+      cloudStackTaskCreator.createSetResourceTagsTask(
         userId,
         Tag.Type.User,
         List(Tag(Tag.Key.VaultRO, "value"))

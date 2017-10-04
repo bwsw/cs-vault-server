@@ -18,7 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
-import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, OtherConstant}
+import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
@@ -29,10 +29,6 @@ private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tag
 private[cloudstack] case class TagList(@JsonProperty("tag") tags: Option[List[Tag]])
 
 object Tag {
-  val prefix: String = OtherConstant.tagPrefix match {
-    case "" => ""
-    case x => s"$x."
-  }
   def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
 
   class KeySerializer extends JsonSerializer[Key] {
@@ -65,9 +61,19 @@ object Tag {
 
   @JsonSerialize(using = classOf[KeySerializer])
   @JsonDeserialize(using = classOf[KeyDeserializer])
-  sealed trait Key extends Product with Serializable
+  sealed trait Key extends Product with Serializable {
+
+    def oneOf(xs: Key*): Boolean = xs.contains(this)
+
+    def oneOf(xs: Set[Key]): Boolean = xs.contains(this)
+
+  }
 
   object Key {
+    val prefix: String = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix) match {
+      case "" => ""
+      case x => s"$x."
+    }
     private val lowerCaseVaultRoString     = s"${prefix}vault.ro"
     private val lowerCaseVaultRwString     = s"${prefix}vault.rw"
     private val lowerCaseVaultHostString   = s"${prefix}vault.host"

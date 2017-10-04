@@ -29,6 +29,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCri
 import com.bwsw.cloudstack.vault.server.util.HttpStatuses
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -96,24 +97,26 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     *
     * @return task for setting tag to entity
     */
-  def createSetResourceTagTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
+  def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
+    @tailrec
+    def addTagsToRequest(index: Int, tagList: List[Tag], request: ApacheCloudStackRequest): ApacheCloudStackRequest = {
+      tagList match {
+        case tag :: tail =>
+          request.addParameter(s"tags[$index].key", Tag.Key.toString(tag.key))
+          request.addParameter(s"tags[$index].value", tag.value)
+          addTagsToRequest(index + 1, tail, request)
+        case _ => request
+      }
+    }
+
     val request = new ApacheCloudStackRequest(Command.toString(Command.CreateTags))
     request.addParameter("response", "json")
     request.addParameter("resourcetype", Tag.Type.toString(resourceType))
     request.addParameter("resourceids", resourceId)
 
-    loop(0, tagList)
+    val requestWithTags = addTagsToRequest(0, tagList, request)
 
-    def loop(index: Int, tagList: List[Tag]): Unit = {
-      if (tagList.nonEmpty) {
-        val tag = tagList.head
-        request.addParameter(s"tags[$index].key", Tag.Key.toString(tag.key))
-        request.addParameter(s"tags[$index].value", tag.value)
-        loop(index + 1, tagList.tail)
-      }
-    }
-
-    createRequest(request, s"set tags to resource: ($resourceId, $resourceType)")
+    createRequest(requestWithTags, s"set tags to resource: ($resourceId, $resourceType)")
   }
 
   /**

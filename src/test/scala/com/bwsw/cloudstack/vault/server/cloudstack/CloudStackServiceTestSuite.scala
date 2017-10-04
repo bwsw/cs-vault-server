@@ -140,7 +140,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val value = "value1"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override def createSetResourceTagTask(resourceId: UUID, resourceType: Type, tagList: List[Tag]): () => Unit = {
+      override def createSetResourceTagsTask(resourceId: UUID, resourceType: Type, tagList: List[Tag]): () => Unit = {
         assert(resourceId == vmId, "resourceId is wrong")
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
         assert(tagList == List(Tag.createTag(key, value)), "tagList is wrong")
@@ -149,7 +149,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    assert(cloudStackService.setResourceTag(vmId, Tag.Type.UserVM, Tag.createTag(key, value) :: Nil).isInstanceOf[Unit])
+    assert(cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, Tag.createTag(key, value) :: Nil).isInstanceOf[Unit])
   }
 
   //Negative tests
