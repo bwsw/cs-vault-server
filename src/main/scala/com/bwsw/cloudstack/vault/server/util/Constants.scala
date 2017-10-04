@@ -52,6 +52,7 @@ object HttpStatuses {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
   val CLOUD_STACK_ENTITY_DOES_NOT_EXIST = 431
+  val NOT_FOUND = 404
 }
 
 object RequestPath {
