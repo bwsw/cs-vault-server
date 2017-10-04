@@ -33,6 +33,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   createMasterNode()
   private val leaderLatch = new leader.LeaderLatch(curatorClient, masterNode, id)
   private var isStarted = false
+  private var isClosed = false
 
   private def createCuratorClient(): CuratorFramework = {
     logger.debug(s"Create a curator client (connection: $zkServer).")
@@ -55,7 +56,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   }
 
   def acquireLeadership(delay: Long): Unit = {
-    while (!hasLeadership) {
+    while (!hasLeadership && !isClosed) {
       logger.debug("Waiting until the leader latch acquires leadership.")
       Thread.sleep(delay)
     }
@@ -94,5 +95,6 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
     logger.info("Close a leader latch if it's started.")
     if (isStarted) leaderLatch.close()
     curatorClient.close()
+    isClosed = true
   }
 }

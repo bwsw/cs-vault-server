@@ -786,8 +786,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     }
 
     val vaultService = new MockVaultService {
-      override def deleteSecret(pathToSecret: String): Unit = {
-        assert(pathToSecret == defaultPath, "pathToSecret is wrong")
+      override def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
+        assert(pathToRootSecret == defaultPath, "pathToSecret is wrong")
       }
     }
     (vaultService, zooKeeperService)
@@ -866,8 +866,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         List(tokenPolicyName)
       }
 
-      override def deleteSecret(pathToSecret: String): Unit = {
-        assert(pathToSecret == defaultPath, "pathToSecret is wrong")
+      override def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
+        assert(pathToRootSecret == defaultPath, "pathToSecret is wrong")
       }
 
       override def deletePolicy(policyName: String): Unit = {

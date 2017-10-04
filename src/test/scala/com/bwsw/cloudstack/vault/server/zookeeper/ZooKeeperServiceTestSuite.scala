@@ -6,9 +6,6 @@ import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCritic
 import org.apache.curator.test.TestingServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-/**
-  * Created by medvedev_vv on 29.08.17.
-  */
 class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
   val server = new TestingServer(9000, true)
   val connectString = server.getConnectString

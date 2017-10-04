@@ -18,5 +18,5 @@ class MockVaultService extends VaultService (
 
   override def revokeToken(tokenId: UUID): List[String] = throw new NotImplementedError("revokeToken not implemented")
 
-  override def deleteSecret(pathToSecret: String): Unit = throw new NotImplementedError("deleteSecret not implemented")
+  override def deleteSecretsRecursively(pathToRootSecret: String): Unit = throw new NotImplementedError("deleteSecretsRecursive not implemented")
 }
