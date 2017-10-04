@@ -22,7 +22,7 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 import com.bettercloud.vault.json.Json
-import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities._
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -39,6 +39,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(true)
+  val vaultUrl: String = vaultRest.vaultUrl
 
   /**
     * Creates token with specified policy
@@ -55,7 +56,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     val tokenParameters = Token.TokenInitParameters(
       noDefaultPolicy = true,
       policies.map(_.name),
-      settings.tokenPeriod
+      Converter.daysToSeconds(settings.tokenPeriod)
     )
 
     def executeRequest = vaultRest.createTokenCreateRequest(jsonSerializer.serialize(tokenParameters))

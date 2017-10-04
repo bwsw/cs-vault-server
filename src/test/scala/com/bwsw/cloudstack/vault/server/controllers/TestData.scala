@@ -2,6 +2,7 @@ package com.bwsw.cloudstack.vault.server.controllers
 
 import java.util.UUID
 
+import com.bwsw.cloudstack.vault.server.MockConfig
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
 
@@ -9,6 +10,7 @@ import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
   * Created by medvedev_vv on 04.09.17.
   */
 trait TestData {
+  val cloudStackVaultControllerSettings = MockConfig.cloudStackVaultControllerSettings
   val accountId = UUID.randomUUID()
   val vmId = UUID.randomUUID()
   val firstUserId = UUID.randomUUID()
@@ -16,18 +18,18 @@ trait TestData {
   val readToken = UUID.randomUUID()
   val writeToken = UUID.randomUUID()
 
-  val rootNodePath = DataPath.zooKeeperRootNode
-  val rootNodeAccountPath = s"${DataPath.zooKeeperRootNode}/accounts"
-  val rootNodeVmPath = s"${DataPath.zooKeeperRootNode}/vms"
+  val rootNodePath = cloudStackVaultControllerSettings.zooKeeperRootNode
+  val rootNodeAccountPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/accounts"
+  val rootNodeVmPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/vms"
 
-  def getDefaultAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultSecretAccount}$accountId"
-  def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vaultSecretVm}$vmId"
+  def getDefaultAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
+  def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
 
-  def getVmEntityNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/vms/$entityId"
-  def getVmTokenReadNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/vms/$entityId/${Tag.prefix}vault.ro"
-  def getVmTokenWriteNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/vms/$entityId/${Tag.prefix}vault.rw"
+  def getVmEntityNodePath(entityId: String) = s"$rootNodePath/vms/$entityId"
+  def getVmTokenReadNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultro"
+  def getVmTokenWriteNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultrw"
 
-  def getAccountEntityNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/accounts/$entityId"
-  def getAccountTokenReadNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/accounts/$entityId/${Tag.prefix}vault.ro"
-  def getAccountTokenWriteNodePath(entityId: String) = s"${DataPath.zooKeeperRootNode}/accounts/$entityId/${Tag.prefix}vault.rw"
+  def getAccountEntityNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId"
+  def getAccountTokenReadNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultro"
+  def getAccountTokenWriteNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultrw"
 }

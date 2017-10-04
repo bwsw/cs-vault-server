@@ -14,7 +14,7 @@ import org.scalatest.FlatSpec
   * Created by medvedev_vv on 31.08.17.
   */
 class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite {
-
+  val vmSecretPath = settings.cloudStackVaultControllerSettings.vmSecretPath
   // Positive tests
   "createTokenCreateRequest" should "create request which return token" in {
     val policyName = "policyName"
@@ -102,7 +102,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
   }
 
   "createPolicyCreateRequest" should "create request which creates policy" in {
-    val policy = Policy.createVmWritePolicy(accountId, vmId)
+    val policy = Policy.createVmWritePolicy(accountId, vmId, vmSecretPath)
     val expectedResponseBody = Array.empty[Byte]
     val expectedPath = s"/v1/sys/policy/${policy.name}"
     val expectedData = getPolicyJson(policy)
@@ -129,7 +129,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
   }
 
   "createPolicyDeleteRequest" should "create request which deletes policy" in {
-    val policy = Policy.createVmReadPolicy(accountId, vmId)
+    val policy = Policy.createVmReadPolicy(accountId, vmId, vmSecretPath)
     val expectedResponseBody = Array.empty[Byte]
     val expectedPath = s"/v1/sys/policy/${policy.name}"
     val expectedData = ""

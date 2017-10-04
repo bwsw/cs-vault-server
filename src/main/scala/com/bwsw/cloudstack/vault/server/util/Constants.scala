@@ -20,29 +20,31 @@ package com.bwsw.cloudstack.vault.server.util
 
 object ConfigLiterals {
   private final val applicationDomain = "app"
-  private final val kafkaDomain = s"$applicationDomain.kafka"
-  private final val vaultDomain = s"$applicationDomain.vault"
-  private final val zooKeeperDomain = s"$applicationDomain.zookeeper"
-  private final val cloudStackDomain = s"$applicationDomain.cloudStack"
+  private final val kafkaDomain       = s"$applicationDomain.kafka"
+  private final val vaultDomain       = s"$applicationDomain.vault"
+  private final val zooKeeperDomain   = s"$applicationDomain.zookeeper"
+  private final val cloudStackDomain  = s"$applicationDomain.cloudStack"
 
-  val tokenPeriod = s"$applicationDomain.tokenPeriod"
+  val tokenPeriod            = s"$applicationDomain.tokenPeriod"
   val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
-  val vmsVaultBasicPath = s"$applicationDomain.vmsVaultBasicPath"
-  val tagNamePrefix = s"$applicationDomain.tagNamePrefix"
+  val vmsVaultBasicPath      = s"$applicationDomain.vmsVaultBasicPath"
+  val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
 
   val kafkaServerList = s"$kafkaDomain.serverList"
-  val kafkaTopic = s"$kafkaDomain.topic"
+  val kafkaTopic      = s"$kafkaDomain.topic"
 
-  val zooKeeperUrl = s"$zooKeeperDomain.url"
-  val zooKeeperRetryDelay = s"$zooKeeperDomain.retryDelay"
+  val zooKeeperUrl             = s"$zooKeeperDomain.url"
+  val zooKeeperRetryDelay      = s"$zooKeeperDomain.retryDelay"
+  val zooKeeperRootNode        = s"$zooKeeperDomain.zooKeeperRootNode"
+  val zooKeeperMasterLatchNode = s"$zooKeeperDomain.masterLatchNode"
 
-  val vaultUrl = s"$vaultDomain.url"
-  val vaultRootToken = s"$vaultDomain.rootToken"
+  val vaultUrl        = s"$vaultDomain.url"
+  val vaultRootToken  = s"$vaultDomain.rootToken"
   val vaultRetryDelay = s"$vaultDomain.retryDelay"
 
   val cloudStackApiUrlList = s"$cloudStackDomain.apiUrlList"
-  val cloudStackApiKey = s"$cloudStackDomain.apiKey"
-  val cloudStackSecretKey = s"$cloudStackDomain.secretKey"
+  val cloudStackApiKey     = s"$cloudStackDomain.apiKey"
+  val cloudStackSecretKey  = s"$cloudStackDomain.secretKey"
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
 }
 
@@ -50,23 +52,18 @@ object HttpStatuses {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
   val CLOUD_STACK_ENTITY_DOES_NOT_EXIST = 431
+  val NOT_FOUND = 404
 }
 
 object RequestPath {
-  val vaultHealthCheckPath = "/v1/sys/health"
-  val vaultTokenCreate     = "/v1/auth/token/create"
-  val vaultTokenLookup     = "/v1/auth/token/lookup"
-  val vaultPolicy          = "/v1/sys/policy"
-  val vaultSecretVm        = s"/v1/${DataPath.vmSecretDefaultPath}"
-  val vaultSecretAccount   = s"/v1/${DataPath.accountSecretDefaultPath}"
-  val vaultTokenRevoke     = "/v1/auth/token/revoke"
+  val vaultRoot            = "/v1/"
+  val vaultHealthCheckPath = s"${vaultRoot}sys/health"
+  val vaultTokenCreate     = s"${vaultRoot}auth/token/create"
+  val vaultTokenLookup     = s"${vaultRoot}auth/token/lookup"
+  val vaultPolicy          = s"${vaultRoot}sys/policy"
+  val vaultTokenRevoke     = s"${vaultRoot}auth/token/revoke"
 }
 
 object DataPath {
-  private val accountSecret = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
-  private val vmSecret = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
-  val vmSecretDefaultPath: String       = vmSecret
-  val accountSecretDefaultPath: String  = accountSecret
-  val zooKeeperRootNode                 = "/cs_vault_server"
-  val masterLatchNode                   = "/cs_vault_server_latch"
+  val masterLatchNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
 }

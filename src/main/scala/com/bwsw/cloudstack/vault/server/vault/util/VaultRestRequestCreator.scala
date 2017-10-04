@@ -33,6 +33,7 @@ import scala.util.{Failure, Success, Try}
   */
 class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private[vault] val vaultUrl: String = settings.vaultUrl
 
   /**
     * Creates request for creating token with specified parameters
@@ -45,7 +46,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenCreateRequest(tokenParameters: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenCreate}", tokenParameters).post,
-      HttpStatuses.OK_STATUS,
+      HttpStatuses.OK_STATUS :: Nil,
       "create token"
     )
   }
@@ -61,7 +62,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenRevokeRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenRevoke}", jsonTokenId).post,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "revoke token"
     )
   }
@@ -78,7 +79,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createPolicyCreateRequest(policyName: String, policyJson: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", policyJson).put,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "write policy"
     )
   }
@@ -94,7 +95,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createPolicyDeleteRequest(policyName: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", "").delete,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "delete policy"
     )
   }
@@ -110,7 +111,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenLookupRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenLookup}", jsonTokenId).post,
-      HttpStatuses.OK_STATUS,
+      HttpStatuses.OK_STATUS :: Nil,
       "get lookup token"
     )
   }
@@ -126,7 +127,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createDeleteSecretRequest(pathToSecret: String):() => String = {
     createRequest(
       createRest(s"$pathToSecret", "").delete,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY,
+      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "delete secret"
     )
   }
@@ -142,7 +143,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createGetSubSecretPathsRequest(pathToRootSecret: String):() => String = {
     createRequest(
       createRest(s"$pathToRootSecret?list=true", "").get,
-      HttpStatuses.OK_STATUS,
+      List(HttpStatuses.OK_STATUS, HttpStatuses.NOT_FOUND),
       "getSubPaths"
     )
   }
@@ -167,7 +168,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     * Handles request execution
     */
   private def createRequest(request: () => RestResponse,
-                            expectedResponseStatus: Int,
+                            expectedResponseStatuses: List[Int],
                             requestDescription: String)(): String = {
     logger.debug(s"Request was executed for: $requestDescription")
     val response = Try {
@@ -182,7 +183,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
         throw new VaultCriticalException(e)
     }
 
-    if (response.getStatus != expectedResponseStatus) {
+    if (!expectedResponseStatuses.contains(response.getStatus)) {
       throw new VaultCriticalException(new VaultException(s"Response status: ${response.getStatus} from vault server is not expected"))
     }
     new String(response.getBody)

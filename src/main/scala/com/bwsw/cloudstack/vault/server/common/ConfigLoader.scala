@@ -21,6 +21,7 @@ package com.bwsw.cloudstack.vault.server.common
 import com.bwsw.cloudstack.vault.server.Components
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -42,13 +43,18 @@ object ConfigLoader {
     val cloudStackUrlList: Array[String] = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiUrlList).split("[,\\s]+")
     val cloudStackSecretKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
     val cloudStackApiKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
+    //cloudStackVaultController
+    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
+    val accountSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
+    val zooKeeperRootNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
 
     Components.Settings(
       CloudStackService.Settings(cloudStackRetryDelay),
       CloudStackTaskCreator.Settings(cloudStackUrlList, cloudStackSecretKey, cloudStackApiKey),
       VaultService.Settings(vaultTokenPeriod, vaultRetryDelay),
       VaultRestRequestCreator.Settings(vaultUrl, vaultRootToken),
-      ZooKeeperService.Settings(zooKeeperUrl, zooKeeperRetryDelay)
+      ZooKeeperService.Settings(zooKeeperUrl, zooKeeperRetryDelay),
+      CloudStackVaultController.Settings(vmSecretPath, accountSecretPath, zooKeeperRootNode)
     )
   }
 }

@@ -13,11 +13,13 @@ import org.scalatest.FlatSpec
   * Created by medvedev_vv on 28.08.17.
   */
 class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
+  val accountSecretPath = settings.cloudStackVaultControllerSettings.accountSecretPath
+  val vmSecretPath = settings.cloudStackVaultControllerSettings.vmSecretPath
 
   //Positive tests
   "createToken" should "return new token UUID" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountReadPolicy(entityId)
+    val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createTokenCreateRequest(tokenParameters: String): () => String  = {
@@ -39,7 +41,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "revokeToken" should "revoke a token" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountWritePolicy(entityId)
+    val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
@@ -61,7 +63,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "deletePolicy" should "delete policy" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountWritePolicy(entityId)
+    val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
@@ -159,7 +161,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   //Negative tests
   "createToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountReadPolicy(entityId)
+    val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createTokenCreateRequest(tokenParameters: String): () => String  = {
@@ -182,7 +184,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "revokeToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountWritePolicy(entityId)
+    val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
@@ -223,7 +225,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "deletePolicy" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountWritePolicy(entityId)
+    val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {

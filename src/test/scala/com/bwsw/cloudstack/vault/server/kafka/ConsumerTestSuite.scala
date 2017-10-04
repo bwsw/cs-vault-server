@@ -4,6 +4,7 @@ import java.util
 import java.util.UUID
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
@@ -20,7 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by medvedev_vv on 15.09.17.
   */
-class ConsumerTestSuite extends FlatSpec with Matchers {
+class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
   val entityId: UUID = UUID.randomUUID()
   val correctAccountDeleteEvent: String = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$entityId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
   val expectedEvent = CloudStackEvent(Some(CloudStackEvent.Status.Completed), Some(CloudStackEvent.Action.AccountDelete), Some(entityId))
@@ -35,8 +36,12 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.updateBeginningOffsets(beginningOffsets)
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
-    val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-    }
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
@@ -61,8 +66,12 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.updateBeginningOffsets(beginningOffsets)
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
-    val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-    }
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
@@ -88,8 +97,12 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.updateBeginningOffsets(beginningOffsets)
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
-    val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-    }
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
@@ -120,8 +133,12 @@ class ConsumerTestSuite extends FlatSpec with Matchers {
     mockConsumer.updateBeginningOffsets(beginningOffsets)
     mockConsumer.addRecord(new ConsumerRecord[String, String](topic, 0, 0L, "key", correctAccountDeleteEvent))
 
-    val controller = new CloudStackVaultController(new MockVaultService, new MockCloudStackService, new MockZooKeeperService) {
-    }
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")

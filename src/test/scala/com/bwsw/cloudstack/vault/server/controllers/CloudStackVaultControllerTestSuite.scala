@@ -2,22 +2,25 @@ package com.bwsw.cloudstack.vault.server.controllers
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
+import com.bwsw.cloudstack.vault.server.{BaseTestSuite, MockConfig}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite with TestData with PrivateMethodTester {
+  val controllerSettings = settings.cloudStackVaultControllerSettings
   var checkedIsExistNodePaths = List.empty[String]
   var checkedDeletionNodePaths = List.empty[String]
   var checkedCreationNodePaths = List.empty[String]
   var checkedRevokedTokens = List.empty[UUID]
   var checkedResourceIds = List.empty[UUID]
   var checkedUserIds = List.empty[UUID]
+  var checkedNewTags = List.empty[Tag]
 
   //user, account expected data
   val accountEntityPath = getAccountEntityNodePath(accountId.toString)
@@ -26,8 +29,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   val expectedAccountId = accountId
   val expectedUserId = firstUserId
   val expectedUserResourceType = Type.User
-  val expectedAccountReadPolicy: Policy = Policy.createAccountReadPolicy(accountId)
-  val expectedAccountWritePolicy: Policy = Policy.createAccountWritePolicy(accountId)
+  val expectedAccountReadPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
+  val expectedAccountWritePolicy: Policy = Policy.createAccountWritePolicy(accountId, controllerSettings.accountSecretPath)
 
   //vm expected data
   val vmEntityPath = getVmEntityNodePath(vmId.toString)
@@ -35,12 +38,21 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   val writeVmTokenNodePath = getVmTokenWriteNodePath(vmId.toString)
   val expectedVmId = vmId
   val expectedVmResourceType = Type.UserVM
-  val expectedVmReadPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId)
-  val expectedVmWritePolicy: Policy = Policy.createVmWritePolicy(accountId, vmId)
+  val expectedVmReadPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
+  val expectedVmWritePolicy: Policy = Policy.createVmWritePolicy(accountId, vmId, controllerSettings.vmSecretPath)
 
-  val expectedTagsWithTokens = List(
+  val expectedTagsWithTokensForAccount = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
-    Tag.createTag(Tag.Key.VaultRW, writeToken.toString)
+    Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
+    Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.accountSecretPath}$accountId"),
+    Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}")
+  )
+
+  val expectedTagsWithTokensForVm = List(
+    Tag.createTag(Tag.Key.VaultRO, readToken.toString),
+    Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
+    Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.vmSecretPath}$vmId"),
+    Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}")
   )
 
   "handleAccountDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {
@@ -68,7 +80,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           new MockCloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -96,7 +109,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           new MockCloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -130,7 +144,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           new MockCloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -157,7 +172,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           new MockCloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -191,10 +207,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         accountId
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedUserId, "resource id is wrong")
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokensForAccount.toSet, "tokenList is wrong")
       }
     }
 
@@ -210,7 +226,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -240,10 +257,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         accountId
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedUserId, "resource id is wrong")
         assert(resourceType == Type.User, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokensForAccount.toSet, "tokenList is wrong")
       }
     }
 
@@ -252,7 +269,9 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
       cloudStackService,
-      zooKeeperService)
+      zooKeeperService,
+      controllerSettings
+    )
 
     cloudStackVaultController.handleUserCreate(firstUserId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
@@ -282,10 +301,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         accountId
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedUserId, "resource id is wrong")
         assert(resourceType == Type.User, "resource type is wrong")
-        assert(tagList.toSet == expectedTagsWithTokens.toSet, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokensForAccount.toSet, "tokenList is wrong")
       }
     }
 
@@ -299,7 +318,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
       cloudStackService,
-      zooKeeperService
+      zooKeeperService,
+      controllerSettings
     )
 
     cloudStackVaultController.handleUserCreate(firstUserId)
@@ -308,7 +328,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   "handleUserCreate" should "writing to zookeeper node throw exception" in {
     val expectedToken = readToken
-    val expectedReadPolicy: Policy = Policy.createAccountReadPolicy(accountId)
+    val expectedReadPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
 
     //exists data
     val pathsForCheckIsExistNode = List(readAccountTokenNodePath)
@@ -344,7 +364,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -370,6 +391,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val pathsForCheckCreationNode = List(readAccountTokenNodePath, writeAccountTokenNodePath)
 
     //actual data
+    checkedNewTags = List.empty[Tag]
     checkedIsExistNodePaths = List.empty[String]
     checkedCreationNodePaths = List.empty[String]
     checkedResourceIds = List.empty[UUID]
@@ -389,10 +411,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         )
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        checkedNewTags = checkedNewTags ::: tagList
       }
     }
 
@@ -408,15 +430,17 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
     assert(pathsForCheckCreationNode == checkedCreationNodePaths)
-    assert(checkedResourceIds == expectedUserIds)
+    assert(checkedResourceIds.toSet == expectedUserIds.toSet)
     assert(checkedUserIds == expectedUserIds)
+    assert(checkedNewTags.toSet == expectedTagsWithTokensForAccount.toSet)
   }
 
   "handleAccountCreate" should "gets tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
@@ -429,6 +453,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     )
 
     //actual data
+    checkedNewTags = List.empty[Tag]
     checkedIsExistNodePaths = List.empty[String]
     checkedResourceIds = List.empty[UUID]
     checkedUserIds = List.empty[UUID]
@@ -447,10 +472,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         )
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        checkedNewTags = checkedNewTags ::: tagList
       }
     }
 
@@ -459,26 +484,35 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
       cloudStackService,
-      zooKeeperService)
+      zooKeeperService,
+      controllerSettings
+    )
 
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
-    assert(expectedUserIds == checkedResourceIds)
+    assert(expectedUserIds.toSet == checkedResourceIds.toSet)
     assert(expectedUserIds == checkedUserIds)
   }
 
-  "handleAccountCreate" should "gets tokens (read, write) from cloudStack user tags" in {
+  "handleAccountCreate" should "gets tokens (read, write) and vault prefix from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
+    val expectedNewTags = List(Tag.createTag(
+      Tag.Key.VaultHost,
+      s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}"
+    ))
     val allTagsWithTokens = List(
       Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
       Tag.createTag(Tag.Key.Other, "test"),
-      Tag.createTag(Tag.Key.VaultRO, readToken.toString)
+      Tag.createTag(Tag.Key.VaultRO, readToken.toString),
+      Tag.createTag(Tag.Key.VaultPrefix, getDefaultAccountSecretPath(accountId))
     )
 
     //exists data
     val pathsForCheckIsExistNode = List()
 
     //actual data
+    checkedNewTags = List.empty[Tag]
+    checkedResourceIds = List.empty[UUID]
     checkedIsExistNodePaths = List.empty[String]
     checkedUserIds = List.empty[UUID]
 
@@ -492,6 +526,12 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         checkedUserIds = checkedUserIds ::: userId :: Nil
         allTagsWithTokens
       }
+
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+        checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
+        assert(resourceType == expectedUserResourceType, "resource type is wrong")
+        checkedNewTags = checkedNewTags ::: tagList
+      }
     }
 
     val zooKeeperService = new MockZooKeeperService {
@@ -504,18 +544,21 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
       cloudStackService,
-      zooKeeperService
+      zooKeeperService,
+      controllerSettings
     )
 
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
     assert(expectedUserIds == checkedUserIds)
+    assert(expectedUserIds == checkedResourceIds)
+    assert(expectedNewTags.toSet == checkedNewTags.toSet)
   }
 
   "handleAccountCreate" should "writing to zookeeper node throw exception" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
-    val expectedPolicy: Policy = Policy.createAccountReadPolicy(accountId)
+    val expectedPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
 
     //exists data
     val pathsForCheckIsExistNode = List(readAccountTokenNodePath)
@@ -554,7 +597,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -586,10 +630,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         expectedAccountId
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokensForVm.toSet, "tokenList is wrong")
       }
     }
 
@@ -605,7 +649,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -630,10 +675,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         expectedAccountId
       }
 
-      override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList == expectedTagsWithTokens, "tokenList is wrong")
+        assert(tagList.toSet == expectedTagsWithTokensForVm.toSet, "tokenList is wrong")
       }
     }
 
@@ -642,7 +687,9 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
       cloudStackService,
-      zooKeeperService)
+      zooKeeperService,
+      controllerSettings
+    )
 
     cloudStackVaultController.handleVmCreate(vmId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
@@ -650,7 +697,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   "handleVmCreate" should "writing to zookeeper node throw exception" in {
     val expectedToken = readToken
-    val expectedPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId)
+    val expectedPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
 
     //exists data
     val pathsForCheckIsExistNode = List(readVmTokenNodePath)
@@ -681,7 +728,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         new CloudStackVaultController(
           vaultService,
           cloudStackService,
-          zooKeeperService
+          zooKeeperService,
+          controllerSettings
         )
     }
 
@@ -704,7 +752,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         override def getNodeData(path: String): Option[String] = {
           None
         }
-      }
+      },
+      controllerSettings
     )
     assertThrows[IllegalArgumentException](
       cloudStackVaultController invokePrivate createMissingAccountTokenTags(accountId, List(otherTagKey))

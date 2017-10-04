@@ -32,7 +32,8 @@ object Components {
                       cloudStackTaskCreatorSettings: CloudStackTaskCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
-                      zooKeeperServiceSettings: ZooKeeperService.Settings)
+                      zooKeeperServiceSettings: ZooKeeperService.Settings,
+                      cloudStackVaultControllerSettings: CloudStackVaultController.Settings)
 }
 
 class Components(settings: Components.Settings) {
@@ -50,7 +51,12 @@ class Components(settings: Components.Settings) {
   )
 
   //controllers
-  lazy val cloudStackVaultController = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService)
+  lazy val cloudStackVaultController = new CloudStackVaultController(
+    vaultService,
+    cloudStackService,
+    zooKeeperService,
+    settings.cloudStackVaultControllerSettings
+  )
 
   //handlers
   lazy val cloudStackEventHandler = new CloudStackEventHandler(cloudStackVaultController)

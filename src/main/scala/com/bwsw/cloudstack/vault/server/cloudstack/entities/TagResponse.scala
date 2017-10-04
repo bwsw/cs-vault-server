@@ -29,10 +29,6 @@ private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tag
 private[cloudstack] case class TagList(@JsonProperty("tag") tags: Option[List[Tag]])
 
 object Tag {
-  val prefix: String = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix) match {
-    case "" => ""
-    case x => s"$x."
-  }
   def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
 
   class KeySerializer extends JsonSerializer[Key] {
@@ -57,11 +53,6 @@ object Tag {
     case object User      extends Type
     case object UserVM    extends Type
 
-    def fromString: PartialFunction[String, Type] = {
-      case "User"       => Type.User
-      case "UserVM"     => Type.UserVM
-    }
-
     def toString(x: Type): String = x match {
       case  Type.User       => "User"
       case  Type.UserVM     => "UserVM"
@@ -70,27 +61,47 @@ object Tag {
 
   @JsonSerialize(using = classOf[KeySerializer])
   @JsonDeserialize(using = classOf[KeyDeserializer])
-  sealed trait Key extends Product with Serializable
+  sealed trait Key extends Product with Serializable {
+
+    def oneOf(xs: Key*): Boolean = xs.contains(this)
+
+    def oneOf(xs: Set[Key]): Boolean = xs.contains(this)
+
+  }
 
   object Key {
-    private val lowerCaseVaultRoString = s"${prefix}vault.ro"
-    private val lowerCaseVaultRwString = s"${prefix}vault.rw"
-    private val upperCaseVaultRoString = lowerCaseVaultRoString.toUpperCase
-    private val upperCaseVaultRwString = lowerCaseVaultRwString.toUpperCase
+    val prefix: String = ApplicationConfig.getRequiredString(ConfigLiterals.tagNamePrefix) match {
+      case "" => ""
+      case x => s"$x."
+    }
+    private val lowerCaseVaultRoString     = s"${prefix}vault.ro"
+    private val lowerCaseVaultRwString     = s"${prefix}vault.rw"
+    private val lowerCaseVaultHostString   = s"${prefix}vault.host"
+    private val lowerCaseVaultPrefixString = s"${prefix}vault.prefix"
+    private val upperCaseVaultRoString     = lowerCaseVaultRoString.toUpperCase
+    private val upperCaseVaultRwString     = lowerCaseVaultRwString.toUpperCase
+    private val upperCaseVaultHostString   = lowerCaseVaultHostString.toUpperCase
+    private val upperCaseVaultPrefixString = lowerCaseVaultPrefixString.toUpperCase
 
     case object VaultRO      extends Key
     case object VaultRW      extends Key
+    case object VaultHost    extends Key
+    case object VaultPrefix  extends Key
     case object Other        extends Key
 
     def fromString: PartialFunction[String, Key] = {
       case `upperCaseVaultRoString`       => Key.VaultRO
       case `upperCaseVaultRwString`       => Key.VaultRW
+      case `upperCaseVaultHostString`     => Key.VaultHost
+      case `upperCaseVaultPrefixString`   => Key.VaultPrefix
       case _                              => Key.Other
     }
 
     def toString(x: Key): String = x match {
       case  Key.VaultRO       => lowerCaseVaultRoString
       case  Key.VaultRW       => lowerCaseVaultRwString
+      case  Key.VaultPrefix   => lowerCaseVaultPrefixString
+      case  Key.VaultHost     => lowerCaseVaultHostString
       case  Key.Other         => ""
     }
   }

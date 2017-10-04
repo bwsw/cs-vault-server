@@ -27,5 +27,5 @@ class MockCloudStackService extends CloudStackService(
 
   override def getUserIdsByAccountId(accountId: UUID): List[UUID] = throw new NotImplementedError("getUserIdsByAccountId not implemented")
 
-  override def setResourceTag(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+  override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 }
