@@ -81,24 +81,6 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleUserCreate(userId: UUID): Unit = {
     logger.debug(s"handleUserCreate(userId: $userId)")
 
-    def getTokenTags(entityId: UUID, tags: List[Tag]) = {
-      val currentTokenTags = tags.filter { tag =>
-        tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
-      }.toSet
-
-      val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
-        currentTokenTags.exists(_.key == x)
-      }
-
-      val newTags = if (absentTokenTagKeyList.nonEmpty) {
-        createMissingAccountTokenTags(entityId, absentTokenTagKeyList)
-      } else {
-        List.empty[Tag]
-      }
-
-      currentTokenTags.toList ::: newTags
-    }
-
     val accountId = cloudStackService.getAccountIdByUserId(userId)
     val accountTags = cloudStackService.getUserTagsByAccountId(accountId)
 
@@ -107,9 +89,9 @@ class CloudStackVaultController(vaultService: VaultService,
       Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
     )
 
-    val allTags = getTokenTags(accountId, accountTags) ::: vaultKeyspaceTags
+    val userTags = getTokenTags(accountId, accountTags) ::: vaultKeyspaceTags
 
-    cloudStackService.setResourceTags(userId, Tag.Type.User, allTags)
+    cloudStackService.setResourceTags(userId, Tag.Type.User, userTags)
     logger.info(s"User creation was processed, userId: $userId)")
   }
 
@@ -205,6 +187,24 @@ class CloudStackVaultController(vaultService: VaultService,
       case Policy.ACL.Read => Tag.Key.VaultRO
       case Policy.ACL.Write => Tag.Key.VaultRW
     }
+  }
+
+  private def getTokenTags(entityId: UUID, tags: List[Tag]): List[Tag] = {
+    val currentTokenTags = tags.filter { tag =>
+      tag.key == Tag.Key.VaultRO || tag.key == Tag.Key.VaultRW
+    }.toSet
+
+    val absentTokenTagKeyList = List(Tag.Key.VaultRO, Tag.Key.VaultRW).filterNot { x =>
+      currentTokenTags.exists(_.key == x)
+    }
+
+    val newTokenTags = if (absentTokenTagKeyList.nonEmpty) {
+      createMissingAccountTokenTags(entityId, absentTokenTagKeyList)
+    } else {
+      List.empty[Tag]
+    }
+
+    currentTokenTags.toList ::: newTokenTags
   }
 
   /**
