@@ -264,7 +264,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: Tag.Key) =
-    s"${createEntityNodePath(entityId, entityName)}/${Tag.Key.toString(tagKey)}"
+    s"${createEntityNodePath(entityId, entityName)}/${tagKey.toString.toLowerCase()}"
 
   private def createEntityNodePath(entityId: String, entityName: String) =
     s"${settings.zooKeeperRootNode}/$entityName/$entityId"

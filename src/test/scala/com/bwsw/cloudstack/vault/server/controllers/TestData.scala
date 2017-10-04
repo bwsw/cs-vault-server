@@ -26,10 +26,10 @@ trait TestData {
   def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
 
   def getVmEntityNodePath(entityId: String) = s"$rootNodePath/vms/$entityId"
-  def getVmTokenReadNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/${Tag.Key.prefix}vault.ro"
-  def getVmTokenWriteNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/${Tag.Key.prefix}vault.rw"
+  def getVmTokenReadNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultro"
+  def getVmTokenWriteNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultrw"
 
   def getAccountEntityNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId"
-  def getAccountTokenReadNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/${Tag.Key.prefix}vault.ro"
-  def getAccountTokenWriteNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/${Tag.Key.prefix}vault.rw"
+  def getAccountTokenReadNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultro"
+  def getAccountTokenWriteNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultrw"
 }
