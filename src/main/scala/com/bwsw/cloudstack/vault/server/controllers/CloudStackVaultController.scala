@@ -241,7 +241,7 @@ class CloudStackVaultController(vaultService: VaultService,
   /**
     * Revokes token and deletes secret in Vault, and remove entity node from ZooKeeper
     */
-  private def deleteTokenAndAppropriateSecret(entityId: UUID, entityName: String, defaultSecretPath: String): Unit = {
+  private def deleteTokenAndAppropriateSecret(entityId: UUID, entityName: String, secretPath: String): Unit = {
     logger.debug(s"deleteTokenAndAppropriateSecret(entityId: $entityId, entityName: $entityName)")
     val pathToEntityNode = createEntityNodePath(entityId.toString, entityName)
 
@@ -260,7 +260,7 @@ class CloudStackVaultController(vaultService: VaultService,
       }
       zooKeeperService.deleteNode(pathToEntityNode)
     }
-    vaultService.deleteSecret(defaultSecretPath)
+    vaultService.deleteSecretsRecursively(secretPath)
   }
 
   private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: Tag.Key) =

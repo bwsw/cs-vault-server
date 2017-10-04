@@ -133,6 +133,22 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
+    * Creates request for getting secret by specified path
+    *
+    * @param pathToRootSecret path to root secret
+    *
+    * @return task for getting json string of sub-paths of secrets
+    * @throws VaultCriticalException if response status is not expected.
+    */
+  def createGetSubSecretPathsRequest(pathToRootSecret: String):() => String = {
+    createRequest(
+      createRest(s"$pathToRootSecret?list=true", "").get,
+      HttpStatuses.OK_STATUS,
+      "getSubPaths"
+    )
+  }
+
+  /**
     * Creates Rest object
     *
     * @param path specified url path
