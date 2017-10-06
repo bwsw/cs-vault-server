@@ -82,8 +82,31 @@ class CloudStackVaultController(vaultService: VaultService,
     logger.debug(s"handleUserCreate(userId: $userId)")
 
     val accountId = cloudStackService.getAccountIdByUserId(userId)
+    val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
 
-    handleAccountCreate(accountId)
+    val currentVaultTags = getCurrentUsersVaultTags(usersIds)
+
+    val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
+      case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
+    }
+
+    val newVaultKeyspaceTagKeyList = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
+      case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
+        tagKey match {
+          case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
+          case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
+        }
+    }
+
+    val completeVaultTags: Set[Tag] = currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
+
+    if (currentVaultTags.isEmpty) {
+      usersIds.foreach { id =>
+        cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags.toList)
+      }
+    } else {
+      cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags.toList)
+    }
     logger.info(s"User creation was processed, userId: $userId)")
   }
 
@@ -96,11 +119,28 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleAccountCreate(accountId: UUID): Unit = {
     logger.debug(s"handleAccountCreate(accountId: $accountId)")
 
-    val usersWithUnrecordedVaultTags = getAccountUsersWithUnrecordedTokenTags(accountId)
+    val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
 
-    if (usersWithUnrecordedVaultTags.nonEmpty) {
-      usersWithUnrecordedVaultTags.foreach {
-        case (userId, unrecordedTags) => cloudStackService.setResourceTags(userId, Tag.Type.User, unrecordedTags.toList)
+    val currentVaultTags = getCurrentUsersVaultTags(usersIds)
+
+    if (currentVaultTags.isEmpty) {
+      val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
+        case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
+      }
+
+      if (usersIds.nonEmpty) {
+        val newVaultKeyspaceTagKeyList = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
+          case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
+            tagKey match {
+              case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
+              case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
+            }
+        }
+        val completeVaultTags: Set[Tag] = newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
+
+        usersIds.foreach { id =>
+          cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags.toList)
+        }
       }
     }
 
@@ -156,41 +196,19 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Get users of account with unrecorded necessary token tags
+    * Get token tags for users
     */
-  private def getAccountUsersWithUnrecordedTokenTags(accountId: UUID): List[(UUID, Set[Tag])] = {
-    def getUsersWithUnrecordedVaultTags(necessaryTags: Set[Tag], usersWithTags: List[(UUID, Set[Tag])]): List[(UUID, Set[Tag])] = {
-      usersWithTags.collect {
-        case (userId, tagSet) if tagSet != necessaryTags => (userId, necessaryTags.diff(tagSet))
-      }
-    }
+  private def getCurrentUsersVaultTags(usersIds: List[UUID]): Set[Tag] = {
 
-    val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
-    val allAccountUsersWithVaultTags = usersIds.map { userId =>
+    val allUsersWithVaultTags = usersIds.map { userId =>
       (userId, cloudStackService.getUserTagsByUserId(userId).filter { tag =>
         tag.key.oneOf(Tag.Key.VaultRO, Tag.Key.VaultRW, Tag.Key.VaultHost, Tag.Key.VaultPrefix)
       }.toSet)
     }
 
-    val currentVaultTags = allAccountUsersWithVaultTags.flatMap {
+    allUsersWithVaultTags.flatMap {
       case (userId, userTags) => userTags
     }.toSet
-
-    val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
-      case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
-    }
-
-    val newVaultKeyspaceTagKeyList = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
-      case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
-        tagKey match {
-          case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
-          case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
-        }
-    }
-
-    val completeVaultTags: Set[Tag] = currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
-
-    getUsersWithUnrecordedVaultTags(completeVaultTags, allAccountUsersWithVaultTags)
   }
 
   /**

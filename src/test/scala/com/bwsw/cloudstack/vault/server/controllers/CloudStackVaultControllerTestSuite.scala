@@ -41,14 +41,14 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   val expectedVmReadPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
   val expectedVmWritePolicy: Policy = Policy.createVmWritePolicy(accountId, vmId, controllerSettings.vmSecretPath)
 
-  val expectedTagsWithTokensForAccount = List(
+  val expectedVaultTagsForAccount = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
     Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.accountSecretPath}$accountId"),
     Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}")
   )
 
-  val expectedTagsWithTokensForVm = List(
+  val expectedVaultTagsForVm = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
     Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.vmSecretPath}$vmId"),
@@ -56,7 +56,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   )
 
   "handleAccountDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {
-    val testSecretPath = getDefaultAccountSecretPath(accountId)
+    val testSecretPath = getDefaultRequestAccountSecretPath(accountId)
 
     //exists data
     val tokensForCheck = List(readToken, writeToken)
@@ -94,7 +94,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
 
   "handleAccountDelete" should "delete secret by default path if node with token does not exist" in {
-    val defaultPath = getDefaultAccountSecretPath(accountId)
+    val defaultPath = getDefaultRequestAccountSecretPath(accountId)
 
     //exists data
     val pathsForCheckIsExistNode = List(accountEntityPath)
@@ -120,7 +120,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
   "handleVmDelete" should "get token from Zookeeper node, revoke it and delete secret by path in token information" in {
-    val testSecretPath = getDefaultVmSecretPath(vmId)
+    val testSecretPath = getDefaultRequestVmSecretPath(vmId)
 
     //exists data
     val tokensForCheck = List(readToken, writeToken)
@@ -157,7 +157,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
   "handleVmDelete" should "delete secret by default path if node with token does not exist" in {
-    val defaultPath = getDefaultVmSecretPath(vmId)
+    val defaultPath = getDefaultRequestVmSecretPath(vmId)
 
     //exists data
     val pathsForCheckIsExistNode = List(vmEntityPath)
@@ -225,7 +225,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathsForCheckCreationNode == checkedCreationNodePaths)
     assert(checkedResourceIds.toSet == expectedUserIds.toSet)
     assert(checkedUserIds == expectedUserIds)
-    assert(checkedNewTags.toSet == expectedTagsWithTokensForAccount.toSet)
+    assert(checkedNewTags.toSet == expectedVaultTagsForAccount.toSet)
   }
 
   "handleUserCreate" should "gets tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
@@ -262,10 +262,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   "handleUserCreate" should "gets tokens (read, write) from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
-    val expectedNewTags = List(Tag.createTag(
-      Tag.Key.VaultHost,
-      s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}"
-    ))
+    val expectedResourceIds = List(firstUserId)
+
     val vaultTags = List(
       Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
       Tag.createTag(Tag.Key.Other, "test"),
@@ -301,8 +299,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     cloudStackVaultController.handleUserCreate(firstUserId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
     assert(expectedUserIds == checkedUserIds)
-    assert(expectedUserIds == checkedResourceIds)
-    assert(expectedNewTags.toSet == checkedNewTags.toSet)
+    assert(expectedResourceIds == checkedResourceIds)
+    assert(expectedVaultTagsForAccount.toSet == checkedNewTags.toSet)
   }
 
   "handleUserCreate" should "writing to zookeeper node throw exception" in {
@@ -353,7 +351,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   //*         Account Creation          *
   //*                                   *
   //*************************************
-  "handleAccountCreate" should "creates new tokens (read, write) and put it into zooKeeper nodes and cloudStack user tags" in {
+  "handleAccountCreate" should "creates new tokens (read, write) and put it into zooKeeper nodes and cloudStack tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -389,12 +387,11 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
     assert(pathsForCheckCreationNode == checkedCreationNodePaths)
-    assert(checkedResourceIds.toSet == expectedUserIds.toSet)
     assert(checkedUserIds == expectedUserIds)
-    assert(checkedNewTags.toSet == expectedTagsWithTokensForAccount.toSet)
+    assert(checkedNewTags.toSet == expectedVaultTagsForAccount.toSet)
   }
 
-  "handleAccountCreate" should "gets tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
+  "handleAccountCreate" should "gets tokens (read, write) from zooKeeper nodes" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -422,11 +419,11 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
-    assert(expectedUserIds.toSet == checkedResourceIds.toSet)
     assert(expectedUserIds == checkedUserIds)
+    assert(checkedResourceIds == expectedUserIds)
   }
 
-  "handleAccountCreate" should "gets tokens (read, write) and vault prefix from cloudStack user tags" in {
+  "handleAccountCreate" should "gets tokens (read, write) from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedNewTags = List(Tag.createTag(
       Tag.Key.VaultHost,
@@ -467,8 +464,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     cloudStackVaultController.handleAccountCreate(accountId)
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
     assert(expectedUserIds == checkedUserIds)
-    assert(expectedUserIds == checkedResourceIds)
-    assert(expectedNewTags.toSet == checkedNewTags.toSet)
+    assert(List() == checkedNewTags)
   }
 
   "handleAccountCreate" should "writing to zookeeper node throw exception" in {
@@ -536,7 +532,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList.toSet == expectedTagsWithTokensForVm.toSet, "tokenList is wrong")
+        assert(tagList.toSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
       }
     }
 
@@ -581,7 +577,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList.toSet == expectedTagsWithTokensForVm.toSet, "tokenList is wrong")
+        assert(tagList.toSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
       }
     }
 

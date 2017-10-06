@@ -22,8 +22,10 @@ trait TestData {
   val rootNodeAccountPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/accounts"
   val rootNodeVmPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/vms"
 
-  def getDefaultAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
-  def getDefaultVmSecretPath(vmId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
+  def getDefaultAccountSecretPath(accountId: UUID) = s"${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
+  def getDefaultVmSecretPath(vmId: UUID) = s"${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
+  def getDefaultRequestAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
+  def getDefaultRequestVmSecretPath(vmId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
 
   def getVmEntityNodePath(entityId: String) = s"$rootNodePath/vms/$entityId"
   def getVmTokenReadNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultro"
