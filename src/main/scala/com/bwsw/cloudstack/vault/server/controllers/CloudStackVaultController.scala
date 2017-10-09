@@ -84,7 +84,7 @@ class CloudStackVaultController(vaultService: VaultService,
     val accountId = cloudStackService.getAccountIdByUserId(userId)
     val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
 
-    val currentVaultTags = getCurrentUsersVaultTags(usersIds)
+    val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
     val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
       case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
@@ -98,14 +98,14 @@ class CloudStackVaultController(vaultService: VaultService,
         }
     }
 
-    val completeVaultTags: Set[Tag] = currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
+    val completeVaultTags: List[Tag] = (currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
 
     if (currentVaultTags.isEmpty) {
       usersIds.foreach { id =>
-        cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags.toList)
+        cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
       }
     } else {
-      cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags.toList)
+      cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags)
     }
     logger.info(s"User creation was processed, userId: $userId)")
   }
@@ -121,7 +121,7 @@ class CloudStackVaultController(vaultService: VaultService,
 
     val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
 
-    val currentVaultTags = getCurrentUsersVaultTags(usersIds)
+    val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
     if (currentVaultTags.isEmpty) {
       val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
@@ -136,10 +136,10 @@ class CloudStackVaultController(vaultService: VaultService,
               case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
             }
         }
-        val completeVaultTags: Set[Tag] = newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
+        val completeVaultTags: List[Tag] = (newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
 
         usersIds.foreach { id =>
-          cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags.toList)
+          cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
         }
       }
     }
@@ -198,7 +198,7 @@ class CloudStackVaultController(vaultService: VaultService,
   /**
     * Get token tags for users
     */
-  private def getCurrentUsersVaultTags(usersIds: List[UUID]): Set[Tag] = {
+  private def getCurrentVaultTagsOfUsers(usersIds: List[UUID]): Set[Tag] = {
 
     val allUsersWithVaultTags = usersIds.map { userId =>
       (userId, cloudStackService.getUserTagsByUserId(userId).filter { tag =>
