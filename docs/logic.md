@@ -22,26 +22,29 @@ The processing of VM creation event consists of the following steps: <br />
 
 The processing of account creation event consists of the following steps: <br />
   * a) get the account users <br />
-  * b) get a tag list of each user and select only token tags <br />
-  * с) if the list of tokens is empty or does not contain both account tokens ('RO' token and 'RW' token): <br />
+  * b) get a tag list of each user and select only vault tags <br />
+  * с) if the list is empty: <br />
     * 1) try to retrieve account tokens from zookeeper <br />
     * 2) if the tokens don't exist: <br />
       * a) the tokens are created in vault <br />
       * b) zookeeper nodes are created for keeping account tokens <br />
       * c) write the vault tokens to zookeeper (in case of an exception, the tokens will be revoked) <br />
-    * 3) write the tokens in CloudStack as user tags for each user <br />
+      3) if users exist within the account
+      * a) create 'vaultPrefix' and 'vaultUrl' tags <br />
+      * b) write all created tags in CloudStack as user tags for all users within the account  <br />
 
 The processing of user creation event consists of the following steps: <br />
   * a) get an user account <br />
   * b) get the account users <br />
-  * c) get a tag list of each user and select only token tags <br />
-  * d) if the list of tokens is empty or does not contain both account tokens ('RO' token and 'RW' token): <br />
+  * c) get a tag list of each user and select only vault tags <br />
+  * d) if the list of tokens is empty or does not contain the mandatory vault tokens ('RO' token and 'RW' token): <br />
     * 1) try to retrieve account tokens from zookeeper <br />
     * 2) if the tokens don't exist: <br />
       * a) the tokens are created in vault <br />
       * b) zookeeper nodes are created for keeping account tokens <br />
       * c) write the vault tokens to zookeeper (in case of an exception, the tokens will be revoked) <br />
-  * e) write the tokens in CloudStack as user tags <br />
+  * e) create 'vaultPrefix' and/or 'vaultUrl' tags if they do not exist <br />
+  * f) write the tags in CloudStack as user tags for all users within the user account if vault tags was empty, or write the tags only into the user tags otherwise  <br />
 
 The processing of VM/account deletion event consists of the following steps: <br />
   * a) if VM/account node exists in zookeeper: <br />
