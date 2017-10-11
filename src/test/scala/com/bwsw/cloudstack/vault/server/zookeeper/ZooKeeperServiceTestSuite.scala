@@ -7,7 +7,8 @@ import org.apache.curator.test.TestingServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
-  val server = new TestingServer(9000, true)
+  val start = true
+  val server = new TestingServer(9000, start)
   val connectString = server.getConnectString
 
   val path = "/test/path"
