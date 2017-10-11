@@ -145,7 +145,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
         if e.getStatusCode == HttpStatuses.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
         throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(e.toString))
-      case Failure(e :Throwable) =>
+      case Failure(e: Throwable) =>
         logger.error(s"Request execution thrown an critical exception: $e")
         throw new CloudStackCriticalException(e)
     }
