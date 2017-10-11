@@ -46,13 +46,13 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @return List with Tag
     * @throws CloudStackCriticalException if account with specified id does not exist.
     */
-  def getUserTagsByAccountId(accountId: UUID): List[Tag] = {
-    logger.debug(s"getUserTagsByAccountId(accountId: $accountId)")
+  def getUserTagsByAccount(accountId: UUID): List[Tag] = {
+    logger.debug(s"getUserTagsByAccount(accountId: $accountId)")
 
-    val allUsersIdInAccount = getUserIdsByAccountId(accountId)
+    val allUsersIdInAccount = getUsersByAccount(accountId)
 
     val tags = allUsersIdInAccount.flatMap { userId =>
-      getUserTagsByUserId(userId)
+      getUserTags(userId)
     }
 
     logger.debug(s"Tags were got for account: $accountId)")
@@ -67,8 +67,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @return List with Tag
     * @throws CloudStackCriticalException if user with specified id does not exist.
     */
-  def getUserTagsByUserId(userId: UUID): List[Tag] = {
-    logger.debug(s"getUserTagsByUserId(userId: $userId)")
+  def getUserTags(userId: UUID): List[Tag] = {
+    logger.debug(s"getUserTags(userId: $userId)")
 
     val tagResponse = getTagsJson(Tag.Type.User, userId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags.getOrElse(List.empty[Tag])
@@ -85,8 +85,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @return List with Tag
     * @throws CloudStackCriticalException if virtual machine with specified id does not exist.
     */
-  def getVmTagsById(vmId: UUID): List[Tag] = {
-    logger.debug(s"getVmTagsById(vmId: $vmId)")
+  def getVmTags(vmId: UUID): List[Tag] = {
+    logger.debug(s"getVmTags(vmId: $vmId)")
 
     val tagResponse = getTagsJson(Tag.Type.UserVM, vmId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags.getOrElse(List.empty[Tag])
@@ -105,8 +105,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @throws CloudStackCriticalException if virtual machine with specified id does not exist,
     *                                     or if account with specified name in virtual machine does not exist.
     */
-  def getAccountIdByVmId(vmId: UUID): UUID = {
-    logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
+  def getVmOwnerAccount(vmId: UUID): UUID = {
+    logger.debug(s"getVmOwnerAccount(vmId: $vmId)")
 
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(vmId.toString, сloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
@@ -132,8 +132,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @return UUID of account which include user with indicate id
     * @throws CloudStackCriticalException if user with specified id does not exist.
     */
-  def getAccountIdByUserId(userId: UUID): UUID = {
-    logger.debug(s"getAccountIdByUserId(userId: $userId)")
+  def getAccountByUser(userId: UUID): UUID = {
+    logger.debug(s"getAccountByUser(userId: $userId)")
 
     val accountId = jsonSerializer.deserialize[UserResponse](
       getEntityJson(userId.toString, сloudStackTaskCreator.idParameter, Command.ListUsers)
@@ -153,8 +153,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     * @return List with UUID of users which are included in account
     * @throws CloudStackCriticalException if account with specified id does not exist.
     */
-  def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
-    logger.debug(s"getUserIdsForAccount(accountId: $accountId)")
+  def getUsersByAccount(accountId: UUID): List[UUID] = {
+    logger.debug(s"getUsersByAccount(accountId: $accountId)")
     val jsonSerializer = new JsonSerializer(true)
 
     val accountResponse = getEntityJson(
