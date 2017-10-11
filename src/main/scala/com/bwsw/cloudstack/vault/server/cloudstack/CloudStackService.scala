@@ -30,10 +30,10 @@ import org.slf4j.LoggerFactory
 /**
   * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
   *
-  * @param сloudStackTaskCreator allows for creating task for interaction with CloudStack
+  * @param cloudStackTaskCreator allows for creating task for interaction with CloudStack
   * @param settings contains the settings for interaction with CloudStack
   */
-class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
+class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
                         settings: CloudStackService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(true)
@@ -109,13 +109,13 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
 
     val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
-      getEntityJson(vmId.toString, сloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
+      getEntityJson(vmId.toString, cloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
     ).virtualMashineList.virtualMashines.getOrElse(
       throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Virtual machine with id: $vmId does not exist"))
     ).map(_.accountName).head
 
     val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
-      getEntityJson(accountName, сloudStackTaskCreator.nameParameter, Command.ListAccounts)
+      getEntityJson(accountName, cloudStackTaskCreator.nameParameter, Command.ListAccounts)
     ).accountList.accounts.getOrElse(
       throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with name: $accountName"))
     ).map(_.id).head
@@ -136,7 +136,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     logger.debug(s"getAccountIdByUserId(userId: $userId)")
 
     val accountId = jsonSerializer.deserialize[UserResponse](
-      getEntityJson(userId.toString, сloudStackTaskCreator.idParameter, Command.ListUsers)
+      getEntityJson(userId.toString, cloudStackTaskCreator.idParameter, Command.ListUsers)
     ).userList.users.getOrElse(
       throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist"))
     ).map(_.accountid).head
@@ -159,7 +159,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
 
     val accountResponse = getEntityJson(
       accountId.toString,
-      сloudStackTaskCreator.idParameter,
+      cloudStackTaskCreator.idParameter,
       Command.ListAccounts
     )
 
@@ -184,20 +184,20 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     */
   def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): Unit = {
     logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
-    def task = сloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagList)
+    def task = cloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagList)
 
     TaskRunner.tryRunUntilSuccess[Unit](task, settings.cloudStackRetryDelay)
     logger.debug(s"Tag was set to resource: $resourceId, $resourceType")
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {
-    def task = сloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
+    def task = cloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
   }
 
   private def getTagsJson(resourceType: Tag.Type, resourceId: UUID): String = {
-    def task = сloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
+    def task = cloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
   }
