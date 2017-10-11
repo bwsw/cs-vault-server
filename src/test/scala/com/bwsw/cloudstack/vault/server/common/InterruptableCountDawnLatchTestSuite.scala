@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 class InterruptableCountDawnLatchTestSuite extends FlatSpec with Matchers {
 
-  "await" should "successull" in {
+  "await" should "successful" in {
     val interruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(1))
 
     Future {
