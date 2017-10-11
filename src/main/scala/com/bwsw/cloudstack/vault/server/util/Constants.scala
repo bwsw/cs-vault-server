@@ -25,10 +25,15 @@ object ConfigLiterals {
   private final val zooKeeperDomain   = s"$applicationDomain.zookeeper"
   private final val cloudStackDomain  = s"$applicationDomain.cloudStack"
 
-  val tokenPeriod            = s"$applicationDomain.tokenPeriod"
-  val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
-  val vmsVaultBasicPath      = s"$applicationDomain.vmsVaultBasicPath"
   val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
+
+  val vaultUrl               = s"$vaultDomain.url"
+  val vaultRootToken         = s"$vaultDomain.rootToken"
+  val vaultRetryDelay        = s"$vaultDomain.retryDelay"
+  val tokenPeriod            = s"$vaultDomain.tokenPeriod"
+  val accountsVaultBasicPath = s"$vaultDomain.accountsBasicPath"
+  val vmsVaultBasicPath      = s"$vaultDomain.vmsBasicPath"
+
 
   val kafkaServerList = s"$kafkaDomain.serverList"
   val kafkaTopic      = s"$kafkaDomain.topic"
@@ -37,10 +42,6 @@ object ConfigLiterals {
   val zooKeeperRetryDelay      = s"$zooKeeperDomain.retryDelay"
   val zooKeeperRootNode        = s"$zooKeeperDomain.zooKeeperRootNode"
   val zooKeeperMasterLatchNode = s"$zooKeeperDomain.masterLatchNode"
-
-  val vaultUrl        = s"$vaultDomain.url"
-  val vaultRootToken  = s"$vaultDomain.rootToken"
-  val vaultRetryDelay = s"$vaultDomain.retryDelay"
 
   val cloudStackApiUrlList = s"$cloudStackDomain.apiUrlList"
   val cloudStackApiKey     = s"$cloudStackDomain.apiKey"
