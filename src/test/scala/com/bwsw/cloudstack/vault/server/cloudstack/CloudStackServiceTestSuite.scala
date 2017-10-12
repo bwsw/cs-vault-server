@@ -36,7 +36,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val tags = cloudStackService.getUserTagsByAccountId(accountId)
+    val tags = cloudStackService.getUserTagsByAccount(accountId)
     assert(Tag(key,value) :: Nil == tags)
   }
 
@@ -54,7 +54,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val tags = cloudStackService.getUserTagsByUserId(userId)
+    val tags = cloudStackService.getUserTags(userId)
     assert(Tag(key,value) :: Nil == tags)
   }
 
@@ -72,7 +72,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val tags = cloudStackService.getVmTagsById(vmId)
+    val tags = cloudStackService.getVmTags(vmId)
     assert(Tag(key,value) :: Nil == tags)
   }
 
@@ -99,7 +99,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val expectedAccountId: UUID = cloudStackService.getAccountIdByVmId(vmId)
+    val expectedAccountId: UUID = cloudStackService.getVmOwnerAccount(vmId)
     assert(expectedAccountId == accountId)
   }
 
@@ -115,11 +115,11 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val actualAccountId: UUID = cloudStackService.getAccountIdByUserId(userId)
+    val actualAccountId: UUID = cloudStackService.getAccountByUser(userId)
     assert(actualAccountId == accountId)
   }
 
-  "getUserIdsByAccountId" should "return user ids by account id" in {
+  "getUsersByAccount" should "return user ids by account id" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
@@ -131,7 +131,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val actualUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
+    val actualUserIds: List[UUID] = cloudStackService.getUsersByAccount(accountId)
     assert(actualUserIds == userId :: Nil)
   }
 
@@ -169,7 +169,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getUserTagsByAccountId(accountId)
+      cloudStackService.getUserTagsByAccount(accountId)
     }
   }
 
@@ -188,7 +188,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getUserTagsByUserId(userId)
+      cloudStackService.getUserTags(userId)
     }
   }
 
@@ -207,7 +207,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getVmTagsById(vmId)
+      cloudStackService.getVmTags(vmId)
     }
   }
 
@@ -228,7 +228,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getAccountIdByVmId(vmId)
+      cloudStackService.getVmOwnerAccount(vmId)
     }
   }
 
@@ -245,11 +245,11 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getAccountIdByUserId(userId)
+      cloudStackService.getAccountByUser(userId)
     }
   }
 
-  "getUserIdsByAccountId" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
+  "getUsersByAccount" should "The CloudStackCriticalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
@@ -262,7 +262,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getUserIdsByAccountId(accountId)
+      cloudStackService.getUsersByAccount(accountId)
     }
   }
 
@@ -278,7 +278,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getAccountIdByVmId(vmId)
+      cloudStackService.getVmOwnerAccount(vmId)
     }
   }
 
@@ -300,7 +300,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getAccountIdByVmId(vmId)
+      cloudStackService.getVmOwnerAccount(vmId)
     }
   }
 
@@ -316,11 +316,11 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getAccountIdByUserId(userId)
+      cloudStackService.getAccountByUser(userId)
     }
   }
 
-  "getUserIdsByAccountId" should "The CloudStackCriticalException must be thrown if account with specified id does not exist" in {
+  "getUsersByAccount" should "The CloudStackCriticalException must be thrown if account with specified id does not exist" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
         assert(parameterValue == accountId.toString, "parameterValue is wrong")
@@ -332,7 +332,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(сloudStackTaskCreator, cloudStackServiceSettings)
     assertThrows[CloudStackCriticalException] {
-      cloudStackService.getUserIdsByAccountId(accountId)
+      cloudStackService.getUsersByAccount(accountId)
     }
   }
 

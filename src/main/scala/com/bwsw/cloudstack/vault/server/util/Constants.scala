@@ -48,7 +48,7 @@ object ConfigLiterals {
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
 }
 
-object HttpStatuses {
+object HttpStatus {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
   val CLOUD_STACK_ENTITY_DOES_NOT_EXIST = 431
