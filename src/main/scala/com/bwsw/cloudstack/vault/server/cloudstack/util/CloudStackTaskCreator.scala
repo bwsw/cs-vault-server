@@ -26,7 +26,7 @@ import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
-import com.bwsw.cloudstack.vault.server.util.HttpStatuses
+import com.bwsw.cloudstack.vault.server.util.HttpStatus
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -142,9 +142,9 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         }
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
-        if e.getStatusCode == HttpStatuses.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
+        if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
         throw new CloudStackEntityDoesNotExistException(e.toString)
-      case Failure(e :Throwable) =>
+      case Failure(e: Throwable) =>
         logger.error(s"Request execution thrown an exception: $e")
         throw new CloudStackFatalException(e.toString)
     }

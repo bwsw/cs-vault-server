@@ -20,7 +20,7 @@ package com.bwsw.cloudstack.vault.server.vault.util
 
 import com.bettercloud.vault.VaultException
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
-import com.bwsw.cloudstack.vault.server.util.{HttpStatuses, RequestPath}
+import com.bwsw.cloudstack.vault.server.util.{HttpStatus, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.slf4j.LoggerFactory
 
@@ -45,7 +45,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenCreateRequest(tokenParameters: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenCreate}", tokenParameters).post,
-      HttpStatuses.OK_STATUS :: Nil,
+      HttpStatus.OK_STATUS :: Nil,
       "create token"
     )
   }
@@ -60,7 +60,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenRevokeRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenRevoke}", jsonTokenId).post,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
+      HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "revoke token"
     )
   }
@@ -76,7 +76,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createPolicyCreateRequest(policyName: String, policyJson: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", policyJson).put,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
+      HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "write policy"
     )
   }
@@ -91,7 +91,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createPolicyDeleteRequest(policyName: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultPolicy}/$policyName", "").delete,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
+      HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "delete policy"
     )
   }
@@ -106,7 +106,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createTokenLookupRequest(jsonTokenId: String):() => String = {
     createRequest(
       createRest(s"${RequestPath.vaultTokenLookup}", jsonTokenId).post,
-      HttpStatuses.OK_STATUS :: Nil,
+      HttpStatus.OK_STATUS :: Nil,
       "get lookup token"
     )
   }
@@ -121,7 +121,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createDeleteSecretRequest(pathToSecret: String):() => String = {
     createRequest(
       createRest(s"$pathToSecret", "").delete,
-      HttpStatuses.OK_STATUS_WITH_EMPTY_BODY :: Nil,
+      HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "delete secret"
     )
   }
@@ -136,7 +136,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   def createGetSubSecretPathsRequest(pathToRootSecret: String):() => String = {
     createRequest(
       createRest(s"$pathToRootSecret?list=true", "").get,
-      List(HttpStatuses.OK_STATUS, HttpStatuses.NOT_FOUND),
+      List(HttpStatus.OK_STATUS, HttpStatus.NOT_FOUND),
       "getSubPaths"
     )
   }
