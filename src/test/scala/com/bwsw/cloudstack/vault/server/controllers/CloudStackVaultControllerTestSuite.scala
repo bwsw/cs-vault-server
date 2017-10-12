@@ -264,7 +264,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedResourceIds = List(firstUserId)
 
-    val vaultTags = List(
+    val vaultTags = Set(
       Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
       Tag.createTag(Tag.Key.Other, "test"),
       Tag.createTag(Tag.Key.VaultRO, readToken.toString),
@@ -425,11 +425,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   "handleAccountCreate" should "gets tokens (read, write) from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
-    val expectedNewTags = List(Tag.createTag(
-      Tag.Key.VaultHost,
-      s"${MockConfig.vaultRestRequestCreatorSettings.vaultUrl}${RequestPath.vaultRoot}"
-    ))
-    val vaultTags = List(
+    val vaultTags = Set(
       Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
       Tag.createTag(Tag.Key.Other, "test"),
       Tag.createTag(Tag.Key.VaultRO, readToken.toString),
@@ -529,10 +525,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         expectedAccountId
       }
 
-      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList.toSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
+        assert(tagSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
       }
     }
 
@@ -574,10 +570,10 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         expectedAccountId
       }
 
-      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagList.toSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
+        assert(tagSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
       }
     }
 
@@ -640,9 +636,9 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(revokedTokenList == checkedRevokedTokens)
   }
 
-  "createMissingAccountTokenTags" should "throw IllegalArgumentException if tag key is not one of (VaultRO, VaultRW)" in {
+  "createMissingAccountTokenTag" should "throw IllegalArgumentException if tag key is not one of (VaultRO, VaultRW)" in {
     val otherTagKey = Tag.Key.Other
-    val createMissingAccountTokenTags = PrivateMethod[List[Tag]]('createMissingAccountTokenTags)
+    val createMissingAccountTokenTag = PrivateMethod[Tag]('createMissingAccountTokenTag)
 
     val cloudStackVaultController = new CloudStackVaultController(
       new MockVaultService,
@@ -655,12 +651,12 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       controllerSettings
     )
     assertThrows[IllegalArgumentException](
-      cloudStackVaultController invokePrivate createMissingAccountTokenTags(accountId, List(otherTagKey))
+      cloudStackVaultController invokePrivate createMissingAccountTokenTag(accountId, otherTagKey)
     )
   }
 
   private def getCloudStackServiceForTestsWithAvailabilityVaultTagsInCloudStack(userIdsInAccount: List[UUID],
-                                                                                vaultTags: List[Tag]) = {
+                                                                                vaultTags: Set[Tag]) = {
     new MockCloudStackService {
       override def getAccountIdByUserId(userId: UUID): UUID = {
         assert(userId == expectedUserId, "user id is wrong")
@@ -672,15 +668,15 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         userIdsInAccount
       }
 
-      override def getUserTagsByUserId(userId: UUID): List[Tag] = {
+      override def getUserTagsByUserId(userId: UUID): Set[Tag] = {
         checkedUserIds = checkedUserIds ::: userId :: Nil
         vaultTags
       }
 
-      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        checkedNewTags = checkedNewTags ::: tagList
+        checkedNewTags = checkedNewTags ++ tagSet
       }
     }
   }
@@ -697,18 +693,18 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
         userIdsInAccount
       }
 
-      override def getUserTagsByUserId(userId: UUID): List[Tag] = {
+      override def getUserTagsByUserId(userId: UUID): Set[Tag] = {
         checkedUserIds = checkedUserIds ::: userId :: Nil
-        List(
+        Set(
           Tag.createTag(Tag.Key.Other, "value1"),
           Tag.createTag(Tag.Key.Other, "value2")
         )
       }
 
-      override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = {
+      override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         checkedResourceIds = checkedResourceIds ::: resourceId :: Nil
         assert(resourceType == expectedUserResourceType, "resource type is wrong")
-        checkedNewTags = checkedNewTags ::: tagList
+        checkedNewTags = checkedNewTags ++ tagSet
       }
     }
   }

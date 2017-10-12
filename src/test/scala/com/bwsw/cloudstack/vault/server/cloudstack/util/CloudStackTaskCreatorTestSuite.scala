@@ -119,11 +119,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(
-      vmId,
-      Tag.Type.UserVM,
-      tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
-    )()
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(vmId, Tag.Type.UserVM, Set(tagsTuple._1, tagsTuple._2, tagsTuple._3))()
 
     assert(createTagResponse.isInstanceOf[Unit])
   }
@@ -138,22 +134,15 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(
-      userId,
-      Tag.Type.User,
-      tagsTuple._1 :: tagsTuple._2 :: tagsTuple._3 :: Nil
-    )()
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(tagsTuple._1, tagsTuple._2, tagsTuple._3))()
 
     assert(createTagResponse.isInstanceOf[Unit])
   }
 
   "createRequest" should "create request" in {
-    var checkedPath = List.empty[String]
 
     val response = "testResponse"
     val urlClient = "http://127.0.0.1:8080/client/api/2"
-
-    var isSecondExecution = false
 
     val createRequest = PrivateMethod[String]('createRequest)
 
@@ -383,11 +372,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createSetResourceTagsTask(
-        userId,
-        Tag.Type.User,
-        List(Tag(Tag.Key.VaultRO, "value"))
-      )()
+      cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(Tag(Tag.Key.VaultRO, "value")))()
     }
   }
 
@@ -405,11 +390,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackCriticalException] {
-      cloudStackTaskCreator.createSetResourceTagsTask(
-        userId,
-        Tag.Type.User,
-        List(Tag(Tag.Key.VaultRO, "value"))
-      )()
+      cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(Tag(Tag.Key.VaultRO, "value")))()
     }
   }
 }
