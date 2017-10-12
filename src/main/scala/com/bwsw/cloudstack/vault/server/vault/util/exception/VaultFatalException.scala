@@ -18,7 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.vault.util.exception
 
-import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
+import com.bwsw.cloudstack.vault.server.util.exception.FatalException
 
-class VaultFatalException(private val message: String) extends CriticalException(message) with FatalException {
-}
+class VaultFatalException(private val message: String) extends FatalException(message)

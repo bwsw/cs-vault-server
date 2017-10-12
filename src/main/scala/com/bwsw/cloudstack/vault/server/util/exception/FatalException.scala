@@ -18,4 +18,4 @@
 */
 package com.bwsw.cloudstack.vault.server.util.exception
 
-trait FatalException extends Exception {}
+class FatalException(private val message: String) extends CriticalException(message)
