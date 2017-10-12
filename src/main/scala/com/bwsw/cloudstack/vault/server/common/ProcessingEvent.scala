@@ -16,12 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.traits
+package com.bwsw.cloudstack.vault.server.common
 
-import com.bwsw.cloudstack.vault.server.common.ProcessingEvent
+import scala.concurrent.Future
 
-trait EventHandler[T] {
-  def handleEventsFromRecords(records: List[String]): Set[ProcessingEvent[T]]
-  def restartEvent(event: T): ProcessingEvent[T]
-  def isNonFatalException(exception: Throwable): Boolean
-}
+case class ProcessingEvent[T](process: Future[Unit], event: T)

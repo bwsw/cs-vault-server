@@ -8,6 +8,7 @@ import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
+import com.bwsw.cloudstack.vault.server.common.ProcessingEvent
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.exception.{AbortedException, CriticalException}
@@ -43,9 +44,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(Unit), expectedEvent))
+        Set(ProcessingEvent(Future(Unit), expectedEvent))
       }
     }
 
@@ -73,9 +74,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(throw new CriticalException(new CloudStackEntityDoesNotExistException("message"))), expectedEvent))
+        Set(ProcessingEvent(Future(throw new CriticalException(new CloudStackEntityDoesNotExistException("message"))), expectedEvent))
       }
     }
 
@@ -104,14 +105,14 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(throw new CriticalException(new Exception)), expectedEvent))
+        Set(ProcessingEvent(Future(throw new CriticalException(new Exception)), expectedEvent))
       }
 
-      override def restartEvent(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
+      override def restartEvent(event: CloudStackEvent): ProcessingEvent[CloudStackEvent] = {
         assert(event == expectedEvent, "event is wrong")
-        (Future(Unit), event)
+        ProcessingEvent(Future(Unit), event)
       }
     }
 
@@ -140,9 +141,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(throw new Exception), expectedEvent))
+        Set(ProcessingEvent(Future(throw new Exception), expectedEvent))
       }
     }
 
