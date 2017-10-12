@@ -16,6 +16,9 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util.exception
+package com.bwsw.cloudstack.vault.server.vault.util.exception
 
-class CriticalException(private val message: String) extends Exception(message) {}
+import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
+
+class VaultFatalException(private val message: String) extends CriticalException(message) with FatalException {
+}

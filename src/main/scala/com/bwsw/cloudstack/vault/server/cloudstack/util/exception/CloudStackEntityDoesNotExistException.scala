@@ -18,5 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.util.exception
 
-class CloudStackEntityDoesNotExistException(private val message: String) extends Exception(message) {
+import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+
+class CloudStackEntityDoesNotExistException(private val message: String) extends CriticalException(message) {
 }

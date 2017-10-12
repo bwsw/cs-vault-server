@@ -16,9 +16,6 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.cloudstack.util.exception
+package com.bwsw.cloudstack.vault.server.util.exception
 
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
-
-class CloudStackCriticalException(override val exception: Throwable) extends CriticalException(exception) {
-}
+trait FatalException extends Exception {}

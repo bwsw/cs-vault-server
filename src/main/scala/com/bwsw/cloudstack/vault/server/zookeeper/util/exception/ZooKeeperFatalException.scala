@@ -18,7 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.zookeeper.util.exception
 
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 
-class ZooKeeperCriticalException(override val exception: Throwable) extends CriticalException(exception) {
+class ZooKeeperFatalException(private val message: String) extends CriticalException(message) with FatalException {
 }
