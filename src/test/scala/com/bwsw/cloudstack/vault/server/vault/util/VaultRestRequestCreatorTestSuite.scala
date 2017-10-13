@@ -7,7 +7,7 @@ import com.bwsw.cloudstack.vault.server.MockConfig.vaultRestRequestCreatorSettin
 import com.bwsw.cloudstack.vault.server.vault.TestData
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.entities.Token.TokenInitParameters
-import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
+import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.FlatSpec
 
 /**
@@ -228,7 +228,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
 
     val tokenInitParameters = TokenInitParameters(false, List("name"), 1000)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultRestRequestCreator.createTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))()
     }
   }
@@ -247,7 +247,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
 
     val jsonTokenId = Json.`object`().add("token", token.toString).toString
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultRestRequestCreator.createTokenRevokeRequest(jsonTokenId)()
     }
   }

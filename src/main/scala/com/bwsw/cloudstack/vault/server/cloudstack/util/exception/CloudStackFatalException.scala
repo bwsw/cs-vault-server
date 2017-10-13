@@ -16,6 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util.exception
+package com.bwsw.cloudstack.vault.server.cloudstack.util.exception
 
-class AbortedException (private val message: String) extends InterruptedException(message)
+import com.bwsw.cloudstack.vault.server.util.exception.FatalException
+
+class CloudStackFatalException(private val message: String) extends FatalException(message)
