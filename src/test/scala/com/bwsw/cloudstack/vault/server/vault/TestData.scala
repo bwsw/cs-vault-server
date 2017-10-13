@@ -10,9 +10,9 @@ import com.bwsw.cloudstack.vault.server.vault.entities.Policy
   * Created by medvedev_vv on 28.08.17.
   */
 trait TestData {
-  val token: UUID = UUID.randomUUID()
-  val accountId: UUID = UUID.randomUUID()
-  val vmId: UUID = UUID.randomUUID()
+  val token = UUID.randomUUID()
+  val accountId = UUID.randomUUID()
+  val vmId = UUID.randomUUID()
   val pathTokenCreate = s"${RequestPath.vaultTokenCreate}"
 
   def getTokenJsonResponse(tokenId: String): String = "{\"auth\":{\"client_token\":\"" + s"$tokenId" + "\"}}"

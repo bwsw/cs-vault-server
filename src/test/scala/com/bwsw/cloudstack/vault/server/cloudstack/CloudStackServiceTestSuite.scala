@@ -99,7 +99,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val expectedAccountId: UUID = cloudStackService.getAccountIdByVmId(vmId)
+    val expectedAccountId = cloudStackService.getAccountIdByVmId(vmId)
     assert(expectedAccountId == accountId)
   }
 
@@ -115,7 +115,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val actualAccountId: UUID = cloudStackService.getAccountIdByUserId(userId)
+    val actualAccountId = cloudStackService.getAccountIdByUserId(userId)
     assert(actualAccountId == accountId)
   }
 
@@ -131,7 +131,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    val actualUserIds: List[UUID] = cloudStackService.getUserIdsByAccountId(accountId)
+    val actualUserIds = cloudStackService.getUserIdsByAccountId(accountId)
     assert(actualUserIds == userId :: Nil)
   }
 

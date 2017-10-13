@@ -65,5 +65,5 @@ object RequestPath {
 }
 
 object DataPath {
-  val masterLatchNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
+  val masterLatchNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
 }

@@ -29,8 +29,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   val expectedAccountId = accountId
   val expectedUserId = firstUserId
   val expectedUserResourceType = Type.User
-  val expectedAccountReadPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
-  val expectedAccountWritePolicy: Policy = Policy.createAccountWritePolicy(accountId, controllerSettings.accountSecretPath)
+  val expectedAccountReadPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
+  val expectedAccountWritePolicy = Policy.createAccountWritePolicy(accountId, controllerSettings.accountSecretPath)
 
   //vm expected data
   val vmEntityPath = getVmEntityNodePath(vmId.toString)
@@ -38,8 +38,8 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   val writeVmTokenNodePath = getVmTokenWriteNodePath(vmId.toString)
   val expectedVmId = vmId
   val expectedVmResourceType = Type.UserVM
-  val expectedVmReadPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
-  val expectedVmWritePolicy: Policy = Policy.createVmWritePolicy(accountId, vmId, controllerSettings.vmSecretPath)
+  val expectedVmReadPolicy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
+  val expectedVmWritePolicy = Policy.createVmWritePolicy(accountId, vmId, controllerSettings.vmSecretPath)
 
   val expectedVaultTagsForAccount = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
@@ -306,7 +306,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   "handleUserCreate" should "writing to zookeeper node throw exception" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
-    val expectedPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
+    val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
 
     //exists data
     val pathsForCheckIsExistNode = List(readAccountTokenNodePath)
@@ -470,7 +470,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   "handleAccountCreate" should "writing to zookeeper node throw exception" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
-    val expectedPolicy: Policy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
+    val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
 
     //exists data
     val pathsForCheckIsExistNode = List(readAccountTokenNodePath)
