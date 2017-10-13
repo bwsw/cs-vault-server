@@ -34,7 +34,7 @@ object ConfigLoader {
     val zooKeeperRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.zooKeeperRetryDelay)
     val zooKeeperUrl: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperUrl)
     //vault
-    val vaultTokenPeriod: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)
+    val vaultTokenPeriod: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
     val vaultRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
     val vaultUrl: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)
     val vaultRootToken: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
@@ -44,8 +44,8 @@ object ConfigLoader {
     val cloudStackSecretKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
     val cloudStackApiKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
     //cloudStackVaultController
-    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
-    val accountSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
+    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultVMsBasicPath)
+    val accountSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultAccountsBasicPath)
     val zooKeeperRootNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
 
     Components.Settings(

@@ -30,9 +30,9 @@ object ConfigLiterals {
   val vaultUrl               = s"$vaultDomain.url"
   val vaultRootToken         = s"$vaultDomain.rootToken"
   val vaultRetryDelay        = s"$vaultDomain.retryDelay"
-  val tokenPeriod            = s"$vaultDomain.tokenPeriod"
-  val accountsVaultBasicPath = s"$vaultDomain.accountsBasicPath"
-  val vmsVaultBasicPath      = s"$vaultDomain.vmsBasicPath"
+  val vaultTokenPeriod       = s"$vaultDomain.tokenPeriod"
+  val vaultAccountsBasicPath = s"$vaultDomain.accountsBasicPath"
+  val vaultVMsBasicPath      = s"$vaultDomain.vmsBasicPath"
 
 
   val kafkaServerList = s"$kafkaDomain.serverList"
