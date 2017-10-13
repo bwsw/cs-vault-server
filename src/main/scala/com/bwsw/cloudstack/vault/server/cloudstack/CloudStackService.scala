@@ -186,23 +186,23 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
     def task = сloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagList)
 
-    TaskRunner.tryRunUntilSuccess[Unit](task, settings.cloudStackRetryDelay)
+    TaskRunner.tryRunUntilSuccess[Unit](task, settings.retryDelay)
     logger.debug(s"Tag was set to resource: $resourceId, $resourceType")
   }
 
   private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {
     def task = сloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
 
-    TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
+    TaskRunner.tryRunUntilSuccess[String](task, settings.retryDelay)
   }
 
   private def getTagsJson(resourceType: Tag.Type, resourceId: UUID): String = {
     def task = сloudStackTaskCreator.createGetTagTask(resourceType, resourceId)
 
-    TaskRunner.tryRunUntilSuccess[String](task, settings.cloudStackRetryDelay)
+    TaskRunner.tryRunUntilSuccess[String](task, settings.retryDelay)
   }
 }
 
 object CloudStackService {
-  case class Settings(cloudStackRetryDelay: Int)
+  case class Settings(retryDelay: Int)
 }

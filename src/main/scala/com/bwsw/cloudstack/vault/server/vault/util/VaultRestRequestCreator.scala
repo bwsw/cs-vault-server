@@ -33,7 +33,7 @@ import scala.util.{Failure, Success, Try}
   */
 class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private[vault] val vaultUrl: String = settings.vaultUrl
+  private[vault] val endpoint: String = settings.endpoint
 
   /**
     * Creates request for creating token with specified parameters
@@ -159,8 +159,8 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
     */
   protected def createRest(path: String, data: String): Rest = {
     new Rest()
-      .url(s"${settings.vaultUrl}$path")
-      .header("X-Vault-Token", settings.vaultRootToken)
+      .url(s"${settings.endpoint}$path")
+      .header("X-Vault-Token", settings.rootToken)
       .body(data.getBytes("UTF-8"))
   }
 
@@ -191,5 +191,5 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
 }
 
 object VaultRestRequestCreator {
-  case class Settings(vaultUrl: String, vaultRootToken: String)
+  case class Settings(endpoint: String, rootToken: String)
 }

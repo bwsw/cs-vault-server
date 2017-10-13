@@ -19,16 +19,16 @@ To start a server in Docker container you should:
     * `ACCOUNTS_VAULT_BASIC_PATH` - path to cloudstack accounts' secrets in vault ("secret/cs/accounts/" by default). Last "/" is required
     * `VM_VAULT_BASIC_PATH` - path to vms' secrets in vault ("secret/cs/vms/" by default). Last "/" is required
     * `TAG_NAME_PREFIX` - prefix for token name tag
-    * `KAFKA_SERVER_LIST` - list of kafka urls
+    * `KAFKA_ENDPOINTS` - list of kafka endpoints
     * `KAFKA_TOPIC` - kafka topic containing cloudstack events
-    * `ZOOKEEPER_URL` - zookeeper url
+    * `ZOOKEEPER_ENDPOINTS` - list of zookeeper endpoints, which is separated by commas
     * `ZOOKEEPER_RETRY_DELAY` - a delay between unsuccessful connection attempt to zookeeper and repeated attempt
     * `ZOOKEEPER_CS_VAULT_ROOT_NODE` - a root node for keeping application data in zookeeper ("/cs_vault_server" by default)
     * `ZOOKEEPER_CS_VAULT_MASTER_LATCH_NODE` - a node for master latch keeping ("/cs_vault_server_latch" by default)
-    * `VAULT_URL` - vault url
+    * `VAULT_ENDPOINT` - vault endpoint
     * `VAULT_ROOT_TOKEN` - root token providing an access to a vault server
     * `VAULT_RETRY_DELAY` -  a delay between unsuccessful connection attempt to vault and repeated attempt
-    * `CS_API_URL_LIST` - list of cloudstack urls
+    * `CS_ENDPOINTS` - list of cloudstack endpoints, which is separated by commas
     * `CS_API_KEY` - api key providing an access to a cloudstack server
     * `CS_SECRET_KEY` - secret key providing an access to a cloudstack server
     * `CS_RETRY_DELAY` - a delay between unsuccessful connection attempt to cloudstack and repeated attempt

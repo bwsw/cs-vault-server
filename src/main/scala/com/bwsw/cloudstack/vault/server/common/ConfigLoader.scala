@@ -32,15 +32,15 @@ object ConfigLoader {
   def loadConfig(): Components.Settings = {
     //zookeeper
     val zooKeeperRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.zooKeeperRetryDelay)
-    val zooKeeperUrl: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperUrl)
+    val zooKeeperEndpoints: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
     //vault
     val vaultTokenPeriod: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)
     val vaultRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
-    val vaultUrl: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultUrl)
+    val vaultEndpoint: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoint)
     val vaultRootToken: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
     //cloudstack
     val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-    val cloudStackUrlList: Array[String] = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiUrlList).split("[,\\s]+")
+    val cloudStackEndpoints: Array[String] = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
     val cloudStackSecretKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
     val cloudStackApiKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
     //cloudStackVaultController
@@ -50,10 +50,10 @@ object ConfigLoader {
 
     Components.Settings(
       CloudStackService.Settings(cloudStackRetryDelay),
-      CloudStackTaskCreator.Settings(cloudStackUrlList, cloudStackSecretKey, cloudStackApiKey),
+      CloudStackTaskCreator.Settings(cloudStackEndpoints, cloudStackSecretKey, cloudStackApiKey),
       VaultService.Settings(vaultTokenPeriod, vaultRetryDelay),
-      VaultRestRequestCreator.Settings(vaultUrl, vaultRootToken),
-      ZooKeeperService.Settings(zooKeeperUrl, zooKeeperRetryDelay),
+      VaultRestRequestCreator.Settings(vaultEndpoint, vaultRootToken),
+      ZooKeeperService.Settings(zooKeeperEndpoints, zooKeeperRetryDelay),
       CloudStackVaultController.Settings(vmSecretPath, accountSecretPath, zooKeeperRootNode)
     )
   }
