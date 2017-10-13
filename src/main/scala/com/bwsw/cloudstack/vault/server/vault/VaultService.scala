@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory
 class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val jsonSerializer = new JsonSerializer(true)
+  private val jsonSerializer = new JsonSerializer(ignore = true)
   val vaultUrl: String = vaultRest.vaultUrl
 
   /**
