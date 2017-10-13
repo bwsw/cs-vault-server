@@ -108,16 +108,24 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
   def getAccountIdByVmId(vmId: UUID): UUID = {
     logger.debug(s"getAccountIdByVmId(vmId: $vmId)")
 
-    val accountName = jsonSerializer.deserialize[VirtualMachinesResponse](
-      getEntityJson(vmId.toString, сloudStackTaskCreator.idParameter, Command.ListVirtualMachines)
+    val virtualMachine = jsonSerializer.deserialize[VirtualMachinesResponse](
+      getEntityJson(Map(сloudStackTaskCreator.idParameter -> vmId.toString), Command.ListVirtualMachines)
     ).virtualMashineList.virtualMashines.getOrElse(
       throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"Virtual machine with id: $vmId does not exist"))
-    ).map(_.accountName).head
+    ).head
 
     val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
-      getEntityJson(accountName, сloudStackTaskCreator.nameParameter, Command.ListAccounts)
+      getEntityJson(
+        Map(
+          сloudStackTaskCreator.nameParameter -> virtualMachine.accountName,
+          сloudStackTaskCreator.domainParameter -> virtualMachine.domainId.toString
+        ),
+        Command.ListAccounts)
     ).accountList.accounts.getOrElse(
-      throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with name: $accountName"))
+      throw new CloudStackCriticalException(
+        new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with " +
+          s"name: ${virtualMachine.accountName} within domain: ${virtualMachine.domainId}")
+      )
     ).map(_.id).head
 
     logger.debug(s"accountId was got for vm: $vmId)")
@@ -136,7 +144,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     logger.debug(s"getAccountIdByUserId(userId: $userId)")
 
     val accountId = jsonSerializer.deserialize[UserResponse](
-      getEntityJson(userId.toString, сloudStackTaskCreator.idParameter, Command.ListUsers)
+      getEntityJson(Map(сloudStackTaskCreator.idParameter -> userId.toString), Command.ListUsers)
     ).userList.users.getOrElse(
       throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist"))
     ).map(_.accountid).head
@@ -158,8 +166,7 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     val jsonSerializer = new JsonSerializer(true)
 
     val accountResponse = getEntityJson(
-      accountId.toString,
-      сloudStackTaskCreator.idParameter,
+      Map(сloudStackTaskCreator.idParameter -> accountId.toString),
       Command.ListAccounts
     )
 
@@ -190,8 +197,8 @@ class CloudStackService(сloudStackTaskCreator: CloudStackTaskCreator,
     logger.debug(s"Tag was set to resource: $resourceId, $resourceType")
   }
 
-  private def getEntityJson(parameterValue: String, parameterName: String, command: Command): String = {
-    def task = сloudStackTaskCreator.createGetEntityTask(parameterValue, parameterName, command)
+  private def getEntityJson(filterRequestParameters: Map[String, String], command: Command): String = {
+    def task = сloudStackTaskCreator.createGetEntityTask(filterRequestParameters, command)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.retryDelay)
   }

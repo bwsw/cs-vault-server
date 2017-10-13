@@ -51,8 +51,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
     val accountResponse = cloudStackTaskCreator.createGetEntityTask(
-      accountId.toString,
-      cloudStackTaskCreator.idParameter,
+      Map(cloudStackTaskCreator.idParameter -> accountId.toString),
       command
     )()
 
@@ -62,14 +61,13 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
   "createGetEntityTask" should "create task which returns response with VM by id" in {
     val accountName = "admin"
     val expectedRequest = Request.getVmRequest(vmId)
-    val expectedResponse = Response.getVmResponseJson(vmId.toString, accountName)
+    val expectedResponse = Response.getVmResponseJson(vmId.toString, accountName, domainId.toString)
     val command = Command.ListVirtualMachines
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
     val vmResponse = cloudStackTaskCreator.createGetEntityTask(
-      vmId.toString,
-      cloudStackTaskCreator.idParameter,
+      Map(cloudStackTaskCreator.idParameter ->  vmId.toString),
       command
     )()
 
@@ -84,8 +82,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
     val userResponse = cloudStackTaskCreator.createGetEntityTask(
-      userId.toString,
-      cloudStackTaskCreator.idParameter,
+      Map(cloudStackTaskCreator.idParameter -> userId.toString),
       command
     )()
 
@@ -94,15 +91,17 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
   "createGetEntityTask" should "create task which returns response with accounts by name" in {
     val accountName = "admin"
-    val expectedRequest = Request.getAccountRequestByName(accountName)
+    val expectedRequest = Request.getAccountRequestByName(accountName, domainId.toString)
     val expectedResponse = Response.getAccountResponseJson(accountId.toString, userId.toString)
     val command = Command.ListAccounts
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
     val vmResponse = cloudStackTaskCreator.createGetEntityTask(
-      accountName,
-      cloudStackTaskCreator.nameParameter,
+      Map(
+        cloudStackTaskCreator.nameParameter -> accountName,
+        cloudStackTaskCreator.domainParameter -> domainId.toString
+      ),
       command
     )()
 
@@ -340,8 +339,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
       cloudStackTaskCreator.createGetEntityTask(
-        accountId.toString,
-        cloudStackTaskCreator.idParameter,
+        Map(cloudStackTaskCreator.idParameter -> accountId.toString),
         Command.ListAccounts
       )()
     }
@@ -362,8 +360,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     assertThrows[CloudStackCriticalException] {
       cloudStackTaskCreator.createGetEntityTask(
-        accountId.toString,
-        cloudStackTaskCreator.idParameter,
+        Map(cloudStackTaskCreator.idParameter -> accountId.toString),
         Command.ListAccounts
       )()
     }
