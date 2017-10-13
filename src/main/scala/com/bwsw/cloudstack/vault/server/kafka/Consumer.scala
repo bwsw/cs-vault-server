@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.kafka
 import java.util.concurrent.CountDownLatch
 import java.util.{Collections, Properties}
 
-import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, ProcessingEvent}
+import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, ProcessingEventResult}
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
@@ -70,7 +70,7 @@ class Consumer[T](val brokers: String,
     logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
-    val futureEvents: Set[ProcessingEvent[T]] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
+    val futureEvents: Set[ProcessingEventResult[T]] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
     val eventLatch: InterruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
 
     futureEvents.foreach { x =>
@@ -81,10 +81,10 @@ class Consumer[T](val brokers: String,
 
     consumer.commitSync()
 
-    def checkEvent(eventForCheck: ProcessingEvent[T]): Unit = {
+    def checkEvent(eventForCheck: ProcessingEventResult[T]): Unit = {
       eventForCheck match {
-        case ProcessingEvent(process, event) =>
-          process.onComplete {
+        case ProcessingEventResult(event, result) =>
+          result.onComplete {
             case Success(x) =>
               logger.info(s"The event: $event was successful")
               eventLatch.succeed()

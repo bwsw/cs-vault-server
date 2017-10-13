@@ -8,7 +8,7 @@ import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
-import com.bwsw.cloudstack.vault.server.common.ProcessingEvent
+import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.exception.{AbortedException, CriticalException}
@@ -44,9 +44,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set(ProcessingEvent(Future(Unit), expectedEvent))
+        Set(ProcessingEventResult(expectedEvent, Future(Unit)))
       }
     }
 
@@ -74,9 +74,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set(ProcessingEvent(Future(throw new CriticalException(new CloudStackEntityDoesNotExistException("message"))), expectedEvent))
+        Set(ProcessingEventResult(expectedEvent, Future(throw new CriticalException(new CloudStackEntityDoesNotExistException("message")))))
       }
     }
 
@@ -105,14 +105,14 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set(ProcessingEvent(Future(throw new CriticalException(new Exception)), expectedEvent))
+        Set(ProcessingEventResult(expectedEvent, Future(throw new CriticalException(new Exception))))
       }
 
-      override def restartEvent(event: CloudStackEvent): ProcessingEvent[CloudStackEvent] = {
+      override def restartEvent(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
         assert(event == expectedEvent, "event is wrong")
-        ProcessingEvent(Future(Unit), event)
+        ProcessingEventResult(event, Future(Unit))
       }
     }
 
@@ -141,9 +141,9 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
       settings.cloudStackVaultControllerSettings
     ) {}
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
-      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
+      override def handleEventsFromRecords(recordValues: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set(ProcessingEvent(Future(throw new Exception), expectedEvent))
+        Set(ProcessingEventResult(expectedEvent, Future(throw new Exception)))
       }
     }
 

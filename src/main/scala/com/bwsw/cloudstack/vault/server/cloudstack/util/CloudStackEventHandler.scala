@@ -19,7 +19,7 @@
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.{JsonSerializer, ProcessingEvent}
+import com.bwsw.cloudstack.vault.server.common.{JsonSerializer, ProcessingEventResult}
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import org.slf4j.LoggerFactory
@@ -43,7 +43,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   @Override
-  def handleEventsFromRecords(records: List[String]): Set[ProcessingEvent[CloudStackEvent]] = {
+  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
     logger.debug(s"handleEventsFromRecords: $records")
     records.map { record =>
       Try {
@@ -61,29 +61,29 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   }
 
   @Override
-  def restartEvent(event: CloudStackEvent): ProcessingEvent[CloudStackEvent] = {
+  def restartEvent(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
     logger.debug(s"restartEvent: $event")
     handleEvent(event)
   }
 
-  private val handleEvent = new PartialFunction[CloudStackEvent, ProcessingEvent[CloudStackEvent]] {
-    override def apply(event: CloudStackEvent): ProcessingEvent[CloudStackEvent] = {
+  private val handleEvent = new PartialFunction[CloudStackEvent, ProcessingEventResult[CloudStackEvent]] {
+    override def apply(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
       event.action.get match {
         case VMCreate =>
           logger.info(s"handle VMCreate event: $event")
-          ProcessingEvent(Future(controller.handleVmCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleVmCreate(event.entityuuid.get)))
         case VMDelete =>
           logger.info(s"handle VMDelete event: $event")
-          ProcessingEvent(Future(controller.handleVmDelete(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleVmDelete(event.entityuuid.get)))
         case AccountCreate =>
           logger.info(s"handle AccountCreate event: $event")
-          ProcessingEvent(Future(controller.handleAccountCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleAccountCreate(event.entityuuid.get)))
         case AccountDelete =>
           logger.info(s"handle AccountDelete event: $event")
-          ProcessingEvent(Future(controller.handleAccountDelete(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleAccountDelete(event.entityuuid.get)))
         case UserCreate =>
           logger.info(s"handle UserCreate event: $event")
-          ProcessingEvent(Future(controller.handleUserCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleUserCreate(event.entityuuid.get)))
       }
     }
 

@@ -18,10 +18,10 @@
 */
 package com.bwsw.cloudstack.vault.server.common.traits
 
-import com.bwsw.cloudstack.vault.server.common.ProcessingEvent
+import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
 
 trait EventHandler[T] {
-  def handleEventsFromRecords(records: List[String]): Set[ProcessingEvent[T]]
-  def restartEvent(event: T): ProcessingEvent[T]
+  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[T]]
+  def restartEvent(event: T): ProcessingEventResult[T]
   def isNonFatalException(exception: Throwable): Boolean
 }

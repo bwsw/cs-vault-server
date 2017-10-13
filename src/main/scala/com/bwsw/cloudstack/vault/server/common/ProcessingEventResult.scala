@@ -20,4 +20,4 @@ package com.bwsw.cloudstack.vault.server.common
 
 import scala.concurrent.Future
 
-case class ProcessingEvent[T](process: Future[Unit], event: T)
+case class ProcessingEventResult[T](event: T, result: Future[Unit])
