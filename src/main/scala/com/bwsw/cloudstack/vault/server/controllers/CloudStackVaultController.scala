@@ -124,19 +124,19 @@ class CloudStackVaultController(vaultService: VaultService,
     val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
     if (currentVaultTags.isEmpty) {
-      val newVaultTokenTagKeySet = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
+      val newVaultTokenTags = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
         case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
       }
 
       if (usersIds.nonEmpty) {
-        val newVaultKeyspaceTagKeySet = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
+        val newVaultKeyspaceTags = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
           case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
             tagKey match {
               case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
               case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
             }
         }
-        val completeVaultTags: Set[Tag] = newVaultTokenTagKeySet ++ newVaultKeyspaceTagKeySet
+        val completeVaultTags: Set[Tag] = newVaultTokenTags ++ newVaultKeyspaceTags
 
         usersIds.foreach { id =>
           cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)

@@ -143,7 +143,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
       override def createSetResourceTagsTask(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): () => Unit = {
         assert(resourceId == vmId, "resourceId is wrong")
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
-        assert(tagSet == Set(Tag.createTag(key, value)), "tagSet is wrong")
+        assert(tagSet == Set(Tag.createTag(key, value)), "set of tags is wrong")
         () => Unit
       }
     }

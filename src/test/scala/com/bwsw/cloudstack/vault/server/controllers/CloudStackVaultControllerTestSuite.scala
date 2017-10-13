@@ -528,7 +528,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
+        assert(tagSet == expectedVaultTagsForVm.toSet, "set of tags is wrong")
       }
     }
 
@@ -573,7 +573,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
       override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = {
         assert(resourceId == expectedVmId, "resourceId is wrong")
         assert(resourceType == expectedVmResourceType, "resource type is wrong")
-        assert(tagSet == expectedVaultTagsForVm.toSet, "tokenList is wrong")
+        assert(tagSet == expectedVaultTagsForVm.toSet, "set of tags is wrong")
       }
     }
 
