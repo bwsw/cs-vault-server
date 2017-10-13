@@ -114,7 +114,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
       throw new CloudStackEntityDoesNotExistException(s"Virtual machine with id: $vmId does not exist")
     ).map(_.accountName).head
 
-    val accountId: UUID = jsonSerializer.deserialize[AccountResponse](
+    val accountId = jsonSerializer.deserialize[AccountResponse](
       getEntityJson(accountName, cloudStackTaskCreator.nameParameter, Command.ListAccounts)
     ).accountList.accounts.getOrElse(
       throw new CloudStackEntityDoesNotExistException(s"The vm: $vmId does not include account with name: $accountName")

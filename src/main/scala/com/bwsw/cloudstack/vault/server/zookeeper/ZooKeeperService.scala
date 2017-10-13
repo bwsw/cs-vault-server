@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
 class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val retryPolicy = new RetryForever(settings.retryDelay)
-  protected val curatorClient: CuratorFramework = CuratorFrameworkFactory.newClient(settings.host, retryPolicy)
+  protected val curatorClient = CuratorFrameworkFactory.newClient(settings.host, retryPolicy)
   initCuratorClient()
 
   /**

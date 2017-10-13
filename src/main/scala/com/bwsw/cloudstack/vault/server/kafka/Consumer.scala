@@ -42,7 +42,7 @@ class Consumer[T](val brokers: String,
                  (implicit executionContext: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val props: Properties = createConsumerConfig(brokers)
+  private val props = createConsumerConfig(brokers)
   protected val consumer: org.apache.kafka.clients.consumer.Consumer[String, String] = new KafkaConsumer[String, String](props)
 
   def createConsumerConfig(brokers: String): Properties = {
@@ -70,8 +70,8 @@ class Consumer[T](val brokers: String,
     logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
-    val futureEvents: Set[(Future[Unit], T)] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
-    val eventLatch: InterruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
+    val futureEvents = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
+    val eventLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
 
     futureEvents.foreach { x =>
       checkEvent(x)
