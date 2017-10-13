@@ -524,7 +524,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     checkedCreationNodePaths = List.empty[String]
 
     val cloudStackService = new MockCloudStackService {
-      override def getAccountIdByVmId(vmId: UUID): UUID = {
+      override def getVmOwnerAccount(vmId: UUID): UUID = {
         assert(vmId == expectedVmId, "vmId is wrong")
         expectedAccountId
       }
@@ -569,7 +569,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     checkedIsExistNodePaths = List.empty[String]
 
     val cloudStackService = new MockCloudStackService {
-      override def getAccountIdByVmId(vmId: UUID): UUID = {
+      override def getVmOwnerAccount(vmId: UUID): UUID = {
         assert(vmId == expectedVmId, "vmId is wrong")
         expectedAccountId
       }
@@ -609,7 +609,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     checkedRevokedTokens = List.empty[UUID]
 
     val cloudStackService = new MockCloudStackService {
-      override def getAccountIdByVmId(vmId: UUID): UUID = {
+      override def getVmOwnerAccount(vmId: UUID): UUID = {
         assert(vmId == expectedVmId, "vmId is wrong")
         expectedAccountId
       }
@@ -662,17 +662,17 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   private def getCloudStackServiceForTestsWithAvailabilityVaultTagsInCloudStack(userIdsInAccount: List[UUID],
                                                                                 vaultTags: List[Tag]) = {
     new MockCloudStackService {
-      override def getAccountIdByUserId(userId: UUID): UUID = {
+      override def getAccountByUser(userId: UUID): UUID = {
         assert(userId == expectedUserId, "user id is wrong")
         accountId
       }
 
-      override def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
+      override def getUsersByAccount(accountId: UUID): List[UUID] = {
         assert(accountId == expectedAccountId, "account id is wrong")
         userIdsInAccount
       }
 
-      override def getUserTagsByUserId(userId: UUID): List[Tag] = {
+      override def getUserTags(userId: UUID): List[Tag] = {
         checkedUserIds = checkedUserIds ::: userId :: Nil
         vaultTags
       }
@@ -687,17 +687,17 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
   private def getCloudStackServiceForTestsWithoutVaultTagsInCloudStack(userIdsInAccount: List[UUID]) = {
     new MockCloudStackService {
-      override def getAccountIdByUserId(userId: UUID): UUID = {
+      override def getAccountByUser(userId: UUID): UUID = {
         assert(userId == expectedUserId, "user id is wrong")
         accountId
       }
 
-      override def getUserIdsByAccountId(accountId: UUID): List[UUID] = {
+      override def getUsersByAccount(accountId: UUID): List[UUID] = {
         assert(accountId == expectedAccountId, "account id is wrong")
         userIdsInAccount
       }
 
-      override def getUserTagsByUserId(userId: UUID): List[Tag] = {
+      override def getUserTags(userId: UUID): List[Tag] = {
         checkedUserIds = checkedUserIds ::: userId :: Nil
         List(
           Tag.createTag(Tag.Key.Other, "value1"),

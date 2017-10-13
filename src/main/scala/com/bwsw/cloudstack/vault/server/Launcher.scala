@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server
 import com.bwsw.cloudstack.vault.server.common.{ConfigLoader, LeaderLatch}
 import com.bwsw.cloudstack.vault.server.kafka.ConsumerManager
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, DataPath}
-import com.typesafe.scalalogging.StrictLogging
+import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
 
@@ -29,10 +29,9 @@ import scala.util.{Failure, Success, Try}
   * Class is responsible for launching application.
   * It creating all services needed to start application.
   * Also it provides support the Leader-Follower registration with help ZooKeeper + Curator
-  *
-  * @author Vladislav Medvedev
   */
-object Launcher extends StrictLogging {
+object Launcher {
+  private val logger = LoggerFactory.getLogger(this.getClass)
   private var leaderLatch: Option[LeaderLatch] = None
 
   def main(args: Array[String]): Unit = {
