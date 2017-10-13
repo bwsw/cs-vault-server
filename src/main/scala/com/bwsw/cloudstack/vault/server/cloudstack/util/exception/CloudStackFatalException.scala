@@ -16,9 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.zookeeper.util.exception
+package com.bwsw.cloudstack.vault.server.cloudstack.util.exception
 
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.bwsw.cloudstack.vault.server.util.exception.FatalException
 
-class ZooKeeperCriticalException(override val exception: Throwable) extends CriticalException(exception) {
-}
+class CloudStackFatalException(private val message: String) extends FatalException(message)

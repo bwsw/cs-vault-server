@@ -7,7 +7,7 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.exception.{AbortedException, CriticalException}
@@ -75,7 +75,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(throw new CriticalException(new CloudStackEntityDoesNotExistException("message"))), expectedEvent))
+        Set((Future(throw new CloudStackEntityDoesNotExistException("message")), expectedEvent))
       }
     }
 
@@ -88,7 +88,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
     consumer.shutdown()
   }
 
-  "process" should "restart event handling if CriticalException which includes non-CloudStackEntityDoesNotExistException was thrown" in {
+  "process" should "restart event handling if CloudStackFatalException was thrown" in {
     val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
 
     mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))
@@ -106,7 +106,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
     val cloudStackEventHandler = new CloudStackEventHandler(controller){
       override def handleEventsFromRecords(recordValues: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
         assert(recordValues == List(correctAccountDeleteEvent), "record is wrong")
-        Set((Future(throw new CriticalException(new Exception)), expectedEvent))
+        Set((Future(throw new CloudStackFatalException("test exception")), expectedEvent))
       }
 
       override def restartEvent(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {

@@ -100,16 +100,4 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       }
     }
   }
-
-  def isNonFatalException(exception: Throwable): Boolean = {
-    logger.debug(s"isNonFatalException: $exception")
-    exception match {
-      case e: CriticalException =>
-        e.exception match {
-          case nonFatalException: CloudStackEntityDoesNotExistException => true
-          case _ => false
-        }
-      case _ => false
-    }
-  }
 }
