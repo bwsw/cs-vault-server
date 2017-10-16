@@ -54,30 +54,30 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   val nameParameter = "name"
 
   /**
-    * Creates task to extract tags for specified entity
+    * Creates task to retrieve tags for specified entity
     *
     * @param resourceType type of tags to extract
-    * @param resourceId id of resource whose tags are extracted
+    * @param resourceId id of resource whose tags are retrieved
     *
-    * @return task for extracting tags
+    * @return task to retrieve tags
     */
-  def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+  def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest(Command.toString(Command.ListTags))
     tagRequest.addParameter("response", "json")
     tagRequest.addParameter("resourcetype", Tag.Type.toString(resourceType))
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
-    createRequest(tagRequest, s"get tag by resource: ($resourceId, $resourceType)")
+    createRequest(tagRequest, s"Retrieve tag by resource: ($resourceId, $resourceType)")
   }
 
   /**
-    * Creates task to extract entity with specified parameters
+    * Creates task to retrieve entity with specified parameters
     *
-    * @param parameterValue value of filter parameter to extract entity
-    * @param parameterName filter parameter to extract entity
+    * @param parameterValue value of filter parameter to retrieve entity
+    * @param parameterName filter parameter to retrieve entity
     *
-    * @return task for extracting entity
+    * @return task to retrieve entity
     */
   def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
@@ -85,7 +85,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     request.addParameter("listAll", "true")
     request.addParameter(parameterName, parameterValue)
 
-    createRequest(request, s"get entity by command: $command")
+    createRequest(request, s"Retrieve entity by command: $command")
   }
 
   /**
@@ -116,25 +116,26 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
 
     val requestWithTags = addTagsToRequest(0, tagList, request)
 
-    createRequest(requestWithTags, s"set tags to resource: ($resourceId, $resourceType)")
+    createRequest(requestWithTags, s"Include tags into resource: ($resourceId, $resourceType)")
   }
 
   /**
     * Processes request execution
     * does not swallow ApacheCloudStackClientRuntimeException if it wraps NoRouteToHostException
-    * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException which have
-    *                                               StatusCode == 431 was thrown
+    * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException with
+    *                                               StatusCode equal to 431 was thrown
+    *
     *
     */
   protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
-    logger.debug(s"Request was executed for action: $requestDescription")
+    logger.debug(s"Request executed for action: $requestDescription")
     val clientList = threadLocalClientList.get()
     Try {
       clientList.head.executeRequest(request)
     } match {
       case Success(x) => x
       case Failure(e: ApacheCloudStackClientRuntimeException) if e.getCause.isInstanceOf[NoRouteToHostException] =>
-        logger.warn(s"CloudStack server is unavailable")
+        logger.warn("CloudStack server is unavailable")
         if (clientList.tail.isEmpty) {
           threadLocalClientList.set(apacheCloudStackClientList)
         } else {
@@ -143,6 +144,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
         if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
+        logger.error(s"Request execution thrown an exception: $e")
         throw new CloudStackEntityDoesNotExistException(e.toString)
       case Failure(e: Throwable) =>
         logger.error(s"Request execution thrown an exception: $e")
