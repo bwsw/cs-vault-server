@@ -138,8 +138,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val cloudStackEventHandler = new CloudStackEventHandler(controller)
 
     val resultFuture = cloudStackEventHandler.restartEvent(event) match {
-      case ProcessingEventResult(successHandleEvent, future) =>
-        assert(successHandleEvent == event, "event is wrong")
+      case ProcessingEventResult(handledEvent, future) =>
+        assert(handledEvent == event, "event is wrong")
         future
     }
 
