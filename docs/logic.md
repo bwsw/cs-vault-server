@@ -1,7 +1,7 @@
 **Event processing at the consumption level.** <br />
 
 A controller handles the following events if they have "Completed" status. 
-1) creation of virtual machine, account and user
+1) creation of virtual machine, account, and user
 2) deletion of virtual machine and account 
 
 Other events are ignored. <br />

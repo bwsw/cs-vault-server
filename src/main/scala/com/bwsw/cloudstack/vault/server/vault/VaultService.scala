@@ -32,8 +32,9 @@ import org.slf4j.LoggerFactory
 /**
   * Class is responsible for interaction with Vault server with help of VaultRestRequestCreator
   *
-  * @param vaultRest allows for creating task for interaction with Vault
-  * @param settings contains the settings for interaction with Vault
+  * @param vaultRest enables interaction with Vault server
+  *
+  * @param settings contains settings for interaction with Vault
   */
 class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
@@ -65,16 +66,16 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.retryDelay
     )
 
-    val token = jsonSerializer.deserialize[Token](responseString)
-    logger.debug("Token was created")
-    token.tokenId.id
+    val token = jsonSerializer.deserialize[Token](responseString).tokenId.id
+    logger.debug(s"Token: $token created")
+    token
   }
 
   /**
     * Revokes token from vault server.
     *
-    * @param tokenId UUID of token for revoke
-    * @return List of names of revoked token policies
+    * @param tokenId UUID of token for revoke.
+    * @return List of names of token policies.
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
@@ -96,7 +97,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRevokeRequest,
       settings.retryDelay
     )
-    logger.debug(s"Token was revoked")
+    logger.debug(s"Token: $tokenId revoked")
 
     lookupToken.tokenData.policies.filter { x =>
       x != "default" && x != "root"
@@ -104,9 +105,9 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   }
 
   /**
-    * Deletes secret from vault server by specified path.
+    * Deletes secrets from vault server by specified path.
     *
-    * @param pathToRootSecret path to root secret for deletion, tree of sub-secret will be deleted too
+    * @param pathToRootSecret path for deletion of root secret, tree of sub-secrets will be deleted too
     * @throws VaultFatalException if response status is not expected.
     */
   def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
@@ -152,14 +153,14 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     loop(pathToRootSecret, subPathsOfRootPath)
     pathsForDeletion.reverse.foreach { x =>
       TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.retryDelay)
-      logger.debug(s"data from path: $x was deleted")
+      logger.debug(s"Data from path: $x deleted")
     }
   }
 
   /**
     * deletes policy in Vault server
     *
-    * @param policyName policyNeme for deletion
+    * @param policyName policyName for deletion
     * @throws VaultFatalException if response status is not expected.
     */
   def deletePolicy(policyName: String): Unit = {
@@ -172,7 +173,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.retryDelay
     )
 
-    logger.debug(s"policy with name: $policyName was deleted")
+    logger.debug(s"Policy with name: $policyName deleted")
   }
 
   /**
@@ -190,7 +191,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRequest,
       settings.retryDelay
     )
-    logger.debug(s"policy was writed: $policy")
+    logger.debug(s"Policy: $policy wrote down")
   }
 }
 

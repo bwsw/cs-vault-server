@@ -44,7 +44,7 @@ object TaskRunner {
         logger.error(s"The critical exception: ${e.getMessage} was thrown")
         throw e
       case Failure(e) =>
-        logger.warn(s"The task execute with an exception: ${e.getMessage}, restart function after $retryDelay seconds")
+        logger.warn(s"The task execute with an exception: ${e.getMessage}, the task will restart after $retryDelay seconds")
         Thread.sleep(retryDelay)
         tryRunUntilSuccess[T](task, retryDelay)
     }

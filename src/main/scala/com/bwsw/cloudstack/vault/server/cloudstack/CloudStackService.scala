@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 /**
   * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
   *
-  * @param cloudStackTaskCreator allows to create tasks for interaction with CloudStack
+  * @param cloudStackTaskCreator enables creation tasks for interaction with CloudStack
   * @param settings contains settings for interaction with CloudStack
   */
 class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
@@ -111,7 +111,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     val vm = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(Command.ListVirtualMachines, Map(cloudStackTaskCreator.idParameter -> vmId.toString))
     ).virtualMashineList.virtualMashines.getOrElse(
-      throw new CloudStackEntityDoesNotExistException(s"The virtual machine with id: $vmId does not exist")
+      throw new CloudStackEntityDoesNotExistException(s"Vm with id: $vmId does not exist")
     ).head
 
     val accountId = jsonSerializer.deserialize[AccountResponse](
@@ -120,11 +120,11 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
                 cloudStackTaskCreator.domainParameter -> vm.domainId.toString
               ))
     ).accountList.accounts.getOrElse(
-      throw new CloudStackEntityDoesNotExistException(s"The virtual machine: $vmId does not include account with " +
+      throw new CloudStackEntityDoesNotExistException(s"Vm: $vmId does not include an account with " +
         s"name: ${vm.accountName} within domain: ${vm.domainId}")
     ).map(_.id).head
 
-    logger.debug(s"accountId: $accountId retrieved for vm: $vmId)")
+    logger.debug(s"Account id: $accountId retrieved for vm: $vmId)")
     accountId
   }
 
@@ -145,7 +145,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
       throw new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist")
     ).map(_.accountid).head
 
-    logger.debug(s"accountId: $accountId retrieved for user: $userId)")
+    logger.debug(s"Account id: $accountId retrieved for user: $userId)")
     accountId
   }
 

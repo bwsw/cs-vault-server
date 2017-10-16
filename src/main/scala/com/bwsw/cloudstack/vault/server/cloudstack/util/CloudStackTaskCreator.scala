@@ -69,7 +69,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     tagRequest.addParameter("listAll", "true")
     tagRequest.addParameter("resourceid", resourceId)
 
-    createRequest(tagRequest, s"Retrieve tag by resource: ($resourceId, $resourceType)")
+    createRequest(tagRequest, s"Retrieve tags by resource: ($resourceId, $resourceType)")
   }
 
   /**
