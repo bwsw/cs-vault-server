@@ -52,6 +52,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
   val idParameter = "id"
   val nameParameter = "name"
+  val domainParameter = "domainid"
 
   /**
     * Creates task for getting tags fro specified entity
@@ -74,16 +75,17 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   /**
     * Creates task for getting entity with specified parameters
     *
-    * @param parameterValue value of filter parameter for getting entity
-    * @param parameterName filter parameter for getting entity
-    *
+    * @param parameters Map where key -> filter parameter for getting entity
+    *        value -> value of filter parameter for getting entity
     * @return task for getting entity
     */
-  def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+  def createGetEntityTask(command: Command, parameters: Map[String, String]):() => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
     request.addParameter("response", "json")
     request.addParameter("listAll", "true")
-    request.addParameter(parameterName, parameterValue)
+    parameters.foreach {
+      case (parameterName, value) => request.addParameter(parameterName, value)
+    }
 
     createRequest(request, s"get entity by command: $command")
   }
