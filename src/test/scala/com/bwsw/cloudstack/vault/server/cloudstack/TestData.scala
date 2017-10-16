@@ -19,7 +19,7 @@ trait TestData {
 
 
   val listUsersCommand = "listUsers"
-  val listVirtualMachines = "listVirtualMachines"
+  val listVms = "listVirtualMachines"
 
   val vmUserResourceType = "UserVM"
   val idParameter = "id"
