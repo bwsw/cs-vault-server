@@ -26,7 +26,7 @@ import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities._
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
-import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
+import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.slf4j.LoggerFactory
 
 /**
@@ -38,16 +38,15 @@ import org.slf4j.LoggerFactory
 class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val jsonSerializer = new JsonSerializer(true)
+  private val jsonSerializer = new JsonSerializer(ignore = true)
   val vaultUrl: String = vaultRest.vaultUrl
 
   /**
     * Creates token with specified policy
     *
     * @param policies policies for token
-    *
     * @return UUID of token
-    * @throws VaultCriticalException if response status is not expected.
+    * @throws VaultFatalException if response status is not expected.
     */
   def createToken(policies: List[Policy]): UUID = {
     logger.debug(s"createToken with policies: $policies")
@@ -75,9 +74,8 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * Revokes token from vault server.
     *
     * @param tokenId UUID of token for revoke
-    *
     * @return List of names of revoked token policies
-    * @throws VaultCriticalException if response status is not expected.
+    * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
     logger.debug(s"revokeToken")
@@ -109,8 +107,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * Deletes secret from vault server by specified path.
     *
     * @param pathToRootSecret path to root secret for deletion, tree of sub-secret will be deleted too
-    *
-    * @throws VaultCriticalException if response status is not expected.
+    * @throws VaultFatalException if response status is not expected.
     */
   def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
     logger.debug(s"deleteSecretsRecursively: $pathToRootSecret")
@@ -163,8 +160,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * deletes policy in Vault server
     *
     * @param policyName policyNeme for deletion
-    *
-    * @throws VaultCriticalException if response status is not expected.
+    * @throws VaultFatalException if response status is not expected.
     */
   def deletePolicy(policyName: String): Unit = {
     logger.debug(s"deletePolicy: $policyName")
@@ -183,8 +179,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * Creates policy in Vault server
     *
     * @param policy policy for creating
-    *
-    * @throws VaultCriticalException if response status is not expected.
+    * @throws VaultFatalException if response status is not expected.
     */
   private def writePolicy(policy: Policy) = {
     logger.debug(s"writePolicy: $policy")

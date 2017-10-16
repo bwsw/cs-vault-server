@@ -23,7 +23,7 @@ import java.util.{Collections, Properties}
 
 import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.slf4j.LoggerFactory
 
@@ -42,7 +42,7 @@ class Consumer[T](val brokers: String,
                  (implicit executionContext: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val props: Properties = createConsumerConfig(brokers)
+  private val props = createConsumerConfig(brokers)
   protected val consumer: org.apache.kafka.clients.consumer.Consumer[String, String] = new KafkaConsumer[String, String](props)
 
   def createConsumerConfig(brokers: String): Properties = {
@@ -70,8 +70,8 @@ class Consumer[T](val brokers: String,
     logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
-    val futureEvents: Set[(Future[Unit], T)] = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
-    val eventLatch: InterruptableCountDawnLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
+    val futureEvents = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
+    val eventLatch = new InterruptableCountDawnLatch(new CountDownLatch(futureEvents.size))
 
     futureEvents.foreach { x =>
       checkEvent(x)
@@ -88,19 +88,17 @@ class Consumer[T](val brokers: String,
             case Success(x) =>
               logger.info(s"The event: $event was successful")
               eventLatch.succeed()
+            case Failure(e: FatalException) =>
+              logger.warn("An exception: \"" + s"${e.getMessage}" +
+                "\" occurred during the event: \"" + s"$event" + "\" processing is fatal, " +
+                "the event will be restarted after 2 seconds")
+              Thread.sleep(2000)
+              val restartedEvent = eventHandler.restartEvent(event)
+              checkEvent(restartedEvent)
             case Failure(e: CriticalException) =>
-              logger.warn(s"An exception occurred during the event: $event processing: $e")
-              if (eventHandler.isNonFatalException(e)) {
-                logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
-                  s"which was thrown while event: $event was being handle, is not fatal and will be ignored")
-                eventLatch.succeed()
-              } else {
-                logger.warn("The exception: \"" + s"${e.exception}" + "\"" +
-                  s"is fatal, the event: $event will be restarted after 2 seconds")
-                Thread.sleep(2000)
-                val restartedEvent = eventHandler.restartEvent(event)
-                checkEvent(restartedEvent)
-              }
+              logger.warn("An exception: \"" + s"${e.getMessage}" +
+                "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal and will be ignored")
+              eventLatch.succeed()
             case Failure(e: Throwable) =>
               logger.error(s"Unhandled exception was thrown: $e")
               eventLatch.abort()

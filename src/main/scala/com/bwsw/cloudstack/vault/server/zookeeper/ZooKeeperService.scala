@@ -18,7 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.zookeeper
 
-import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
+import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.RetryForever
 import org.apache.zookeeper.{CreateMode, ZooDefs}
@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
 class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val retryPolicy = new RetryForever(settings.retryDelay)
-  protected val curatorClient: CuratorFramework = CuratorFrameworkFactory.newClient(settings.host, retryPolicy)
+  protected val curatorClient = CuratorFrameworkFactory.newClient(settings.host, retryPolicy)
   initCuratorClient()
 
   /**
@@ -43,7 +43,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
-    * @throws ZooKeeperCriticalException if zNode already does exist.
+    * @throws ZooKeeperFatalException if zNode already does exist.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
@@ -58,7 +58,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     } match {
       case Success(x) =>
       case Failure(e: Throwable) =>
-        throw new ZooKeeperCriticalException(e)
+        throw new ZooKeeperFatalException(e.toString)
     }
 
   }
@@ -86,7 +86,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     * Will be waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
-    * @throws ZooKeeperCriticalException if node does not exist
+    * @throws ZooKeeperFatalException if node does not exist
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
@@ -96,7 +96,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     } match {
       case Success(x) =>
       case Failure(e: Throwable) =>
-        throw new ZooKeeperCriticalException(e)
+        throw new ZooKeeperFatalException(e.toString)
     }
 
   }

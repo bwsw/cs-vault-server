@@ -73,11 +73,7 @@ class JsonSerializer extends Serializer {
 
   override def setIgnoreUnknown(ignore: Boolean): Unit = {
     logger.debug(s"Set a value of flag: FAIL_ON_UNKNOWN_PROPERTIES to '$ignore'")
-    if (ignore) {
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    } else {
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
-    }
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, !ignore)
   }
 
   override def getIgnoreUnknown(): Boolean = {
