@@ -43,17 +43,17 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param accountId id of account for gets user's tags
     *
-    * @return List with Tag
+    * @return Set with Tag
     * @throws CloudStackEntityDoesNotExistException if account with specified id does not exist.
     */
-  def getUserTagsByAccount(accountId: UUID): List[Tag] = {
+  def getUserTagsByAccount(accountId: UUID): Set[Tag] = {
     logger.debug(s"getUserTagsByAccount(accountId: $accountId)")
 
     val allUsersIdInAccount = getUsersByAccount(accountId)
 
     val tags = allUsersIdInAccount.flatMap { userId =>
       getUserTags(userId)
-    }
+    }.toSet
 
     logger.debug(s"Tags were got for account: $accountId)")
     tags
@@ -64,14 +64,14 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param userId id of user for gets user's tags
     *
-    * @return List with Tag
+    * @return Set with Tag
     * @throws CloudStackEntityDoesNotExistException if user with specified id does not exist.
     */
-  def getUserTags(userId: UUID): List[Tag] = {
+  def getUserTags(userId: UUID): Set[Tag] = {
     logger.debug(s"getUserTags(userId: $userId)")
 
     val tagResponse = getTagsJson(Tag.Type.User, userId)
-    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags.getOrElse(List.empty[Tag])
+    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
     logger.debug(s"Tags were got for user: $userId)")
     tags
@@ -82,14 +82,14 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param vmId id of virtual mashine for gets user's tags
     *
-    * @return List with Tag
+    * @return Set with Tag
     * @throws CloudStackEntityDoesNotExistException if virtual machine with specified id does not exist.
     */
-  def getVmTags(vmId: UUID): List[Tag] = {
+  def getVmTags(vmId: UUID): Set[Tag] = {
     logger.debug(s"getVmTags(vmId: $vmId)")
 
     val tagResponse = getTagsJson(Tag.Type.UserVM, vmId)
-    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagList.tags.getOrElse(List.empty[Tag])
+    val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
     logger.debug(s"Tags were got for vm: $vmId)")
 
@@ -178,13 +178,13 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   /**
     * Sets tag to specified entity.
     *
-    * @param resourceId id of entity for set tag
+    * @param resourceId   id of entity for set tag
     * @param resourceType "User" or "UserVM" type of tags
-    * @param tagList List with tags to add to the resource
+    * @param tagSet Set with tags to add to the resource
     */
-  def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]): Unit = {
+  def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagSet: Set[Tag]): Unit = {
     logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
-    def task = cloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagList)
+    def task = cloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagSet)
 
     TaskRunner.tryRunUntilSuccess[Unit](task, settings.retryDelay)
     logger.debug(s"Tag was set to resource: $resourceId, $resourceType")

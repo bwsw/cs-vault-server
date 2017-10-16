@@ -64,7 +64,6 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   "deletePolicy" should "delete policy" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
-    val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createPolicyDeleteRequest(policyName: String): () => String = {
@@ -184,7 +183,6 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "revokeToken" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
-    val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
@@ -226,7 +224,6 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   "deletePolicy" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
-    val tokenJson = getTokenJson(entityId.toString)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createPolicyDeleteRequest(policyName: String): () => String = {
