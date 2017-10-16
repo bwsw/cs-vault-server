@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.kafka
 import java.util.concurrent.CountDownLatch
 import java.util.{Collections, Properties}
 
-import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
+import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, ProcessingEventResult}
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
@@ -81,10 +81,10 @@ class Consumer[T](val brokers: String,
 
     consumer.commitSync()
 
-    def checkEvent(eventForCheck: (Future[Unit], T)): Unit = {
+    def checkEvent(eventForCheck: ProcessingEventResult[T]): Unit = {
       eventForCheck match {
-        case (future, event) =>
-          future.onComplete {
+        case ProcessingEventResult(event, result) =>
+          result.onComplete {
             case Success(x) =>
               logger.info(s"The event: $event was successful")
               eventLatch.succeed()
