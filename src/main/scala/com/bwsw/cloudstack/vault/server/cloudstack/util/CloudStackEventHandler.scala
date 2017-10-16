@@ -39,7 +39,7 @@ import scala.util.{Failure, Success, Try}
   */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
-  private val jsonSerializer = new JsonSerializer(ignore = true)
+  private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   @Override

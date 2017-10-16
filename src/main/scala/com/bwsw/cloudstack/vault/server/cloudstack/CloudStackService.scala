@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory
 class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
                         settings: CloudStackService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val jsonSerializer = new JsonSerializer(ignore = true)
+  private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
 
   /**
     * Gets all tags of account's users which has "User" type.
@@ -155,7 +155,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     */
   def getUsersByAccount(accountId: UUID): List[UUID] = {
     logger.debug(s"getUsersByAccount(accountId: $accountId)")
-    val jsonSerializer = new JsonSerializer(ignore = true)
+    val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
 
     val accountResponse = getEntityJson(
       accountId.toString,

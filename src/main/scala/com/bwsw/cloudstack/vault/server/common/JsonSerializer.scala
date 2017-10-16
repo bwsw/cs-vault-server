@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory
 
 class JsonSerializer extends Serializer {
 
-  def this(ignore: Boolean) = {
+  def this(ignoreUnknownProperties: Boolean) = {
     this()
-    this.setIgnoreUnknown(ignore)
+    this.setIgnoreUnknownPropertiesFlag(ignoreUnknownProperties)
   }
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -71,12 +71,12 @@ class JsonSerializer extends Serializer {
     }
   }
 
-  override def setIgnoreUnknown(ignore: Boolean): Unit = {
-    logger.debug(s"Set a value of flag: FAIL_ON_UNKNOWN_PROPERTIES to '$ignore'")
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, !ignore)
+  override def setIgnoreUnknownPropertiesFlag(ignoreUnknownProperties: Boolean): Unit = {
+    logger.debug(s"Set a value of flag: FAIL_ON_UNKNOWN_PROPERTIES to '$ignoreUnknownProperties'")
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, !ignoreUnknownProperties)
   }
 
-  override def getIgnoreUnknown(): Boolean = {
+  override def getIgnoreUnknownPropertiesFlag: Boolean = {
     logger.debug(s"Retrieve a value of flag: FAIL_ON_UNKNOWN_PROPERTIES")
     !((mapper.getDeserializationConfig.getDeserializationFeatures & DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.getMask) == DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.getMask)
   }
