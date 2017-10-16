@@ -25,8 +25,8 @@ import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, Apach
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCriticalException, CloudStackEntityDoesNotExistException}
-import com.bwsw.cloudstack.vault.server.util.HttpStatuses
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
+import com.bwsw.cloudstack.vault.server.util.HttpStatus
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -41,7 +41,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
+  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.endpoints.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
 
@@ -122,9 +122,8 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   /**
     * Handles request execution
     * does not swallowed ApacheCloudStackClientRuntimeException if it wrapping NoRouteToHostException
-    * @throws CloudStackCriticalException which wrapping CloudStackEntityDoesNotExistException if
-    *                                     ApacheCloudStackClientRequestRuntimeException which have StatusCode == 431
-    *                                     was thrown, also wrapping other exception to CloudStackCriticalException
+    * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException which have
+    *                                               StatusCode == 431 was thrown
     *
     */
   protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
@@ -143,15 +142,15 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         }
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
-        if e.getStatusCode == HttpStatuses.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
-        throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(e.toString))
-      case Failure(e :Throwable) =>
-        logger.error(s"Request execution thrown an critical exception: $e")
-        throw new CloudStackCriticalException(e)
+        if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
+        throw new CloudStackEntityDoesNotExistException(e.toString)
+      case Failure(e: Throwable) =>
+        logger.error(s"Request execution thrown an exception: $e")
+        throw new CloudStackFatalException(e.toString)
     }
   }
 }
 
 object CloudStackTaskCreator {
-  case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
+  case class Settings(endpoints: Array[String], secretKey: String, apiKey: String)
 }

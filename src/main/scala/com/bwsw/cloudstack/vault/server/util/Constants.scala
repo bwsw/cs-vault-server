@@ -27,7 +27,7 @@ object ConfigLiterals {
 
   val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
 
-  val vaultUrl               = s"$vaultDomain.url"
+  val vaultEndpoint          = s"$vaultDomain.endpoint"
   val vaultRootToken         = s"$vaultDomain.rootToken"
   val vaultRetryDelay        = s"$vaultDomain.retryDelay"
   val vaultTokenPeriod       = s"$vaultDomain.tokenPeriod"
@@ -35,21 +35,21 @@ object ConfigLiterals {
   val vaultVmsBasicPath      = s"$vaultDomain.vmsBasicPath"
 
 
-  val kafkaServerList = s"$kafkaDomain.serverList"
+  val kafkaEndpoints  = s"$kafkaDomain.endpoints"
   val kafkaTopic      = s"$kafkaDomain.topic"
 
-  val zooKeeperUrl             = s"$zooKeeperDomain.url"
+  val zooKeeperEndpoints       = s"$zooKeeperDomain.endpoints"
   val zooKeeperRetryDelay      = s"$zooKeeperDomain.retryDelay"
-  val zooKeeperRootNode        = s"$zooKeeperDomain.zooKeeperRootNode"
+  val zooKeeperRootNode        = s"$zooKeeperDomain.rootNode"
   val zooKeeperMasterLatchNode = s"$zooKeeperDomain.masterLatchNode"
 
-  val cloudStackApiUrlList = s"$cloudStackDomain.apiUrlList"
+  val cloudStackEndpoints  = s"$cloudStackDomain.endpoints"
   val cloudStackApiKey     = s"$cloudStackDomain.apiKey"
   val cloudStackSecretKey  = s"$cloudStackDomain.secretKey"
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
 }
 
-object HttpStatuses {
+object HttpStatus {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
   val CLOUD_STACK_ENTITY_DOES_NOT_EXIST = 431
@@ -66,5 +66,5 @@ object RequestPath {
 }
 
 object DataPath {
-  val masterLatchNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
+  val masterLatchNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
 }

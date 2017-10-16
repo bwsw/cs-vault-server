@@ -86,7 +86,7 @@ trait TestData {
   : CloudStackTaskCreator = {
     new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               assert(request.toString == expectedRequest.toString, "request is wrong")

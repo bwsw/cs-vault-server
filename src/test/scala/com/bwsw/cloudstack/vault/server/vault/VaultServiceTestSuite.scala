@@ -6,7 +6,7 @@ import com.bwsw.cloudstack.vault.server.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
-import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
+import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.FlatSpec
 
 /**
@@ -159,13 +159,13 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   }
 
   //Negative tests
-  "createToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
+  "createToken" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createTokenCreateRequest(tokenParameters: String): () => String  = {
-        throw new VaultCriticalException(new Exception("test exception"))
+        throw new VaultFatalException("test exception")
       }
 
       override def createPolicyCreateRequest(policyName: String, policyJson: String): () => String = {
@@ -177,12 +177,12 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultService.createToken(policy :: Nil)
     }
   }
 
-  "revokeToken" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
+  "revokeToken" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
@@ -190,25 +190,25 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createTokenLookupRequest(tokenJsonString: String): () => String  = {
         assert(tokenJson == tokenJsonString, "tokenJsonString is wrong")
-        throw new VaultCriticalException(new Exception("test exception"))
+        throw new VaultFatalException("test exception")
       }
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultService.revokeToken(entityId)
     }
   }
 
-  "deleteSecretRecursive" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
+  "deleteSecretRecursive" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val path = "/test/path"
     val responseWithEmptySubTree = "{\"errors\":[]}"
 
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createDeleteSecretRequest(pathToSecret: String): () => String = {
         assert(pathToSecret == path, "vaultRest is wrong")
-        throw new VaultCriticalException(new Exception("test exception"))
+        throw new VaultFatalException("test exception")
       }
 
       override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
@@ -218,12 +218,12 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultService.deleteSecretsRecursively(path)
     }
   }
 
-  "deletePolicy" should "The VaultCriticalException thrown by VaultRestRequestCreator must not be swallowed" in {
+  "deletePolicy" should "The VaultFatalException thrown by VaultRestRequestCreator must not be swallowed" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
@@ -231,13 +231,13 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override def createPolicyDeleteRequest(policyName: String): () => String = {
         assert(policyName == policy.name, "policyName is wrong")
-        throw new VaultCriticalException(new Exception("test exception"))
+        throw new VaultFatalException("test exception")
       }
     }
 
     val vaultService = new VaultService(vaultRest, vaultServiceSettings)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultService.deletePolicy(policy.name)
     }
   }
