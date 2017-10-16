@@ -18,10 +18,9 @@
 */
 package com.bwsw.cloudstack.vault.server.common.traits
 
-import scala.concurrent.Future
+import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
 
 trait EventHandler[T] {
-  def handleEventsFromRecords(records: List[String]): Set[(Future[Unit], T)]
-  def restartEvent(event: T): (Future[Unit], T)
-  def isNonFatalException(exception: Throwable): Boolean
+  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[T]]
+  def restartEvent(event: T): ProcessingEventResult[T]
 }

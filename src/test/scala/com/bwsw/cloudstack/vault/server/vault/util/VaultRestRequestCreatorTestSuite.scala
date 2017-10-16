@@ -7,7 +7,7 @@ import com.bwsw.cloudstack.vault.server.MockConfig.vaultRestRequestCreatorSettin
 import com.bwsw.cloudstack.vault.server.vault.TestData
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.entities.Token.TokenInitParameters
-import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultCriticalException
+import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.FlatSpec
 
 /**
@@ -21,7 +21,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     val period = 1000
     val expectedResponseBody = getTokenJsonResponse(token.toString).getBytes("UTF-8")
     val expectedPath = "/v1/auth/token/create"
-    val expectedData = getTokenInitParametersJson(false, policyName, period)
+    val expectedData = getTokenInitParametersJson(noDefaultPolicy = true, policyName, period)
 
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
@@ -33,13 +33,13 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
 
-    val tokenInitParameters = TokenInitParameters(false, List(policyName), period)
+    val tokenInitParameters = TokenInitParameters(noDefaultPolicy = true, List(policyName), period)
     val resultTokenResponse = vaultRestRequestCreator.createTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))()
 
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
@@ -60,8 +60,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -89,8 +89,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -117,8 +117,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -144,8 +144,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -170,8 +170,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -197,8 +197,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody.getBytes("UTF-8")
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -220,15 +220,15 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             Array.empty[Byte]
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
 
-    val tokenInitParameters = TokenInitParameters(false, List("name"), 1000)
+    val tokenInitParameters = TokenInitParameters(noDefaultPolicy = true, List("name"), 1000)
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultRestRequestCreator.createTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))()
     }
   }
@@ -239,15 +239,15 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
           override def post(): RestResponse = throw new Exception("test exception")
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
 
     val jsonTokenId = Json.`object`().add("token", token.toString).toString
 
-    assertThrows[VaultCriticalException] {
+    assertThrows[VaultFatalException] {
       vaultRestRequestCreator.createTokenRevokeRequest(jsonTokenId)()
     }
   }
@@ -257,8 +257,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
           override def post(): RestResponse = throw new RestException("test exception")
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }

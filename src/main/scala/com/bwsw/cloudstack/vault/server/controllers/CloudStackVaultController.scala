@@ -44,7 +44,7 @@ class CloudStackVaultController(vaultService: VaultService,
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val accountEntityName = "accounts"
   private val vmEntityName = "vms"
-  private val vaultApiPath = s"${vaultService.vaultUrl}${RequestPath.vaultRoot}"
+  private val vaultApiPath = s"${vaultService.endpoint}${RequestPath.vaultRoot}"
 
   /**
     * Revoke token and delete secret in Vault server.
@@ -136,7 +136,7 @@ class CloudStackVaultController(vaultService: VaultService,
               case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
             }
         }
-        val completeVaultTags: Set[Tag] = newVaultTokenTags ++ newVaultKeyspaceTags
+        val completeVaultTags = newVaultTokenTags ++ newVaultKeyspaceTags
 
         usersIds.foreach { id =>
           cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
