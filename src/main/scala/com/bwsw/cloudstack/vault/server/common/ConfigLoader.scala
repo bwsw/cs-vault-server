@@ -44,7 +44,7 @@ object ConfigLoader {
     val cloudStackSecretKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
     val cloudStackApiKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
     //cloudStackVaultController
-    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultVMsBasicPath)
+    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultVmsBasicPath)
     val accountSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultAccountsBasicPath)
     val zooKeeperRootNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
 
