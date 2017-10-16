@@ -15,10 +15,11 @@ trait TestData {
   val userId: UUID = UUID.randomUUID()
   val accountId: UUID = UUID.randomUUID()
   val vmId: UUID = UUID.randomUUID()
+  val domainId: UUID = UUID.randomUUID()
 
 
   val listUsersCommand = "listUsers"
-  val listVirtualMachines = "listVirtualMachines"
+  val listVms = "listVirtualMachines"
 
   val vmUserResourceType = "UserVM"
   val idParameter = "id"
@@ -28,7 +29,7 @@ trait TestData {
     def getTagResponseJson(key: Tag.Key, value: String): String = "{\"listtagsresponse\":{\"count\":1,\"tag\":[{\"key\":\"" + s"${Tag.Key.toString(key)}" + "\",\"value\":\"" + s"$value" + "\"}]}}"
     def getAccountResponseJson(account: String, user: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"" + s"$user" + "\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
     def getUserResponseJson(user: String, account: String): String = "{\"listusersresponse\":{\"count\":1,\"user\":[{\"id\":\"" + s"$user" + "\", \"accountid\":\" " + s"$account" + "\"}]}}"
-    def getVmResponseJson(vm: String, accountName: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\"}]}}"
+    def getVmResponseJson(vm: String, accountName: String, domain: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\",\"domainid\":\"" + s"$domain" + "\"}]}}"
 
     def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
     def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
@@ -53,10 +54,11 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", accountId)
 
-    def getAccountRequestByName(name: String): ApacheCloudStackRequest = new ApacheCloudStackRequest("listAccounts")
+    def getAccountRequestByName(name: String, domain: String): ApacheCloudStackRequest = new ApacheCloudStackRequest("listAccounts")
       .addParameter("response", "json")
       .addParameter("listAll", "true")
       .addParameter("name", name)
+      .addParameter("domainid", domain)
 
     def getVmRequest(vmId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listVirtualMachines")
       .addParameter("response", "json")
@@ -86,7 +88,7 @@ trait TestData {
   : CloudStackTaskCreator = {
     new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               assert(request.toString == expectedRequest.toString, "request is wrong")

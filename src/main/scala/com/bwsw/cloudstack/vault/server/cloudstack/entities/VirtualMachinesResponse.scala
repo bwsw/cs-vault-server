@@ -26,4 +26,4 @@ private[cloudstack] case class VirtualMachinesResponse(@JsonProperty("listvirtua
 
 private[cloudstack] case class VirtualMashineList(@JsonProperty("virtualmachine") virtualMashines: Option[List[VirtualMashine]])
 
-private[cloudstack] case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String)
+private[cloudstack] case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String, @JsonProperty("domainid") domainId: UUID)

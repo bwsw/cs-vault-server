@@ -49,12 +49,12 @@ object Launcher {
 
   protected def start(): Unit = {
     leaderLatch = Option(createLeaderLatch(
-      ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperUrl)
+      ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
     ))
 
     val consumerManagerSettings = ConsumerManager.Settings(
       ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaServerList)
+      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
     )
     val components = new Components(ConfigLoader.loadConfig())
     val consumerManager = new ConsumerManager(components.cloudStackEventHandler, consumerManagerSettings)

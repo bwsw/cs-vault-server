@@ -21,9 +21,9 @@ package com.bwsw.cloudstack.vault.server.cloudstack.entities
 import java.util.UUID
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
+import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind._
-import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 object CloudStackEvent {
 

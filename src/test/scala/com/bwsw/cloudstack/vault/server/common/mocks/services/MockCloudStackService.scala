@@ -15,11 +15,11 @@ class MockCloudStackService extends CloudStackService(
   new CloudStackTaskCreator(MockConfig.cloudStackTaskCreatorSettings),
   MockConfig.cloudStackServiceSettings
 ){
-  override def getUserTagsByAccount(accountId: UUID): List[Tag] = throw new NotImplementedError("getUserTagsByAccountId not implemented")
+  override def getUserTagsByAccount(accountId: UUID): Set[Tag] = throw new NotImplementedError("getUserTagsByAccountId not implemented")
 
-  override def getUserTags(userId: UUID): List[Tag] = throw new NotImplementedError("getUserTagsByUserId not implemented")
+  override def getUserTags(userId: UUID): Set[Tag] = throw new NotImplementedError("getUserTagsByUserId not implemented")
 
-  override def getVmTags(vmId: UUID): List[Tag] = throw new NotImplementedError("getVmTagsById not implemented")
+  override def getVmTags(vmId: UUID): Set[Tag] = throw new NotImplementedError("getVmTagsById not implemented")
 
   override def getVmOwnerAccount(vmId: UUID): UUID = throw new NotImplementedError("getAccountIdByVmId not implemented")
 
@@ -27,5 +27,5 @@ class MockCloudStackService extends CloudStackService(
 
   override def getUsersByAccount(accountId: UUID): List[UUID] = throw new NotImplementedError("getUsersByAccount not implemented")
 
-  override def setResourceTags(resourceId: UUID, resourceType: Type, tagList: List[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+  override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 }

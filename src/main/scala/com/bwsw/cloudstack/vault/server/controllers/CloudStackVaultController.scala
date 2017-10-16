@@ -44,7 +44,7 @@ class CloudStackVaultController(vaultService: VaultService,
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val accountEntityName = "accounts"
   private val vmEntityName = "vms"
-  private val vaultApiPath = s"${vaultService.vaultUrl}${RequestPath.vaultRoot}"
+  private val vaultApiPath = s"${vaultService.endpoint}${RequestPath.vaultRoot}"
 
   /**
     * Revoke token and delete secret in Vault server.
@@ -98,7 +98,7 @@ class CloudStackVaultController(vaultService: VaultService,
         }
     }
 
-    val completeVaultTags = (currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
+    val completeVaultTags = currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
 
     if (currentVaultTags.isEmpty) {
       usersIds.foreach { id =>
@@ -124,19 +124,19 @@ class CloudStackVaultController(vaultService: VaultService,
     val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
     if (currentVaultTags.isEmpty) {
-      val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
+      val newVaultTokenTags = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
         case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
       }
 
       if (usersIds.nonEmpty) {
-        val newVaultKeyspaceTagKeyList = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
+        val newVaultKeyspaceTags = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
           case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
             tagKey match {
               case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
               case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
             }
         }
-        val completeVaultTags = (newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
+        val completeVaultTags = newVaultTokenTags ++ newVaultKeyspaceTags
 
         usersIds.foreach { id =>
           cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
@@ -174,14 +174,14 @@ class CloudStackVaultController(vaultService: VaultService,
           writeTokenToZooKeeperNode(pathToData, token)
           tag
       }
-    }
+    }.toSet
 
-    val vaultKeyspaceTags = List(
+    val vaultKeyspaceTags = Set(
       Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
       Tag.createTag(Tag.Key.VaultPrefix, getVmEntitySecretPath(vmId))
     )
 
-    cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ::: vaultKeyspaceTags)
+    cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ++ vaultKeyspaceTags)
     logger.info(s"VM creation was processed, vmId: $vmId)")
   }
 
@@ -200,14 +200,10 @@ class CloudStackVaultController(vaultService: VaultService,
     */
   private def getCurrentVaultTagsOfUsers(usersIds: List[UUID]): Set[Tag] = {
 
-    val allUsersWithVaultTags = usersIds.map { userId =>
-      (userId, cloudStackService.getUserTags(userId).filter { tag =>
+    usersIds.flatMap { userId =>
+      cloudStackService.getUserTags(userId).filter { tag =>
         tag.key.oneOf(Tag.Key.VaultRO, Tag.Key.VaultRW, Tag.Key.VaultHost, Tag.Key.VaultPrefix)
-      }.toSet)
-    }
-
-    allUsersWithVaultTags.flatMap {
-      case (userId, userTags) => userTags
+      }
     }.toSet
   }
 

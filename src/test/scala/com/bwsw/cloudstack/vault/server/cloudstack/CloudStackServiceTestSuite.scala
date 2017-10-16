@@ -21,9 +21,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val value = "value1"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == accountId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
         () => Response.getAccountResponseJson(accountId.toString, userId.toString)
       }
@@ -37,7 +36,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
     val tags = cloudStackService.getUserTagsByAccount(accountId)
-    assert(Tag(key,value) :: Nil == tags)
+    assert(Set(Tag(key,value)) == tags)
   }
 
   "getUserTagsByUserId" should "return user tags by UserId" in {
@@ -55,7 +54,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
     val tags = cloudStackService.getUserTags(userId)
-    assert(Tag(key,value) :: Nil == tags)
+    assert(Set(Tag(key,value)) == tags)
   }
 
   "getVmTagsById" should "return virtual machines tags by id" in {
@@ -73,22 +72,23 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
     val tags = cloudStackService.getVmTags(vmId)
-    assert(Tag(key,value) :: Nil == tags)
+    assert(Set(Tag(key,value)) == tags)
   }
 
   "getAccountIdByVmId" should "return account id by virtual machine id" in {
     val accountName = "admin"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         command match {
           case Command.ListVirtualMachines =>
-            assert(parameterValue == vmId.toString, "parameterValue is wrong")
-            assert(parameterName == idParameter, "parameterName is wrong")
-            () => Response.getVmResponseJson(vmId.toString, accountName)
+            assert(Map(idParameter -> vmId.toString) == parameters, "parameters is wrong")
+            () => Response.getVmResponseJson(vmId.toString, accountName, domainId.toString)
           case Command.ListAccounts =>
-            assert(parameterValue == accountName, "parameterValue is wrong")
-            assert(parameterName == nameParameter, "parameterName is wrong")
+            assert(
+              Map(nameParameter -> accountName, domainParameter -> domainId.toString) == parameters,
+              "parameters is wrong"
+            )
             () => Response.getAccountResponseJson(accountId.toString, userId.toString)
           case _ =>
             assert(false, "command is wrong")
@@ -105,9 +105,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getAccountIdByUserId" should "return account id by user id" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == userId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> userId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListUsers, "command is wrong")
         () => Response.getUserResponseJson(userId.toString, accountId.toString)
       }
@@ -121,9 +120,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getUsersByAccount" should "return user ids by account id" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == accountId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
         () => Response.getAccountResponseJson(accountId.toString, userId.toString)
       }
@@ -140,27 +138,23 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val value = "value1"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override def createSetResourceTagsTask(resourceId: UUID, resourceType: Type, tagList: List[Tag]): () => Unit = {
+      override def createSetResourceTagsTask(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): () => Unit = {
         assert(resourceId == vmId, "resourceId is wrong")
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
-        assert(tagList == List(Tag.createTag(key, value)), "tagList is wrong")
+        assert(tagSet == Set(Tag.createTag(key, value)), "set of tags is wrong")
         () => Unit
       }
     }
     val cloudStackService = new CloudStackService(cloudStackTaskCreator, cloudStackServiceSettings)
 
-    assert(cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, Tag.createTag(key, value) :: Nil).isInstanceOf[Unit])
+    assert(cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, Set(Tag.createTag(key, value))).isInstanceOf[Unit])
   }
 
   //Negative tests
   "getUserTagsByAccountId" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
-    val key = Tag.Key.VaultRO
-    val value = "value1"
-
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == accountId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
         throw new CloudStackFatalException("test exception")
       }
@@ -174,9 +168,6 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
   }
 
   "getUserTagsByUserId" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
-    val key = Tag.Key.VaultRW
-    val value = "value1"
-
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
@@ -193,9 +184,6 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
   }
 
   "getVmTagsById" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
-    val key = Tag.Key.VaultRW
-    val value = "value3"
-
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
@@ -212,14 +200,11 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
   }
 
   "getAccountIdByVmId" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
-    val accountName = "admin"
-
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         command match {
           case Command.ListVirtualMachines =>
-            assert(parameterValue == vmId.toString, "parameterValue is wrong")
-            assert(parameterName == idParameter, "parameterName is wrong")
+            assert(Map(idParameter -> vmId.toString) == parameters, "parameters is wrong")
             throw new CloudStackFatalException("test exception")
         }
       }
@@ -234,9 +219,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getAccountIdByUserId" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == userId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> userId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListUsers, "command is wrong")
         throw new CloudStackFatalException("test exception")
       }
@@ -251,9 +235,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getUsersByAccount" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == accountId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
         throw new CloudStackFatalException("test exception")
       }
@@ -268,9 +251,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getAccountIdByVmId" should "The CloudStackEntityDoesNotExistException must be thrown if vm with specified id does not exist" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == vmId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> vmId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListVirtualMachines, "command is wrong")
         () => Response.getResponseWithEmptyVmList
       }
@@ -286,13 +268,15 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val accountName = "accountName"
 
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         command match {
           case Command.ListVirtualMachines =>
-            () => Response.getVmResponseJson(vmId.toString, accountName)
+            () => Response.getVmResponseJson(vmId.toString, accountName, domainId.toString)
           case Command.ListAccounts =>
-            assert(parameterValue == accountName, "parameterValue is wrong")
-            assert(parameterName == nameParameter, "parameterName is wrong")
+            assert(
+              Map(nameParameter -> accountName.toString, domainParameter -> domainId.toString) == parameters,
+              "parameters is wrong"
+            )
             () => Response.getResponseWithEmptyAccountList
         }
       }
@@ -306,9 +290,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getAccountIdByUserId" should "The CloudStackEntityDoesNotExistException must be thrown if user with specified id does not exist" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == userId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> userId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListUsers, "command is wrong")
         () => Response.getResponseWithEmptyUserList
       }
@@ -322,9 +305,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getUsersByAccount" should "The CloudStackEntityDoesNotExistException must be thrown if account with specified id does not exist" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
-        assert(parameterValue == accountId.toString, "parameterValue is wrong")
-        assert(parameterName == idParameter, "parameterName is wrong")
+      override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
+        assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
         assert(command == Command.ListAccounts, "command is wrong")
         () => Response.getResponseWithEmptyAccountList
       }

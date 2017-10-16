@@ -41,7 +41,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
+  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.endpoints.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
 
@@ -52,6 +52,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
   val idParameter = "id"
   val nameParameter = "name"
+  val domainParameter = "domainid"
 
   /**
     * Creates task to retrieve tags for specified entity
@@ -74,18 +75,19 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   /**
     * Creates task to retrieve entity with specified parameters
     *
-    * @param parameterValue value of filter parameter to retrieve entity
-    * @param parameterName filter parameter to retrieve entity
-    *
+    * @param parameters Map where key -> filter parameter to retrieve entity
+    *        value -> value of filter parameter to retrieve entity
     * @return task to retrieve entity
     */
-  def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
+  def createGetEntityTask(command: Command, parameters: Map[String, String]):() => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
     request.addParameter("response", "json")
     request.addParameter("listAll", "true")
-    request.addParameter(parameterName, parameterValue)
+    parameters.foreach {
+      case (parameterName, value) => request.addParameter(parameterName, value)
+    }
 
-    createRequest(request, s"Retrieve entity by command: $command")
+    createRequest(request, s"Retrieve entity by command: $command with parameters: $parameters")
   }
 
   /**
@@ -93,19 +95,19 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     *
     * @param resourceId id of resource to include tag
     * @param resourceType type of resources tags
-    * @param tagList List of tags to include in resource tags
+    * @param tagSet Set with tags to include in resource tags
     *
     * @return task to include tags into entity tags
     */
-  def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
+  def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagSet: Set[Tag]):() => Unit = {
     @tailrec
-    def addTagsToRequest(index: Int, tagList: List[Tag], request: ApacheCloudStackRequest): ApacheCloudStackRequest = {
-      tagList match {
-        case tag :: tail =>
-          request.addParameter(s"tags[$index].key", Tag.Key.toString(tag.key))
-          request.addParameter(s"tags[$index].value", tag.value)
-          addTagsToRequest(index + 1, tail, request)
-        case _ => request
+    def addTagsToRequest(index: Int, tags: Set[Tag], request: ApacheCloudStackRequest): ApacheCloudStackRequest = {
+      if (tags.nonEmpty) {
+        request.addParameter(s"tags[$index].key", Tag.Key.toString(tags.head.key))
+        request.addParameter(s"tags[$index].value", tags.head.value)
+        addTagsToRequest(index + 1, tags.tail, request)
+      } else {
+        request
       }
     }
 
@@ -114,7 +116,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     request.addParameter("resourcetype", Tag.Type.toString(resourceType))
     request.addParameter("resourceids", resourceId)
 
-    val requestWithTags = addTagsToRequest(0, tagList, request)
+    val requestWithTags = addTagsToRequest(0, tagSet, request)
 
     createRequest(requestWithTags, s"Include tags into resource: ($resourceId, $resourceType)")
   }
@@ -154,5 +156,5 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
 }
 
 object CloudStackTaskCreator {
-  case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
+  case class Settings(endpoints: Array[String], secretKey: String, apiKey: String)
 }
