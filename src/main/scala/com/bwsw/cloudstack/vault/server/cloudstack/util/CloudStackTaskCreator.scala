@@ -75,16 +75,15 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   /**
     * Creates task for getting entity with specified parameters
     *
-    * @param filterRequestParameters Map where key -> filter parameter for getting entity
-    *                                          value -> value of filter parameter for getting entity
-    *
+    * @param parameters Map where key -> filter parameter for getting entity
+    *        value -> value of filter parameter for getting entity
     * @return task for getting entity
     */
-  def createGetEntityTask(filterRequestParameters: Map[String, String], command: Command): () => String = {
+  def createGetEntityTask(command: Command, parameters: Map[String, String]):() => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
     request.addParameter("response", "json")
     request.addParameter("listAll", "true")
-    filterRequestParameters.foreach {
+    parameters.foreach {
       case (parameterName, value) => request.addParameter(parameterName, value)
     }
 

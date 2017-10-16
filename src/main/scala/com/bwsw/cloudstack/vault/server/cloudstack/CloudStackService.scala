@@ -191,7 +191,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   }
 
   private def getEntityJson(command: Command, parameters: Map[String, String]) = {
-    def task = cloudStackTaskCreator.createGetEntityTask(parameters, command)
+    def task = cloudStackTaskCreator.createGetEntityTask(command, parameters)
 
     TaskRunner.tryRunUntilSuccess[String](task, settings.retryDelay)
   }
