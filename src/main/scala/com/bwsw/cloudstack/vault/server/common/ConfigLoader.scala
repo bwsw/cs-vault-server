@@ -31,22 +31,22 @@ object ConfigLoader {
 
   def loadConfig(): Components.Settings = {
     //zookeeper
-    val zooKeeperRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.zooKeeperRetryDelay)
-    val zooKeeperEndpoints: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
+    val zooKeeperRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.zooKeeperRetryDelay)
+    val zooKeeperEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
     //vault
-    val vaultTokenPeriod: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)
-    val vaultRetryDelay: Int = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
-    val vaultEndpoint: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoint)
-    val vaultRootToken: String = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
+    val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.tokenPeriod)
+    val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
+    val vaultEndpoint = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoint)
+    val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
     //cloudstack
     val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
-    val cloudStackEndpoints: Array[String] = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
-    val cloudStackSecretKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
-    val cloudStackApiKey: String = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
+    val cloudStackEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
+    val cloudStackSecretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
+    val cloudStackApiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
     //cloudStackVaultController
-    val vmSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
-    val accountSecretPath: String = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
-    val zooKeeperRootNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
+    val vmSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.vmsVaultBasicPath)
+    val accountSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.accountsVaultBasicPath)
+    val zooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
 
     Components.Settings(
       CloudStackService.Settings(cloudStackRetryDelay),

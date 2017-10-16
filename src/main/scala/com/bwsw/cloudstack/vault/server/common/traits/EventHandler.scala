@@ -23,5 +23,4 @@ import scala.concurrent.Future
 trait EventHandler[T] {
   def handleEventsFromRecords(records: List[String]): Set[(Future[Unit], T)]
   def restartEvent(event: T): (Future[Unit], T)
-  def isNonFatalException(exception: Throwable): Boolean
 }

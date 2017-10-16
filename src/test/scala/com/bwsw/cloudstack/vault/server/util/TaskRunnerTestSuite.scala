@@ -29,7 +29,7 @@ class TaskRunnerTestSuite extends FlatSpec {
   "tryRunUntilSuccess" should "not re-run itself if CriticalException is thrown" in {
 
     def testTask:() => String = () => {
-      throw new CriticalException(new Exception)
+      throw new CriticalException("test exception")
     }
 
     assertThrows[CriticalException]{

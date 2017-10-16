@@ -39,7 +39,7 @@ import scala.util.{Failure, Success, Try}
   */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
-  private val jsonSerializer = new JsonSerializer(true)
+  private val jsonSerializer = new JsonSerializer(ignore = true)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   @Override
@@ -98,18 +98,6 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
             false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
         }
       }
-    }
-  }
-
-  def isNonFatalException(exception: Throwable): Boolean = {
-    logger.debug(s"isNonFatalException: $exception")
-    exception match {
-      case e: CriticalException =>
-        e.exception match {
-          case nonFatalException: CloudStackEntityDoesNotExistException => true
-          case _ => false
-        }
-      case _ => false
     }
   }
 }

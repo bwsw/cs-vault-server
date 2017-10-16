@@ -81,8 +81,8 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleUserCreate(userId: UUID): Unit = {
     logger.debug(s"handleUserCreate(userId: $userId)")
 
-    val accountId = cloudStackService.getAccountIdByUserId(userId)
-    val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
+    val accountId = cloudStackService.getAccountByUser(userId)
+    val usersIds = cloudStackService.getUsersByAccount(accountId)
 
     val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
@@ -98,7 +98,7 @@ class CloudStackVaultController(vaultService: VaultService,
         }
     }
 
-    val completeVaultTags: List[Tag] = (currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
+    val completeVaultTags = (currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
 
     if (currentVaultTags.isEmpty) {
       usersIds.foreach { id =>
@@ -119,7 +119,7 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleAccountCreate(accountId: UUID): Unit = {
     logger.debug(s"handleAccountCreate(accountId: $accountId)")
 
-    val usersIds = cloudStackService.getUserIdsByAccountId(accountId)
+    val usersIds = cloudStackService.getUsersByAccount(accountId)
 
     val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
 
@@ -136,7 +136,7 @@ class CloudStackVaultController(vaultService: VaultService,
               case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
             }
         }
-        val completeVaultTags: List[Tag] = (newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
+        val completeVaultTags = (newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList).toList
 
         usersIds.foreach { id =>
           cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
@@ -156,7 +156,7 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleVmCreate(vmId: UUID): Unit = {
     logger.debug(s"handleVmCreate(vmId: $vmId)")
 
-    val accountId = cloudStackService.getAccountIdByVmId(vmId)
+    val accountId = cloudStackService.getVmOwnerAccount(vmId)
 
     val policyList = List(
       Policy.createVmReadPolicy(accountId, vmId, settings.vmSecretPath),
@@ -201,7 +201,7 @@ class CloudStackVaultController(vaultService: VaultService,
   private def getCurrentVaultTagsOfUsers(usersIds: List[UUID]): Set[Tag] = {
 
     val allUsersWithVaultTags = usersIds.map { userId =>
-      (userId, cloudStackService.getUserTagsByUserId(userId).filter { tag =>
+      (userId, cloudStackService.getUserTags(userId).filter { tag =>
         tag.key.oneOf(Tag.Key.VaultRO, Tag.Key.VaultRW, Tag.Key.VaultHost, Tag.Key.VaultPrefix)
       }.toSet)
     }
