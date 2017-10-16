@@ -27,7 +27,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
         () => Response.getAccountResponseJson(accountId.toString, userId.toString)
       }
 
-      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+      override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
         () => Response.getTagResponseJson(key, value)
@@ -44,7 +44,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val value = "value1"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+      override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
         () => Response.getTagResponseJson(key, value)
@@ -62,7 +62,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     val value = "value3"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+      override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
         assert(resourceId == vmId, "resourceId is wrong")
         () => Response.getTagResponseJson(key, value)
@@ -169,7 +169,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getUserTagsByUserId" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+      override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
         assert(resourceId == userId, "resourceId is wrong")
         throw new CloudStackFatalException("test exception")
@@ -185,7 +185,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
 
   "getVmTagsById" should "The CloudStackFatalException thrown by cloudStackTaskCreator must not be swallowed" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
-      override def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
+      override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
         assert(resourceId == vmId, "resourceId is wrong")
         throw new CloudStackFatalException("test exception")

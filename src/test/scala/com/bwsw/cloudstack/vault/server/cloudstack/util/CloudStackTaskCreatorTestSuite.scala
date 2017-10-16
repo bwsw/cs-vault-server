@@ -25,7 +25,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
-    val tagResponse = cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     assert(tagResponse == expectedResponse)
   }
 
@@ -37,7 +37,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
-    val tagResponse = cloudStackTaskCreator.createGetTagTask(Tag.Type.UserVM, vmId)()
+    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.UserVM, vmId)()
     assert(tagResponse == expectedResponse)
   }
 
@@ -272,7 +272,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     }
   }
 
@@ -290,7 +290,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackFatalException] {
-      cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     }
   }
 
