@@ -33,8 +33,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -60,8 +60,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -89,8 +89,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -117,8 +117,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -144,8 +144,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -170,8 +170,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -197,8 +197,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             expectedResponseBody.getBytes("UTF-8")
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -220,8 +220,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
             "application/json",
             Array.empty[Byte]
           )
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -239,8 +239,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
           override def post(): RestResponse = throw new Exception("test exception")
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }
@@ -257,8 +257,8 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
           override def post(): RestResponse = throw new RestException("test exception")
-        }.url(s"${vaultRestRequestCreatorSettings.vaultUrl}$path")
-          .header("X-Vault-Token", vaultRestRequestCreatorSettings.vaultRootToken)
+        }.url(s"${vaultRestRequestCreatorSettings.endpoint}$path")
+          .header("X-Vault-Token", vaultRestRequestCreatorSettings.rootToken)
           .body(data.getBytes("UTF-8"))
       }
     }

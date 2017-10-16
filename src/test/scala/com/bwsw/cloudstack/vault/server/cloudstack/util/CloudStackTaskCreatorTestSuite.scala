@@ -286,7 +286,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new ApacheCloudStackClientRuntimeException(new NoRouteToHostException)
@@ -304,7 +304,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new Exception("test exception")
@@ -322,7 +322,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new ApacheCloudStackClientRuntimeException(new NoRouteToHostException)
@@ -344,7 +344,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new Exception("test exception")
@@ -366,7 +366,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the exception is not swallowed" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new ApacheCloudStackClientRuntimeException(new NoRouteToHostException)
@@ -388,7 +388,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.urlList.map { x =>
+        cloudStackTaskCreatorSettings.endpoints.map { x =>
           new ApacheCloudStackClient(x, apacheCloudStackUser) {
             override def executeRequest(request: ApacheCloudStackRequest): String = {
               throw new Exception("test exception")

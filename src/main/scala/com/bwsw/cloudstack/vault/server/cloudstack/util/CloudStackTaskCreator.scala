@@ -41,7 +41,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   //cloud stack client config
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.urlList.map { x =>
+  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.endpoints.map { x =>
     new ApacheCloudStackClient(x, apacheCloudStackUser)
   }.toList
 
@@ -152,5 +152,5 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
 }
 
 object CloudStackTaskCreator {
-  case class Settings(urlList: Array[String], secretKey: String, apiKey: String)
+  case class Settings(endpoints: Array[String], secretKey: String, apiKey: String)
 }

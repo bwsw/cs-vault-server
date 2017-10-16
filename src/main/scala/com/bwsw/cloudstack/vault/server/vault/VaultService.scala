@@ -39,7 +39,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val jsonSerializer = new JsonSerializer(ignore = true)
-  val vaultUrl: String = vaultRest.vaultUrl
+  val endpoint: String = vaultRest.endpoint
 
   /**
     * Creates token with specified policy
@@ -62,7 +62,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     val responseString = TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      settings.vaultRetryDelay
+      settings.retryDelay
     )
 
     val token = jsonSerializer.deserialize[Token](responseString)
@@ -85,7 +85,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     val lookupResponseString = TaskRunner.tryRunUntilSuccess[String](
       executeLookupRequest,
-      settings.vaultRetryDelay
+      settings.retryDelay
     )
 
     val lookupToken = jsonSerializer.deserialize[LookupToken](lookupResponseString)
@@ -94,7 +94,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     val revokeResponseString = TaskRunner.tryRunUntilSuccess[String](
       executeRevokeRequest,
-      settings.vaultRetryDelay
+      settings.retryDelay
     )
     logger.debug(s"Token was revoked")
 
@@ -133,7 +133,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     def getPathListPair(pathToSecret: String): (List[String], List[String]) = {
       jsonSerializer.deserialize[SecretResponse](TaskRunner.tryRunUntilSuccess[String](
         vaultRest.createGetSubSecretPathsRequest(pathToSecret),
-        settings.vaultRetryDelay
+        settings.retryDelay
       )).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
         stringPattern.matcher(x).matches()
       }
@@ -151,7 +151,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     }
     loop(pathToRootSecret, subPathsOfRootPath)
     pathsForDeletion.reverse.foreach { x =>
-      TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.vaultRetryDelay)
+      TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.retryDelay)
       logger.debug(s"data from path: $x was deleted")
     }
   }
@@ -169,7 +169,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      settings.vaultRetryDelay
+      settings.retryDelay
     )
 
     logger.debug(s"policy with name: $policyName was deleted")
@@ -188,12 +188,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
 
     TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
-      settings.vaultRetryDelay
+      settings.retryDelay
     )
     logger.debug(s"policy was writed: $policy")
   }
 }
 
 object VaultService {
-  case class Settings(tokenPeriod: Int, vaultRetryDelay: Int)
+  case class Settings(tokenPeriod: Int, retryDelay: Int)
 }
