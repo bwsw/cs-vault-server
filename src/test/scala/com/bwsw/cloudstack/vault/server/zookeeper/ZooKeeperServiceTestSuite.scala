@@ -2,12 +2,13 @@ package com.bwsw.cloudstack.vault.server.zookeeper
 
 import com.bwsw.cloudstack.vault.server.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
-import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperCriticalException
+import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
 import org.apache.curator.test.TestingServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
-  val server = new TestingServer(9000, true)
+  val start = true
+  val server = new TestingServer(9000, start)
   val connectString = server.getConnectString
 
   val path = "/test/path"
@@ -22,7 +23,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
 
   "createNodeWithData" should "should throw ZooKeeperCriticalException" in {
     zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit]
-    assertThrows[ZooKeeperCriticalException] {
+    assertThrows[ZooKeeperFatalException] {
       zooKeeperService.createNodeWithData(path, expectedData)
     }
     zooKeeperService.deleteNode(path)
@@ -46,7 +47,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
   }
 
   "deleteNode" should "should throw ZooKeeperCriticalException" in {
-    assertThrows[ZooKeeperCriticalException] {
+    assertThrows[ZooKeeperFatalException] {
       zooKeeperService.deleteNode(path)
     }
   }

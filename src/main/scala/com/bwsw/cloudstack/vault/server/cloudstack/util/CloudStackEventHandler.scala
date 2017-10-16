@@ -19,7 +19,7 @@
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.common.{JsonSerializer, ProcessingEventResult}
 import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import org.slf4j.LoggerFactory
@@ -39,11 +39,11 @@ import scala.util.{Failure, Success, Try}
   */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
-  private val jsonSerializer = new JsonSerializer(true)
+  private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   @Override
-  def handleEventsFromRecords(records: List[String]): Set[(Future[Unit], CloudStackEvent)] = {
+  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
     logger.debug(s"handleEventsFromRecords: $records")
     records.map { record =>
       Try {
@@ -61,29 +61,29 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
   }
 
   @Override
-  def restartEvent(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
+  def restartEvent(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
     logger.debug(s"restartEvent: $event")
     handleEvent(event)
   }
 
-  private val handleEvent = new PartialFunction[CloudStackEvent, (Future[Unit], CloudStackEvent)] {
-    override def apply(event: CloudStackEvent): (Future[Unit], CloudStackEvent) = {
+  private val handleEvent = new PartialFunction[CloudStackEvent, ProcessingEventResult[CloudStackEvent]] {
+    override def apply(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
       event.action.get match {
         case VMCreate =>
           logger.info(s"handle VMCreate event: $event")
-          (Future(controller.handleVmCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleVmCreate(event.entityuuid.get)))
         case VMDelete =>
           logger.info(s"handle VMDelete event: $event")
-          (Future(controller.handleVmDelete(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleVmDelete(event.entityuuid.get)))
         case AccountCreate =>
           logger.info(s"handle AccountCreate event: $event")
-          (Future(controller.handleAccountCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleAccountCreate(event.entityuuid.get)))
         case AccountDelete =>
           logger.info(s"handle AccountDelete event: $event")
-          (Future(controller.handleAccountDelete(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleAccountDelete(event.entityuuid.get)))
         case UserCreate =>
           logger.info(s"handle UserCreate event: $event")
-          (Future(controller.handleUserCreate(event.entityuuid.get)), event)
+          ProcessingEventResult(event, Future(controller.handleUserCreate(event.entityuuid.get)))
       }
     }
 
@@ -98,18 +98,6 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
             false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
         }
       }
-    }
-  }
-
-  def isNonFatalException(exception: Throwable): Boolean = {
-    logger.debug(s"isNonFatalException: $exception")
-    exception match {
-      case e: CriticalException =>
-        e.exception match {
-          case nonFatalException: CloudStackEntityDoesNotExistException => true
-          case _ => false
-        }
-      case _ => false
     }
   }
 }

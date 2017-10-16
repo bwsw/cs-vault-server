@@ -25,8 +25,8 @@ import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, Apach
 import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackCriticalException, CloudStackEntityDoesNotExistException}
-import com.bwsw.cloudstack.vault.server.util.HttpStatuses
+import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
+import com.bwsw.cloudstack.vault.server.util.HttpStatus
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -96,19 +96,19 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     *
     * @param resourceId id of resource for setting tag
     * @param resourceType type of resources tags
-    * @param tagList List with tags for setting in resource tags
+    * @param tagSet Set with tags for setting in resource tags
     *
     * @return task for setting tag to entity
     */
-  def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
+  def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagSet: Set[Tag]):() => Unit = {
     @tailrec
-    def addTagsToRequest(index: Int, tagList: List[Tag], request: ApacheCloudStackRequest): ApacheCloudStackRequest = {
-      tagList match {
-        case tag :: tail =>
-          request.addParameter(s"tags[$index].key", Tag.Key.toString(tag.key))
-          request.addParameter(s"tags[$index].value", tag.value)
-          addTagsToRequest(index + 1, tail, request)
-        case _ => request
+    def addTagsToRequest(index: Int, tags: Set[Tag], request: ApacheCloudStackRequest): ApacheCloudStackRequest = {
+      if (tags.nonEmpty) {
+        request.addParameter(s"tags[$index].key", Tag.Key.toString(tags.head.key))
+        request.addParameter(s"tags[$index].value", tags.head.value)
+        addTagsToRequest(index + 1, tags.tail, request)
+      } else {
+        request
       }
     }
 
@@ -117,7 +117,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     request.addParameter("resourcetype", Tag.Type.toString(resourceType))
     request.addParameter("resourceids", resourceId)
 
-    val requestWithTags = addTagsToRequest(0, tagList, request)
+    val requestWithTags = addTagsToRequest(0, tagSet, request)
 
     createRequest(requestWithTags, s"set tags to resource: ($resourceId, $resourceType)")
   }
@@ -125,9 +125,8 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   /**
     * Handles request execution
     * does not swallowed ApacheCloudStackClientRuntimeException if it wrapping NoRouteToHostException
-    * @throws CloudStackCriticalException which wrapping CloudStackEntityDoesNotExistException if
-    *                                     ApacheCloudStackClientRequestRuntimeException which have StatusCode == 431
-    *                                     was thrown, also wrapping other exception to CloudStackCriticalException
+    * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException which have
+    *                                               StatusCode == 431 was thrown
     *
     */
   protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
@@ -146,11 +145,11 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         }
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
-        if e.getStatusCode == HttpStatuses.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
-        throw new CloudStackCriticalException(new CloudStackEntityDoesNotExistException(e.toString))
-      case Failure(e :Throwable) =>
-        logger.error(s"Request execution thrown an critical exception: $e")
-        throw new CloudStackCriticalException(e)
+        if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
+        throw new CloudStackEntityDoesNotExistException(e.toString)
+      case Failure(e: Throwable) =>
+        logger.error(s"Request execution thrown an exception: $e")
+        throw new CloudStackFatalException(e.toString)
     }
   }
 }

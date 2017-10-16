@@ -25,22 +25,23 @@ object ConfigLiterals {
   private final val zooKeeperDomain   = s"$applicationDomain.zookeeper"
   private final val cloudStackDomain  = s"$applicationDomain.cloudStack"
 
-  val tokenPeriod            = s"$applicationDomain.tokenPeriod"
-  val accountsVaultBasicPath = s"$applicationDomain.accountsVaultBasicPath"
-  val vmsVaultBasicPath      = s"$applicationDomain.vmsVaultBasicPath"
   val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
 
-  val kafkaEndpoints = s"$kafkaDomain.endpoints"
+  val vaultEndpoint          = s"$vaultDomain.endpoint"
+  val vaultRootToken         = s"$vaultDomain.rootToken"
+  val vaultRetryDelay        = s"$vaultDomain.retryDelay"
+  val vaultTokenPeriod       = s"$vaultDomain.tokenPeriod"
+  val vaultAccountsBasicPath = s"$vaultDomain.accountsBasicPath"
+  val vaultVmsBasicPath      = s"$vaultDomain.vmsBasicPath"
+
+
+  val kafkaEndpoints  = s"$kafkaDomain.endpoints"
   val kafkaTopic      = s"$kafkaDomain.topic"
 
   val zooKeeperEndpoints       = s"$zooKeeperDomain.endpoints"
   val zooKeeperRetryDelay      = s"$zooKeeperDomain.retryDelay"
-  val zooKeeperRootNode        = s"$zooKeeperDomain.zooKeeperRootNode"
+  val zooKeeperRootNode        = s"$zooKeeperDomain.rootNode"
   val zooKeeperMasterLatchNode = s"$zooKeeperDomain.masterLatchNode"
-
-  val vaultEndpoint   = s"$vaultDomain.endpoint"
-  val vaultRootToken  = s"$vaultDomain.rootToken"
-  val vaultRetryDelay = s"$vaultDomain.retryDelay"
 
   val cloudStackEndpoints  = s"$cloudStackDomain.endpoints"
   val cloudStackApiKey     = s"$cloudStackDomain.apiKey"
@@ -48,7 +49,7 @@ object ConfigLiterals {
   val cloudStackRetryDelay = s"$cloudStackDomain.retryDelay"
 }
 
-object HttpStatuses {
+object HttpStatus {
   val OK_STATUS = 200
   val OK_STATUS_WITH_EMPTY_BODY = 204
   val CLOUD_STACK_ENTITY_DOES_NOT_EXIST = 431
@@ -65,5 +66,5 @@ object RequestPath {
 }
 
 object DataPath {
-  val masterLatchNode: String = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
+  val masterLatchNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperMasterLatchNode)
 }

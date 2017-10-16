@@ -5,6 +5,7 @@ import java.util.UUID
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
+import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import org.scalatest.FlatSpec
@@ -73,7 +74,7 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val cloudStackEventHandler = new CloudStackEventHandler(controller)
     val handleEventFutures = cloudStackEventHandler.handleEventsFromRecords(records).map {
-      case (future, event) => future
+      case ProcessingEventResult(event, future) => future
     }
 
     val singleFuture = Future.sequence(handleEventFutures)
@@ -137,8 +138,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val cloudStackEventHandler = new CloudStackEventHandler(controller)
 
     val resultFuture = cloudStackEventHandler.restartEvent(event) match {
-      case (future, successHandleEvent) =>
-        assert(successHandleEvent == event, "event is wrong")
+      case ProcessingEventResult(handledEvent, future) =>
+        assert(handledEvent == event, "event is wrong")
         future
     }
 

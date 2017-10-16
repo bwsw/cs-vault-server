@@ -19,11 +19,12 @@
 package com.bwsw.cloudstack.vault.server.util
 
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}
-import com.typesafe.scalalogging.StrictLogging
+import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
-object ApplicationConfig extends StrictLogging {
+object ApplicationConfig {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
     * Application config object.

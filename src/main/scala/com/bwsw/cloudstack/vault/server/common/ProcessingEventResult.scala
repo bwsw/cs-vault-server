@@ -16,9 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.vault.util.exception
+package com.bwsw.cloudstack.vault.server.common
 
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import scala.concurrent.Future
 
-class VaultCriticalException(override val exception: Throwable) extends CriticalException(exception) {
-}
+case class ProcessingEventResult[T](event: T, result: Future[Unit])
