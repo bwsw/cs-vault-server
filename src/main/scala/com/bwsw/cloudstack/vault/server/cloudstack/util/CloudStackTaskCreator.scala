@@ -33,9 +33,9 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for creating tasks for interaction with CloudStack server with help of CloudStack library
+  * Class is responsible for tasks creation for interaction with CloudStack server with help of CloudStack library
   *
-  * @param settings contains the settings for interaction with CloudStack
+  * @param settings contains settings for interaction with CloudStack
   */
 class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -54,12 +54,12 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   val nameParameter = "name"
 
   /**
-    * Creates task for getting tags fro specified entity
+    * Creates task to extract tags for specified entity
     *
-    * @param resourceType type of tags for getting
-    * @param resourceId id of resource which tags will be got
+    * @param resourceType type of tags to extract
+    * @param resourceId id of resource whose tags are extracted
     *
-    * @return task for getting tags
+    * @return task for extracting tags
     */
   def createGetTagTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
     val tagRequest = new ApacheCloudStackRequest(Command.toString(Command.ListTags))
@@ -72,12 +72,12 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
 
   /**
-    * Creates task for getting entity with specified parameters
+    * Creates task to extract entity with specified parameters
     *
-    * @param parameterValue value of filter parameter for getting entity
-    * @param parameterName filter parameter for getting entity
+    * @param parameterValue value of filter parameter to extract entity
+    * @param parameterName filter parameter to extract entity
     *
-    * @return task for getting entity
+    * @return task for extracting entity
     */
   def createGetEntityTask(parameterValue: String, parameterName: String, command: Command): () => String = {
     val request = new ApacheCloudStackRequest(Command.toString(command))
@@ -89,13 +89,13 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
 
   /**
-    * Creates task for setting tag to tags of specified entity
+    * Creates task to include tags into tags of specified entity
     *
-    * @param resourceId id of resource for setting tag
+    * @param resourceId id of resource to include tag
     * @param resourceType type of resources tags
-    * @param tagList List with tags for setting in resource tags
+    * @param tagList List of tags to include in resource tags
     *
-    * @return task for setting tag to entity
+    * @return task to include tags into entity tags
     */
   def createSetResourceTagsTask(resourceId: UUID, resourceType: Tag.Type, tagList: List[Tag]):() => Unit = {
     @tailrec
@@ -120,8 +120,8 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
 
   /**
-    * Handles request execution
-    * does not swallowed ApacheCloudStackClientRuntimeException if it wrapping NoRouteToHostException
+    * Processes request execution
+    * does not swallow ApacheCloudStackClientRuntimeException if it wraps NoRouteToHostException
     * @throws CloudStackCriticalException which wrapping CloudStackEntityDoesNotExistException if
     *                                     ApacheCloudStackClientRequestRuntimeException which have StatusCode == 431
     *                                     was thrown, also wrapping other exception to CloudStackCriticalException

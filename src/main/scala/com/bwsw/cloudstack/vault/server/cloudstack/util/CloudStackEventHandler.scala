@@ -33,9 +33,9 @@ import com.fasterxml.jackson.core.JsonParseException
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for handling cloudstack event.
+  * Class is responsible for processing cloudstack events.
   *
-  * @param controller allows for logic executing from event
+  * @param controller enables logic execution from event
   */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
@@ -51,10 +51,10 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       } match {
         case Success(x) => x
         case Failure(e: JsonParseException) =>
-          logger.warn("Can not to parse record json, the empty CloudStackEvent will be return")
+          logger.warn("Can not to parse record: \"" + s"$record" + "\", the empty CloudStackEvent is returned")
           CloudStackEvent(None, None, None)
         case Failure(e: Throwable) =>
-          logger.error("Exception was thrown while record was being deserialized")
+          logger.error("The process of record: \"" + s"$record" + "\"" + s"deserializing thrown an exception: $e")
           throw e
       }
     }.toSet.collect(handleEvent)
