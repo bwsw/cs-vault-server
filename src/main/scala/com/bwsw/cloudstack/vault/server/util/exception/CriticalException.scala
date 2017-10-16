@@ -18,4 +18,4 @@
 */
 package com.bwsw.cloudstack.vault.server.util.exception
 
-class CriticalException(val exception: Throwable) extends Exception() {}
+class CriticalException(private val message: String) extends Exception(message)
