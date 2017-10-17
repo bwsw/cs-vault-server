@@ -1,3 +1,21 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.controllers
 
 import java.util.UUID
@@ -93,7 +111,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
 
-  "handleAccountDelete" should "delete secret by default path if node with token does not exist" in {
+  "handleAccountDelete" should "delete secret if node with token does not exist" in {
     val defaultPath = getDefaultRequestAccountSecretPath(accountId)
 
     //exists data
@@ -119,7 +137,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths, "checkedIsExistNodePaths is wrong")
   }
 
-  "handleVmDelete" should "get token from Zookeeper node, revoke it and delete secret by path in token information" in {
+  "handleVmDelete" should "get token from Zookeeper node, revoke it and then delete secret and policy" in {
     val testSecretPath = getDefaultRequestVmSecretPath(vmId)
 
     //exists data
@@ -156,7 +174,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathForCheckDeletionNode == checkedDeletionNodePaths, "checkedDeletionNodePaths is wrong")
   }
 
-  "handleVmDelete" should "delete secret by default path if node with token does not exist" in {
+  "handleVmDelete" should "delete secret if node with token does not exist" in {
     val defaultPath = getDefaultRequestVmSecretPath(vmId)
 
     //exists data
@@ -187,7 +205,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   //*           User Creation           *
   //*                                   *
   //*************************************
-  "handleUserCreate" should "creates new tokens (read, write) and put it into zooKeeper nodes and cloudStack user tags" in {
+  "handleUserCreate" should "create new tokens (read, write) and put it into zooKeeper nodes and cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -228,7 +246,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(checkedNewTags.toSet == expectedVaultTagsForAccount.toSet)
   }
 
-  "handleUserCreate" should "gets tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
+  "handleUserCreate" should "get tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -260,7 +278,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(expectedUserIds == checkedUserIds)
   }
 
-  "handleUserCreate" should "gets tokens (read, write) from cloudStack user tags" in {
+  "handleUserCreate" should "get tokens (read, write) from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedResourceIds = List(firstUserId)
 
@@ -303,7 +321,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(expectedVaultTagsForAccount.toSet == checkedNewTags.toSet)
   }
 
-  "handleUserCreate" should "writing to zookeeper node throw exception" in {
+  "handleUserCreate" should "throw exception when try to write token to zookeeper node" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
     val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
@@ -351,7 +369,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   //*         Account Creation          *
   //*                                   *
   //*************************************
-  "handleAccountCreate" should "creates new tokens (read, write) and put it into zooKeeper nodes and cloudStack tags" in {
+  "handleAccountCreate" should "create new tokens (read, write) and put it into zooKeeper nodes and cloudStack tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -391,7 +409,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(checkedNewTags.toSet == expectedVaultTagsForAccount.toSet)
   }
 
-  "handleAccountCreate" should "gets tokens (read, write) from zooKeeper nodes" in {
+  "handleAccountCreate" should "get tokens (read, write) from zooKeeper nodes" in {
     val expectedUserIds = List(firstUserId, secondUserId)
 
     //exists data
@@ -423,7 +441,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(checkedResourceIds == expectedUserIds)
   }
 
-  "handleAccountCreate" should "gets tokens (read, write) from cloudStack user tags" in {
+  "handleAccountCreate" should "get tokens (read, write) from cloudStack user tags" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val vaultTags = Set(
       Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
@@ -463,7 +481,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(List() == checkedNewTags)
   }
 
-  "handleAccountCreate" should "writing to zookeeper node throw exception" in {
+  "handleAccountCreate" should "throw exception when try to write token to zookeeper node" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
     val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
@@ -510,7 +528,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   //*            VM Creation            *
   //*                                   *
   //*************************************
-  "handleVmCreate" should "creates new tokens (read, write) and put it into zooKeeper nodes and cloudStack vm tags" in {
+  "handleVmCreate" should "create new tokens (read, write) and put it into zooKeeper nodes and cloudStack vm tags" in {
     //exists data
     val pathsForCheckIsExistNode = List(readVmTokenNodePath, writeVmTokenNodePath)
     val pathsForCheckCreationNode = List(readVmTokenNodePath, writeVmTokenNodePath)
@@ -554,7 +572,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathsForCheckCreationNode == checkedCreationNodePaths)
   }
 
-  "handleVmCreate" should "gets tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
+  "handleVmCreate" should "get tokens (read, write) from zooKeeper nodes and write it into cloudStack user tags" in {
     //exists data
     val pathsForCheckIsExistNode = List(
       readVmTokenNodePath,
@@ -590,7 +608,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
   }
 
-  "handleVmCreate" should "writing to zookeeper node throw exception" in {
+  "handleVmCreate" should "throw exception when try to write token to zookeeper node" in {
     val expectedToken = readToken
     val expectedPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
 

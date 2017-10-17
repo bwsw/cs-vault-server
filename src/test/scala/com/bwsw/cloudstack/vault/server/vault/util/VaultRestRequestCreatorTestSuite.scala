@@ -1,3 +1,21 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.vault.util
 
 import com.bettercloud.vault.json.Json
@@ -10,9 +28,6 @@ import com.bwsw.cloudstack.vault.server.vault.entities.Token.TokenInitParameters
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.FlatSpec
 
-/**
-  * Created by medvedev_vv on 31.08.17.
-  */
 class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite {
   val vmSecretPath = settings.cloudStackVaultControllerSettings.vmSecretPath
   // Positive tests
@@ -209,8 +224,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
   }
 
   // Negative tests
-  "createTokenCreateRequest" should "if response status is not equal to expected status, " +
-    "the VaultCriticalException will thrown" in {
+  "createTokenCreateRequest" should "throw VaultFatalException if response status is not equal to expected status" in {
 
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
@@ -233,8 +247,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenRevokeRequest" should "if Rest throw not same with RestException, " +
-    "the exception will wrapped to VaultCriticalException" in {
+  "createTokenRevokeRequest" should "throw VaultFatalException if Rest throw not same with RestException" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {
@@ -252,7 +265,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenLookupRequest" should "if Rest throws RestException, the exception will not be caught" in {
+  "createTokenLookupRequest" should "not caught the RestException" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {

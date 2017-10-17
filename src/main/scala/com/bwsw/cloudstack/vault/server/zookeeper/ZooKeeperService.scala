@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for launch task which are created by ZooKeeperTaskCreator.
+  * Class is responsible for interaction with ZooKeeper server.
   *
-  * @param settings contains the settings for interaction with ZooKeeper
+  * @param settings contains settings for interaction with ZooKeeper
   */
 class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -38,8 +38,8 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   initCuratorClient()
 
   /**
-    * Creates zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Creates zNode.
+    * Waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
@@ -64,12 +64,12 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Gets data from zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Retrieves data from zNode.
+    * Waiting if zookeeper server is unavailable.
     *
     * @param path String with path to zNode data
     *
-    * @return Data as string stored in zNode if zNode exist
+    * @return Some(data) if zNode exist
     *         None if zNode does not exist
     */
   def getNodeData(path: String): Option[String] = {
@@ -82,8 +82,8 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Launches task for deletion data from zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Deletes zNode by specified path.
+    * Waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     * @throws ZooKeeperFatalException if node does not exist
@@ -102,8 +102,8 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Launches task for check zNode existing
-    * Will be waiting if zookeeper server is unavailable.
+    * Checks zNode existing
+    * Waiting if zookeeper server is unavailable.
     *
     * @param path String with path of zNode
     *
