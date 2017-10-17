@@ -7,6 +7,7 @@ import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRunt
 import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.common.CircleQueue
 
 /**
   * Created by medvedev_vv on 25.08.17.
@@ -87,15 +88,17 @@ trait TestData {
   def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
   : CloudStackTaskCreator = {
     new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.endpoints.map { x =>
-          new ApacheCloudStackClient(x, apacheCloudStackUser) {
-            override def executeRequest(request: ApacheCloudStackRequest): String = {
-              assert(request.toString == expectedRequest.toString, "request is wrong")
-              response
-            }
+      override val endpointQueue = new CircleQueue[String](cloudStackTaskCreatorSettings.endpoints.toList)
+
+      override def getClient(endpoint: String): ApacheCloudStackClient = {
+        assert(endpoint == endpointQueue.getElement)
+        new ApacheCloudStackClient(endpoint, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            assert(request.toString == expectedRequest.toString, "request is wrong")
+            response
           }
-        }.toList
+        }
+      }
     }
   }
 
