@@ -58,7 +58,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     * Creates task to retrieve tags for specified entity
     *
     * @param resourceType type of tags to extract
-    * @param resourceId id of resource whose tags are retrieved
+    * @param resourceId id of resource which tags are retrieved
     *
     * @return task to retrieve tags
     */
@@ -94,8 +94,8 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     * Creates task to include tags into tags of specified entity
     *
     * @param resourceId id of resource to include tag
-    * @param resourceType type of resources tags
-    * @param tagSet Set with tags to include in resource tags
+    * @param resourceType type of resources’ tags
+    * @param tagSet Set of tags to include them into resource
     *
     * @return task to include tags into entity tags
     */
@@ -125,7 +125,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     * Processes request execution
     * does not swallow ApacheCloudStackClientRuntimeException if it wraps NoRouteToHostException
     * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException with
-    *                                               StatusCode equal to 431 was thrown
+    *                                               with 431 status code was thrown
     *
     *
     */
