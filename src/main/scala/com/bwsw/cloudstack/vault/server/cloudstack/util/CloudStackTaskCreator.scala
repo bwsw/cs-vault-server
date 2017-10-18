@@ -26,7 +26,7 @@ import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
-import com.bwsw.cloudstack.vault.server.common.CircleQueue
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.HttpStatus
 import org.slf4j.LoggerFactory
 
@@ -42,7 +42,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  protected val endpointQueue = new CircleQueue[String](settings.endpoints.toList)
+  protected val endpointQueue = new WeightedQueue[String](settings.endpoints.toList)
 
   val idParameter = "id"
   val nameParameter = "name"

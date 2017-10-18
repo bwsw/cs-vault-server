@@ -3,11 +3,12 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
-import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
-import com.bwsw.cloudstack.vault.server.common.CircleQueue
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
+
+import scala.util.Random
 
 /**
   * Created by medvedev_vv on 25.08.17.
@@ -88,7 +89,11 @@ trait TestData {
   def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
   : CloudStackTaskCreator = {
     new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override val endpointQueue = new CircleQueue[String](cloudStackTaskCreatorSettings.endpoints.toList)
+      override val endpointQueue = new WeightedQueue[String](cloudStackTaskCreatorSettings.endpoints.toList) {
+        override val r = new Random {
+          override def nextInt(n: Int): Int = 0
+        }
+      }
 
       override def getClient(endpoint: String): ApacheCloudStackClient = {
         assert(endpoint == endpointQueue.getElement)
@@ -99,6 +104,12 @@ trait TestData {
           }
         }
       }
+    }
+  }
+
+  def getEndPointQueue(endpoints: List[String]) = new WeightedQueue[String](endpoints) {
+    override val r = new Random {
+      override def nextInt(n: Int): Int = 0
     }
   }
 

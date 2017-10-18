@@ -20,35 +20,68 @@ package com.bwsw.cloudstack.vault.server.common
 
 import org.scalatest.{FlatSpec, Matchers}
 
-class CircleQueueTestSuite extends FlatSpec with Matchers {
+import scala.util.Random
+
+class WeightedQueueTestSuite extends FlatSpec with Matchers {
   val firstElement = "1"
   val secondElement = "2"
   val thirdElement = "3"
 
   "moveElementToEnd" should "move the first element to end of the queue" in {
     val expectedResult = List(secondElement, thirdElement, firstElement)
-    val queue = new CircleQueue[String](List(firstElement, secondElement, thirdElement))
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
     queue.moveElementToEnd(firstElement)
 
     assert(expectedResult == queue.getElements)
   }
 
-  "moveElementToEnd" should "not change queue if element for move is not first" in {
-    val expectedResult = List(firstElement, secondElement, thirdElement)
-    val queue = new CircleQueue[String](List(firstElement, secondElement, thirdElement))
+  "moveElementToEnd" should "move the second element to end of the queue" in {
+    val expectedResult = List(firstElement, thirdElement, secondElement)
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
     queue.moveElementToEnd(secondElement)
 
     assert(expectedResult == queue.getElements)
   }
 
+  "moveElementToEnd" should "not change queue if element for move is last" in {
+    val expectedResult = List(firstElement, secondElement, thirdElement)
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
+
+    queue.moveElementToEnd(thirdElement)
+
+    assert(expectedResult == queue.getElements)
+  }
+
   "moveElementToEnd" should "throw IllegalArgumentException if Initialize elements list is not contain element for move" in {
     val expectedResult = List(firstElement, secondElement, thirdElement)
-    val queue = new CircleQueue[String](List(firstElement, secondElement, thirdElement))
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
     assertThrows[IllegalArgumentException] {
       queue.moveElementToEnd("test")
     }
+  }
+
+  "getElement" should "return first element" in {
+    val expectedResult = firstElement
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement)) {
+      override val r = new Random {
+        override def nextInt(n: Int): Int = 0
+      }
+    }
+
+    assert(firstElement == queue.getElement)
+  }
+
+  "getElement" should "return second element" in {
+    val expectedResult = secondElement
+    val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement)) {
+      override val r = new Random {
+        override def nextInt(n: Int): Int = 3
+      }
+    }
+
+    assert(expectedResult == queue.getElement)
   }
 }
