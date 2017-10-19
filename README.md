@@ -2,6 +2,7 @@
 
 Also see:
 * [Event processing logic](docs/logic.md)
+* [UML diagrams](docs/diagrams/)
 
 # cs-vault-server
 CloudStack Vault Plugin Server Handler
@@ -33,7 +34,7 @@ To start a server in Docker container you should:
     * `CS_SECRET_KEY` - secret key providing an access to a cloudstack server
     * `CS_RETRY_DELAY` - a delay between unsuccessful connection attempt to cloudstack and repeated attempt
 2. Execute the following command:
-    "docker run --env-file variables.env medvedevbwsw/cs-vault-server:latest"
+    "docker run --env-file variables.env bwsw/cs-vault-server:latest"
 
 To create a local docker image you should execute the following command:
     "docker build -t REPOSITORY:TAG ."
