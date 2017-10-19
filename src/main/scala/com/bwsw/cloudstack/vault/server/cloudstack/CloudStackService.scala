@@ -180,7 +180,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param resourceId id of entity to include tag
     * @param resourceType "User" or "UserVM" type of tags
-    * @param tagSet Set of tags to include them into resource
+    * @param tagSet Set of tags to include into resource
     */
   def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagSet: Set[Tag]): Unit = {
     logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")

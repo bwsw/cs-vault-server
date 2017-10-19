@@ -89,7 +89,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     *
     * @param resourceId id of resource to include tag
     * @param resourceType type of resources’ tags
-    * @param tagSet Set of tags to include them into resource
+    * @param tagSet Set of tags to include into resource
     *
     * @return task to include tags into entity tags
     */

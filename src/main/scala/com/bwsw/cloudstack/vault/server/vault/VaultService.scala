@@ -74,7 +74,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   /**
     * Revokes token from Vault server.
     *
-    * @param tokenId id of token to revoke
+    * @param tokenId token id to revoke
     * @return List of token policies names
     * @throws VaultFatalException if response status is not expected.
     */

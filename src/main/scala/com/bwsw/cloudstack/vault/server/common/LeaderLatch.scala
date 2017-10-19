@@ -92,7 +92,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   }
 
   def close(): Unit = {
-    logger.info("Close a leader latch if it has been started")
+    logger.info("Close a leader latch if it has started")
     if (isStarted) leaderLatch.close()
     curatorClient.close()
     isClosed = true
