@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 /**
   * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
   *
-  * @param cloudStackTaskCreator enables creation tasks for interaction with CloudStack
+  * @param cloudStackTaskCreator enables tasks creation for interaction with CloudStack
   * @param settings contains settings for interaction with CloudStack
   */
 class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
