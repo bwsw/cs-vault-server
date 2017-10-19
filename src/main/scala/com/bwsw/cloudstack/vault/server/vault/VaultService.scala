@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
 /**
   * Class is responsible for interaction with Vault server with help of VaultRestRequestCreator
   *
-  * @param vaultRest enables interaction with Vault server
+  * @param vaultRest provides interaction with Vault server
   *
   * @param settings contains settings for interaction with Vault
   */
@@ -46,7 +46,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * Creates token with specified policy
     *
     * @param policies policies for token
-    * @return UUID of token
+    * @return token id
     * @throws VaultFatalException if response status is not expected.
     */
   def createToken(policies: List[Policy]): UUID = {
@@ -67,15 +67,15 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     )
 
     val token = jsonSerializer.deserialize[Token](responseString).tokenId.id
-    logger.debug(s"Token: $token created")
+    logger.debug(s"Token: $token is created")
     token
   }
 
   /**
     * Revokes token from vault server.
     *
-    * @param tokenId UUID of token for revoke.
-    * @return List of names of token policies.
+    * @param tokenId id of token to revoke.
+    * @return List of token policies names.
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
@@ -97,7 +97,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRevokeRequest,
       settings.retryDelay
     )
-    logger.debug(s"Token: $tokenId revoked")
+    logger.debug(s"Token: $tokenId is revoked")
 
     lookupToken.tokenData.policies.filter { x =>
       x != "default" && x != "root"
@@ -153,7 +153,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     loop(pathToRootSecret, subPathsOfRootPath)
     pathsForDeletion.reverse.foreach { x =>
       TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.retryDelay)
-      logger.debug(s"Data from path: $x deleted")
+      logger.debug(s"Data from path: $x is deleted")
     }
   }
 
@@ -173,7 +173,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.retryDelay
     )
 
-    logger.debug(s"Policy with name: $policyName deleted")
+    logger.debug(s"Policy with name: $policyName is deleted")
   }
 
   /**
@@ -191,7 +191,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRequest,
       settings.retryDelay
     )
-    logger.debug(s"Policy: $policy wrote down")
+    logger.debug(s"Policy: $policy is created")
   }
 }
 

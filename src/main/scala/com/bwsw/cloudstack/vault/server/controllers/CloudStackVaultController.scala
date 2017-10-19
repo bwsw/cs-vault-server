@@ -33,9 +33,9 @@ import scala.util.{Failure, Success, Try}
 /**
   * Class is responsible for execution of business logic (see docs/logic.md).
   *
-  * @param vaultService enables interaction with Vault server
-  * @param cloudStackService enables interaction with CloudStack server
-  * @param zooKeeperService enables interaction with ZooKeeper server
+  * @param vaultService provides interaction with Vault server
+  * @param cloudStackService provides interaction with CloudStack server
+  * @param zooKeeperService provides interaction with ZooKeeper server
   */
 class CloudStackVaultController(vaultService: VaultService,
                                 cloudStackService: CloudStackService,
@@ -56,20 +56,20 @@ class CloudStackVaultController(vaultService: VaultService,
     logger.debug(s"handleAccountDelete(accountId: $accountId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getAccountEntitySecretPath(accountId)}"
     deleteTokenAndAppropriateSecret(accountId, accountEntityName, requestSecretPath)
-    logger.debug(s"Account deletion processed, accountId: $accountId)")
+    logger.debug(s"Account deletion has processed, accountId: $accountId)")
   }
 
   /**
     * Revokes tokens and deletes secrets in Vault server.
     * For details see part "Account or VM deletion event processing" in docs/logic.md
     *
-    * @param vmId virtual machine id in CloudStack server for which vault token is created
+    * @param vmId VM id in CloudStack server for which vault token is created
     */
   def handleVmDelete(vmId: UUID): Unit = {
     logger.debug(s"handleVmDelete(vmId: $vmId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getVmEntitySecretPath(vmId)}"
     deleteTokenAndAppropriateSecret(vmId, vmEntityName, requestSecretPath)
-    logger.debug(s"Vm deletion processed, vmId: $vmId)")
+    logger.debug(s"Vm deletion has processed, vmId: $vmId)")
   }
 
   /**
@@ -107,7 +107,7 @@ class CloudStackVaultController(vaultService: VaultService,
     } else {
       cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags)
     }
-    logger.debug(s"User creation processed, userId: $userId)")
+    logger.debug(s"User creation has processed, userId: $userId)")
   }
 
   /**
@@ -144,14 +144,14 @@ class CloudStackVaultController(vaultService: VaultService,
       }
     }
 
-    logger.debug(s"Account creation processed, accountId: $accountId)")
+    logger.debug(s"Account creation has processed, accountId: $accountId)")
   }
 
   /**
-    * Processes tokens creation for the virtual machine.
+    * Processes tokens creation for the VM.
     * For details see part "Virtual machine creation event processing" in docs/logic.md
     *
-    * @param vmId virtual machine id in CloudStack server
+    * @param vmId VM id in CloudStack server
     */
   def handleVmCreate(vmId: UUID): Unit = {
     logger.debug(s"handleVmCreate(vmId: $vmId)")
@@ -182,11 +182,11 @@ class CloudStackVaultController(vaultService: VaultService,
     )
 
     cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ++ vaultKeyspaceTags)
-    logger.debug(s"VM creation processed, vmId: $vmId)")
+    logger.debug(s"VM creation has processed, vmId: $vmId)")
   }
 
   /**
-    * Aligns policy acl in Vault and tag key in CloudStack
+    * Aligns policy in Vault and tag key in CloudStack
     */
   private def getTagKeyByPolicyACL(acl: Policy.ACL): Tag.Key = {
     acl match {
@@ -196,7 +196,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Retrieves tokens tags for users
+    * Retrieves tokens’ tags for users
     */
   private def getCurrentVaultTagsOfUsers(usersIds: List[UUID]): Set[Tag] = {
 
@@ -208,7 +208,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Creates token in Vault or gets it from ZooKeeper node for CloudStack entity which does not includes tag with it
+    * Creates token in Vault or gets it from ZooKeeper node for CloudStack entity which does not include tag with it
     */
   private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: Tag.Key): Tag = {
     logger.debug(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")
@@ -235,7 +235,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Revokes token and deletes secret in Vault, and remove entity node from ZooKeeper
+    * Revokes token and deletes secret in Vault, and removes entity node from ZooKeeper
     */
   private def deleteTokenAndAppropriateSecret(entityId: UUID, entityName: String, secretPath: String): Unit = {
     logger.debug(s"deleteTokenAndAppropriateSecret(entityId: $entityId, entityName: $entityName)")
@@ -282,7 +282,7 @@ class CloudStackVaultController(vaultService: VaultService,
     } match {
       case Success(_) =>
       case Failure(e: Throwable) =>
-        logger.warn(s"Node by path: $path could not to create into zooKeeper, exception was thrown: $e, token is revoked")
+        logger.warn(s"Node by path: $path could not create in zooKeeper, exception thrown: $e, token is revoked")
         vaultService.revokeToken(token)
         throw e
     }

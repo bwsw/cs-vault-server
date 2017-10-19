@@ -78,12 +78,12 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   }
 
   /**
-    * Retrieves all tags of virtual machine.
+    * Retrieves all tags of VM.
     *
-    * @param vmId id of virtual machine to retrieve its tags
+    * @param vmId id of VM to retrieve its tags
     *
     * @return Set of tags
-    * @throws CloudStackEntityDoesNotExistException if virtual machine with specified id does not exist.
+    * @throws CloudStackEntityDoesNotExistException if VM with specified id does not exist.
     */
   def getVmTags(vmId: UUID): Set[Tag] = {
     logger.debug(s"getVmTags(vmId: $vmId)")
@@ -97,13 +97,13 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   }
 
   /**
-    * Retrieves account id for virtual machine.
+    * Retrieves account id for VM.
     *
-    * @param vmId id of virtual machine to retrieve account name
+    * @param vmId id of VM to retrieve account name
     *
-    * @return UUID of account which name is indicated in virtual machine
-    * @throws CloudStackEntityDoesNotExistException if virtual machine with specified id does not exist,
-    *                                               or if account with specified name in virtual machine does not exist.
+    * @return id of account which name is indicated in VM
+    * @throws CloudStackEntityDoesNotExistException if VM with specified id does not exist,
+    *                                               or if account with specified name in VM does not exist.
     */
   def getVmOwnerAccount(vmId: UUID): UUID = {
     logger.debug(s"getVmOwnerAccount(vmId: $vmId)")
@@ -133,7 +133,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param userId id of user to retrieve account id
     *
-    * @return UUID of account which includes a user with indicated id
+    * @return id of account which includes a user with indicated id
     * @throws CloudStackEntityDoesNotExistException if user with specified id does not exist.
     */
   def getAccountByUser(userId: UUID): UUID = {
@@ -154,7 +154,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *
     * @param accountId id of account to retrieve users ids
     *
-    * @return List with UUID of users which are included in account
+    * @return List with id of users which are included in account
     * @throws CloudStackEntityDoesNotExistException if account with specified id does not exist.
     */
   def getUsersByAccount(accountId: UUID): List[UUID] = {

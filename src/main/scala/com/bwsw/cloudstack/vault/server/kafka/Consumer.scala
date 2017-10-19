@@ -67,7 +67,7 @@ class Consumer[T](val brokers: String,
   }
 
   def process() {
-    logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
+    logger.debug(s"Waiting for records consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
     val futureEvents = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
@@ -86,7 +86,7 @@ class Consumer[T](val brokers: String,
         case ProcessingEventResult(event, result) =>
           result.onComplete {
             case Success(x) =>
-              logger.info(s"The event: $event was successful")
+              logger.info(s"The event: $event is processed")
               eventLatch.succeed()
             case Failure(e: FatalException) =>
               logger.warn("An exception: \"" + s"${e.getMessage}" +

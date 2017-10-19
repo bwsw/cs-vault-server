@@ -156,12 +156,12 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Handles request execution
+    * Handles request
     */
   private def createRequest(request: () => RestResponse,
                             expectedResponseStatuses: List[Int],
                             requestDescription: String)(): String = {
-    logger.debug(s"Request executed for: $requestDescription")
+    logger.debug(s"Request is executed : $requestDescription")
     val response = Try {
       request()
     } match {
@@ -170,7 +170,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
         logger.warn("Vault server is unavailable")
         throw e
       case Failure(e: Throwable) =>
-        logger.error(s"Request to vault server is not finish correctly, exception was thrown: $e")
+        logger.error(s"Request to vault server does not finish correctly, exception was thrown: $e")
         throw new VaultFatalException(e.toString)
     }
 

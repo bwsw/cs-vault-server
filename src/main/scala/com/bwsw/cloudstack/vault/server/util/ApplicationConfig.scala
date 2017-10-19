@@ -33,11 +33,11 @@ object ApplicationConfig {
 
   /**
     * Gets the required string from the config file or throws
-    * an exception if the string is not found.
+    * an exception if the configuration parameter is not found
     *
     * @param path path to string
     *
-    * @return string fetched by path
+    * @return configuration parameter fetched by path
     */
   def getRequiredString(path: String): String = getRequiredString(config, path)
 
@@ -49,11 +49,11 @@ object ApplicationConfig {
 
   /**
     * Gets the required int from the config file or throws
-    * an exception if the int is not found.
+    * an exception if the configuration parameter is not found
     *
     * @param path path to int
     *
-    * @return int fetched by path
+    * @return configuration parameter fetched by path
     */
   def getRequiredInt(path: String): Int = getRequiredInt(config, path)
 
@@ -65,11 +65,11 @@ object ApplicationConfig {
 
   /**
     * Gets the required string list from the config file or throws
-    * an exception if the string list is not found.
+    * an exception if the configuration parameter is not found
     *
     * @param path path to string list
     *
-    * @return string list fetched by path
+    * @return configuration parameter fetched by path
     */
   def getRequiredStringList(path: String): List[String] = getRequiredStringList(config, path)
 

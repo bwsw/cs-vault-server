@@ -72,7 +72,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     assert(Set(Tag(key,value)) == tags)
   }
 
-  "getVmTagsById" should "return virtual machines tags by id" in {
+  "getVmTagsById" should "return VMs tags by id" in {
     val key = Tag.Key.VaultRW
     val value = "value3"
 
@@ -90,7 +90,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     assert(Set(Tag(key,value)) == tags)
   }
 
-  "getAccountIdByVmId" should "return account id by virtual machine id" in {
+  "getAccountIdByVmId" should "return account id by VM id" in {
     val accountName = "admin"
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
@@ -166,7 +166,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
   }
 
   //Negative tests
-  "getUserTagsByAccountId" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getUserTagsByAccountId" should "not swallow CloudStackFatalException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")
@@ -182,7 +182,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUserTagsByUserId" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getUserTagsByUserId" should "not swallow CloudStackFatalException" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.User, "resourceType is wrong")
@@ -198,7 +198,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getVmTagsById" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getVmTagsById" should "not swallow CloudStackFatalException" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetTagsTask(resourceType: Tag.Type, resourceId: UUID): () => String = {
         assert(resourceType == Tag.Type.UserVM, "resourceType is wrong")
@@ -214,7 +214,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByVmId" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getAccountIdByVmId" should "not swallow CloudStackFatalException" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         command match {
@@ -232,7 +232,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getAccountIdByUserId" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getAccountIdByUserId" should "not swallow CloudStackFatalException" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         assert(Map(idParameter -> userId.toString) == parameters, "parameters is wrong")
@@ -248,7 +248,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSui
     }
   }
 
-  "getUsersByAccount" should "not swallowed CloudStackFatalException thrown by cloudStackTaskCreator" in {
+  "getUsersByAccount" should "not swallow CloudStackFatalException" in {
     val сloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings)  {
       override def createGetEntityTask(command: Command, parameters: Map[String, String]): () => String = {
         assert(Map(idParameter -> accountId.toString) == parameters, "parameters is wrong")

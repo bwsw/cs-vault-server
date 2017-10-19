@@ -27,7 +27,7 @@ object TaskRunner {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
-    * Re-runs task while not it will be successfully executed or critical exception will be thrown
+    * Runs the task until it successfully completes or critical exception is thrown
     *
     * @param task task for execution
     * @param retryDelay delay between task restarts

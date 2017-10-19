@@ -102,7 +102,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "return its ID if it acquires leadership" in {
+  it should "return its ID if LeaderLatch acquires leadership" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString
@@ -115,7 +115,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "delete its node from a server after closing" in {
+  it should "delete its node from a server after close" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString

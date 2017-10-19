@@ -43,7 +43,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
   val expectedEvent = CloudStackEvent(Some(CloudStackEvent.Status.Completed), Some(CloudStackEvent.Action.AccountDelete), Some(entityId))
   val topic = "testTopic"
 
-  "process" should "handle event successful" in {
+  "process" should "handle event successfully" in {
     val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
 
     mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))
@@ -73,7 +73,7 @@ class ConsumerTestSuite extends FlatSpec with Matchers with BaseTestSuite {
     consumer.shutdown()
   }
 
-  "process" should "handle event successful if CriticalException which includes CloudStackEntityDoesNotExistException was thrown" in {
+  "process" should "handle event successfully if CriticalException which includes CloudStackEntityDoesNotExistException was thrown" in {
     val mockConsumer = new MockConsumer[String, String](OffsetResetStrategy.EARLIEST)
 
     mockConsumer.assign(util.Arrays.asList(new TopicPartition(topic, 0)))

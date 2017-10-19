@@ -43,7 +43,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path of zNode
     * @param data String with data of zNode
-    * @throws ZooKeeperFatalException if zNode already does exist.
+    * @throws ZooKeeperFatalException if zNode already exists.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")

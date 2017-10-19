@@ -39,7 +39,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     zooKeeperService.deleteNode(path)
   }
 
-  "createNodeWithData" should "should throw ZooKeeperCriticalException" in {
+  "createNodeWithData" should "throw ZooKeeperCriticalException" in {
     zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit]
     assertThrows[ZooKeeperFatalException] {
       zooKeeperService.createNodeWithData(path, expectedData)
@@ -47,7 +47,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     zooKeeperService.deleteNode(path)
   }
 
-  "doesNodeExist" should "return true if node exist" in {
+  "doesNodeExist" should "return true if node exists" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.doesNodeExist(path))
     zooKeeperService.deleteNode(path)
@@ -64,7 +64,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     assert(zooKeeperService.deleteNode(path).isInstanceOf[Unit])
   }
 
-  "deleteNode" should "should throw ZooKeeperCriticalException" in {
+  "deleteNode" should "throw ZooKeeperCriticalException" in {
     assertThrows[ZooKeeperFatalException] {
       zooKeeperService.deleteNode(path)
     }

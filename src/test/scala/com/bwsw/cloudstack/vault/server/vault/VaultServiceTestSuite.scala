@@ -173,7 +173,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
   }
 
   //Negative tests
-  "createToken" should "not swallow VaultFatalException thrown by VaultRestRequestCreator" in {
+  "createToken" should "not swallow VaultFatalException" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
@@ -196,7 +196,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "revokeToken" should "not swallow VaultFatalException thrown by VaultRestRequestCreator" in {
+  "revokeToken" should "not swallow VaultFatalException" in {
     val entityId = UUID.randomUUID()
     val tokenJson = getTokenJson(entityId.toString)
 
@@ -214,7 +214,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deleteSecretRecursive" should "not swallow VaultFatalException thrown by VaultRestRequestCreator" in {
+  "deleteSecretRecursive" should "not swallow VaultFatalException" in {
     val path = "/test/path"
     val responseWithEmptySubTree = "{\"errors\":[]}"
 
@@ -236,7 +236,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deletePolicy" should "not swallow VaultFatalException thrown by VaultRestRequestCreator" in {
+  "deletePolicy" should "not swallow VaultFatalException" in {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
 
