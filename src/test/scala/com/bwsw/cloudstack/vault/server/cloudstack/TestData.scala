@@ -21,10 +21,12 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
-import br.com.autonomiccs.apacheCloudStack.exceptions.ApacheCloudStackClientRuntimeException
 import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
+
+import scala.util.Random
 
 trait TestData {
   val userId: UUID = UUID.randomUUID()
@@ -102,15 +104,27 @@ trait TestData {
   def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
   : CloudStackTaskCreator = {
     new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override val apacheCloudStackClientList: List[ApacheCloudStackClient] =
-        cloudStackTaskCreatorSettings.endpoints.map { x =>
-          new ApacheCloudStackClient(x, apacheCloudStackUser) {
-            override def executeRequest(request: ApacheCloudStackRequest): String = {
-              assert(request.toString == expectedRequest.toString, "request is wrong")
-              response
-            }
+      override val endpointQueue = new WeightedQueue[String](cloudStackTaskCreatorSettings.endpoints.toList) {
+        override val r = new Random {
+          override def nextInt(n: Int): Int = 0
+        }
+      }
+
+      override def createClient(endpoint: String): ApacheCloudStackClient = {
+        assert(endpoint == endpointQueue.getElement)
+        new ApacheCloudStackClient(endpoint, apacheCloudStackUser) {
+          override def executeRequest(request: ApacheCloudStackRequest): String = {
+            assert(request.toString == expectedRequest.toString, "request is wrong")
+            response
           }
-        }.toList
+        }
+      }
+    }
+  }
+
+  def getEndpointQueue(endpoints: List[String]) = new WeightedQueue[String](endpoints) {
+    override val r = new Random {
+      override def nextInt(n: Int): Int = 0
     }
   }
 

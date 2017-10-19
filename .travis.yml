@@ -10,7 +10,7 @@ script:
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
       docker build -t cs-vault-server:latest .;
       docker images;
-      docker tag cs-vault-server:latest medvedevbwsw/cs-vault-server:latest;
+      docker tag cs-vault-server:latest bwsw/cs-vault-server:latest;
       docker push $DOCKER_USERNAME/cs-vault-server:latest;
     fi
 
