@@ -26,6 +26,7 @@ import br.com.autonomiccs.apacheCloudStack.client.beans.ApacheCloudStackUser
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.HttpStatus
 import org.slf4j.LoggerFactory
 
@@ -39,17 +40,10 @@ import scala.util.{Failure, Success, Try}
   */
 class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  //cloud stack client config
-  protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
-  protected val apacheCloudStackClientList: List[ApacheCloudStackClient] = settings.endpoints.map { x =>
-    new ApacheCloudStackClient(x, apacheCloudStackUser)
-  }.toList
 
-  private var threadLocalClientList = new ThreadLocal[List[ApacheCloudStackClient]](){
-    override protected def initialValue(): List[ApacheCloudStackClient] = {
-      apacheCloudStackClientList
-    }
-  }
+  protected val apacheCloudStackUser = new ApacheCloudStackUser(settings.secretKey, settings.apiKey)
+  protected val endpointQueue = new WeightedQueue[String](settings.endpoints.toList)
+
   val idParameter = "id"
   val nameParameter = "name"
   val domainParameter = "domainid"
@@ -130,18 +124,15 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     */
   protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
     logger.debug(s"Request was executed for action: $requestDescription")
-    val clientList = threadLocalClientList.get()
+    val currentEndpoint = endpointQueue.getElement
+    val client = createClient(currentEndpoint)
     Try {
-      clientList.head.executeRequest(request)
+      client.executeRequest(request)
     } match {
       case Success(x) => x
       case Failure(e: ApacheCloudStackClientRuntimeException) if e.getCause.isInstanceOf[NoRouteToHostException] =>
-        logger.warn(s"CloudStack server is unavailable")
-        if (clientList.tail.isEmpty) {
-          threadLocalClientList.set(apacheCloudStackClientList)
-        } else {
-          threadLocalClientList.set(clientList.tail)
-        }
+        logger.warn(s"CloudStack server is unavailable by endpoint: $currentEndpoint")
+        endpointQueue.moveElementToEnd(currentEndpoint)
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
         if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
@@ -150,6 +141,10 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         logger.error(s"Request execution thrown an exception: $e")
         throw new CloudStackFatalException(e.toString)
     }
+  }
+
+  protected def createClient(endpoint: String): ApacheCloudStackClient = {
+    new ApacheCloudStackClient(endpoint, apacheCloudStackUser)
   }
 }
 
