@@ -24,22 +24,22 @@ import scala.util.Random
 
 /**
   * Class is responsible for obtaining a list item with a probability calculated by the formula:
-  * (lengthOfList - indexOfElement)/sumOfAllNumbersOfList
+  * (length - indexOfElement)/sumOfAllNumbersOfList
   * where:
-  * "lengthOfList" - length of initialization list with elements
+  * "length" - length of initialization list with elements
   * "indexOfElement" - index of element in the list
-  * "sumOfAllNumbersOfList" - sum of numbers from 1 to "lengthOfList"
+  * "sumOfAllNumbersOfList" - sum of numbers from 1 to "length"
   */
 class WeightedQueue[T](private val elementList: List[T]) {
   protected val r = new Random
 
-  private val lengthOfList = elementList.length
-  private val sumOfNumbers = lengthOfList * (1 + lengthOfList)/2
+  private val length = elementList.length
+  private val sumOfNumbers = length * (1 + length)/2
   private val elementIndexByProbability: RangeMap[Integer, Int] = TreeRangeMap.create()
 
   private var elements = elementList
 
-  associateIndexesWithProbabilities(0, lengthOfList, 0)
+  associateIndexesWithProbabilities(0, length, 0)
 
   def getElement: T = elements(elementIndexByProbability.get(r.nextInt(sumOfNumbers)))
 
@@ -48,8 +48,8 @@ class WeightedQueue[T](private val elementList: List[T]) {
   def moveElementToEnd(element: T): Unit = synchronized {
     val currentIndex = elements.indexOf(element)
     if (currentIndex != -1) {
-      if (currentIndex != lengthOfList - 1) {
-        elements = elements.take(currentIndex) ++ elements.takeRight(lengthOfList - currentIndex - 1) :+ element
+      if (currentIndex != length - 1) {
+        elements = elements.take(currentIndex) ++ elements.takeRight(length - currentIndex - 1) :+ element
       }
     } else {
       throw new IllegalArgumentException(s"Requested element doesn't exist: $element")

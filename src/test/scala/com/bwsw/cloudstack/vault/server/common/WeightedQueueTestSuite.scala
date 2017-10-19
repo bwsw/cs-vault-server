@@ -54,7 +54,7 @@ class WeightedQueueTestSuite extends FlatSpec with Matchers {
     assert(expectedResult == queue.getElements)
   }
 
-  "moveElementToEnd" should "throw IllegalArgumentException if Initialize elements list is not contain element for move" in {
+  "moveElementToEnd" should "throw IllegalArgumentException if requested element doesn't exist" in {
     val expectedResult = List(firstElement, secondElement, thirdElement)
     val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
