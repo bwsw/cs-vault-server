@@ -27,7 +27,7 @@ class WeightedQueueTestSuite extends FlatSpec with Matchers {
   val secondElement = "2"
   val thirdElement = "3"
 
-  "moveElementToEnd" should "move the first element to end of the queue" in {
+  "moveElementToEnd" should "move the first element to the end of the queue" in {
     val expectedResult = List(secondElement, thirdElement, firstElement)
     val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
@@ -36,7 +36,7 @@ class WeightedQueueTestSuite extends FlatSpec with Matchers {
     assert(expectedResult == queue.getElements)
   }
 
-  "moveElementToEnd" should "move the second element to end of the queue" in {
+  "moveElementToEnd" should "move the second element to the end of the queue" in {
     val expectedResult = List(firstElement, thirdElement, secondElement)
     val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 
@@ -45,7 +45,7 @@ class WeightedQueueTestSuite extends FlatSpec with Matchers {
     assert(expectedResult == queue.getElements)
   }
 
-  "moveElementToEnd" should "not change queue if element for move is last" in {
+  "moveElementToEnd" should "not change a queue if an element is last" in {
     val expectedResult = List(firstElement, secondElement, thirdElement)
     val queue = new WeightedQueue[String](List(firstElement, secondElement, thirdElement))
 

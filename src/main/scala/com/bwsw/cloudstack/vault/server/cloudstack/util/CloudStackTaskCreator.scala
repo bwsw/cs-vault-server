@@ -125,7 +125,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   protected def createRequest(request: ApacheCloudStackRequest, requestDescription: String)(): String = {
     logger.debug(s"Request was executed for action: $requestDescription")
     val currentEndpoint = endpointQueue.getElement
-    val client = getClient(currentEndpoint)
+    val client = createClient(currentEndpoint)
     Try {
       client.executeRequest(request)
     } match {
@@ -143,7 +143,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     }
   }
 
-  protected def getClient(endpoint: String): ApacheCloudStackClient = {
+  protected def createClient(endpoint: String): ApacheCloudStackClient = {
     new ApacheCloudStackClient(endpoint, apacheCloudStackUser)
   }
 }

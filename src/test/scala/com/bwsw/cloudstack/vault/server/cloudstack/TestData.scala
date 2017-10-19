@@ -95,7 +95,7 @@ trait TestData {
         }
       }
 
-      override def getClient(endpoint: String): ApacheCloudStackClient = {
+      override def createClient(endpoint: String): ApacheCloudStackClient = {
         assert(endpoint == endpointQueue.getElement)
         new ApacheCloudStackClient(endpoint, apacheCloudStackUser) {
           override def executeRequest(request: ApacheCloudStackRequest): String = {
@@ -107,7 +107,7 @@ trait TestData {
     }
   }
 
-  def getEndPointQueue(endpoints: List[String]) = new WeightedQueue[String](endpoints) {
+  def getEndpointQueue(endpoints: List[String]) = new WeightedQueue[String](endpoints) {
     override val r = new Random {
       override def nextInt(n: Int): Int = 0
     }

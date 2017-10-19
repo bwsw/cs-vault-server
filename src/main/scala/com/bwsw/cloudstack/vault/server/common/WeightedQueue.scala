@@ -33,41 +33,33 @@ import scala.util.Random
 class WeightedQueue[T](private val elementList: List[T]) {
   protected val r = new Random
 
-  private val lengthOfArray = elementList.length
-  private val sumOfNumbers = getSumOfNumbers(0, lengthOfArray)
-  private val gradeScaleElements: RangeMap[Integer, Int] = TreeRangeMap.create()
+  private val lengthOfList = elementList.length
+  private val sumOfNumbers = lengthOfList * (1 + lengthOfList)/2
+  private val elementIndexByProbability: RangeMap[Integer, Int] = TreeRangeMap.create()
 
   private var elements = elementList
 
-  fillRangeMap(0, lengthOfArray, 0)
+  associateIndexesWithProbabilities(0, lengthOfList, 0)
 
-  def getElement: T = elements(gradeScaleElements.get(r.nextInt(sumOfNumbers)))
+  def getElement: T = elements(elementIndexByProbability.get(r.nextInt(sumOfNumbers)))
 
   def getElements: List[T] = elements
 
   def moveElementToEnd(element: T): Unit = synchronized {
     val currentIndex = elements.indexOf(element)
-    if(currentIndex != -1) {
-      if (currentIndex != lengthOfArray - 1) {
-        elements = elements.take(currentIndex) ++ elements.takeRight(lengthOfArray - currentIndex - 1) :+ element
+    if (currentIndex != -1) {
+      if (currentIndex != lengthOfList - 1) {
+        elements = elements.take(currentIndex) ++ elements.takeRight(lengthOfList - currentIndex - 1) :+ element
       }
     } else {
-      throw new IllegalArgumentException(s"Element: $element is not included in the initialization list: $elementList")
+      throw new IllegalArgumentException(s"Requested element doesn't exist: $element")
     }
   }
 
-  private def fillRangeMap(startOfRange: Int, range: Int, index: Int): Unit = {
+  private def associateIndexesWithProbabilities(startOfRange: Int, range: Int, index: Int): Unit = {
     if (range != 0) {
-      gradeScaleElements.put(Range.closed(startOfRange, startOfRange + range - 1), index)
-      fillRangeMap(startOfRange + range, range - 1, index + 1)
-    }
-  }
-
-  private def getSumOfNumbers(acc: Int, lenght: Int): Int = {
-    if(lenght == 0) {
-      acc
-    } else {
-      getSumOfNumbers(acc + lenght, lenght - 1)
+      elementIndexByProbability.put(Range.closed(startOfRange, startOfRange + range - 1), index)
+      associateIndexesWithProbabilities(startOfRange + range, range - 1, index + 1)
     }
   }
 }
