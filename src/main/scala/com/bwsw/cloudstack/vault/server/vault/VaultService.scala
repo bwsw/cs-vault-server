@@ -72,10 +72,10 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   }
 
   /**
-    * Revokes token from vault server.
+    * Revokes token from Vault server.
     *
-    * @param tokenId id of token to revoke.
-    * @return List of token policies names.
+    * @param tokenId id of token to revoke
+    * @return List of token policies names
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
@@ -105,7 +105,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   }
 
   /**
-    * Deletes secrets from vault server by specified path.
+    * Deletes secrets from Vault server by specified path.
     *
     * @param pathToRootSecret path for deletion of root secret, tree of sub-secrets will be deleted too
     * @throws VaultFatalException if response status is not expected.

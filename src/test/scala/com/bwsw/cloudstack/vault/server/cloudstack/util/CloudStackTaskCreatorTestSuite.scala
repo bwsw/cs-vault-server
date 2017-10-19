@@ -165,7 +165,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
   }
 
   "createRequest" should "throw CloudStackFatalException " +
-    "if non-ApacheCloudStackClientRuntimeException was thrown by cloudStack client " in {
+    "if non-ApacheCloudStackClientRuntimeException was thrown by CloudStack client " in {
     var checkedPath = List.empty[String]
     val urlClient = "http://127.0.0.1:8080/client/api/1"
     val createRequest = PrivateMethod[String]('createRequest)

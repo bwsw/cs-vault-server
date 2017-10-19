@@ -125,7 +125,7 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
     * Processes request execution
     * does not swallow ApacheCloudStackClientRuntimeException if it wraps NoRouteToHostException
     * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException with
-    *                                               with 431 status code was thrown
+    *                                               431 status code was thrown
     *
     *
     */
@@ -146,10 +146,10 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
         throw e
       case Failure(e: ApacheCloudStackClientRequestRuntimeException)
         if e.getStatusCode == HttpStatus.CLOUD_STACK_ENTITY_DOES_NOT_EXIST =>
-        logger.error(s"Request execution thrown an exception: $e")
+        logger.error(s"Request execution threw an exception: $e")
         throw new CloudStackEntityDoesNotExistException(e.toString)
       case Failure(e: Throwable) =>
-        logger.error(s"Request execution thrown an exception: $e")
+        logger.error(s"Request execution threw an exception: $e")
         throw new CloudStackFatalException(e.toString)
     }
   }

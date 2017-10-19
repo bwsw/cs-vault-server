@@ -30,20 +30,20 @@ import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 object ConfigLoader {
 
   def loadConfig(): Components.Settings = {
-    //zookeeper
+    //ZooKeeper
     val zooKeeperRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.zooKeeperRetryDelay)
     val zooKeeperEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
-    //vault
+    //Vault
     val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
     val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
     val vaultEndpoint = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoint)
     val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
-    //cloudstack
+    //CloudStack
     val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
     val cloudStackEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
     val cloudStackSecretKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackSecretKey)
     val cloudStackApiKey = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackApiKey)
-    //cloudStackVaultController
+    //CloudStackVaultController
     val vmSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.vaultVmsBasicPath)
     val accountSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.vaultAccountsBasicPath)
     val zooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)

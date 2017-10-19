@@ -97,7 +97,7 @@ class Consumer[T](val brokers: String,
               checkEvent(restartedEvent)
             case Failure(e: CriticalException) =>
               logger.warn("An exception: \"" + s"${e.getMessage}" +
-                "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal and ignored")
+                "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal, so it is ignored")
               eventLatch.succeed()
             case Failure(e: Throwable) =>
               logger.error(s"Unhandled exception was thrown: $e")

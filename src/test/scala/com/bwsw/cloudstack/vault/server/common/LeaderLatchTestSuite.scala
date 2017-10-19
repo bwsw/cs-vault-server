@@ -49,7 +49,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Await.result(Future(super.withFixture(test)), timeLimitPerTest)
   }
 
-  "LeaderLatch" should "create master node on ZK server" in {
+  "LeaderLatch" should "create master node on ZooKeeper server" in {
     val masterNode = newMasterNode
     val leaderLatchId = UUID.randomUUID().toString
 
@@ -70,7 +70,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "acquire leadership if there is only one participant of the master node" in {
+  it should "acquire leadership if there is only one participant of the master znode" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString
@@ -115,7 +115,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "delete its node from a server after close" in {
+  it should "delete its znode from a server after close" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString

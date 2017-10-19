@@ -38,12 +38,12 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   initCuratorClient()
 
   /**
-    * Creates zNode.
-    * Waiting if zookeeper server is unavailable.
+    * Creates znode.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
-    * @param data String with data of zNode
-    * @throws ZooKeeperFatalException if zNode already exists.
+    * @param path String with path of znode
+    * @param data String with data of znode
+    * @throws ZooKeeperFatalException if znode already exists.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
@@ -64,13 +64,13 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Retrieves data from zNode.
-    * Waiting if zookeeper server is unavailable.
+    * Retrieves data from znode.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path to zNode data
+    * @param path String with path to znode data
     *
-    * @return Some(data) if zNode exist
-    *         None if zNode does not exist
+    * @return Some(data) if znode exist
+    *         None if znode does not exist
     */
   def getNodeData(path: String): Option[String] = {
     logger.debug(s"getNodeData from path: $path")
@@ -82,11 +82,11 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Deletes zNode by specified path.
-    * Waiting if zookeeper server is unavailable.
+    * Deletes znode by specified path.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
-    * @throws ZooKeeperFatalException if node does not exist
+    * @param path String with path of znode
+    * @throws ZooKeeperFatalException if znode does not exist
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
@@ -102,12 +102,12 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Checks zNode existing
-    * Waiting if zookeeper server is unavailable.
+    * Checks znode existing
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
+    * @param path String with path of znode
     *
-    * @return boolean flag on the existence zNode
+    * @return boolean flag on the existence znode
     */
   def doesNodeExist(path: String): Boolean = {
     logger.debug(s"doesNodeExist by path: $path")

@@ -44,7 +44,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   }
 
   private def createMasterNode(): Any = {
-    logger.debug(s"Create a master node: $masterNode if it doesn't exist")
+    logger.debug(s"Create a master znode: $masterNode if it doesn't exist")
     val doesPathExist = Option(curatorClient.checkExists().forPath(masterNode))
     if (doesPathExist.isEmpty) curatorClient.create.creatingParentsIfNeeded().forPath(masterNode)
   }

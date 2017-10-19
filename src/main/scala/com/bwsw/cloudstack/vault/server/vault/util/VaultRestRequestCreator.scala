@@ -170,12 +170,12 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
         logger.warn("Vault server is unavailable")
         throw e
       case Failure(e: Throwable) =>
-        logger.error(s"Request to vault server does not finish correctly, exception was thrown: $e")
+        logger.error(s"Request to Vault server does not complete successfully, exception occurred: $e")
         throw new VaultFatalException(e.toString)
     }
 
     if (!expectedResponseStatuses.contains(response.getStatus)) {
-      throw new VaultFatalException(s"Response status: ${response.getStatus} from vault server is not expected")
+      throw new VaultFatalException(s"Response status: ${response.getStatus} from Vault server is not expected")
     }
     new String(response.getBody)
   }

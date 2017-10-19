@@ -56,7 +56,7 @@ class CloudStackVaultController(vaultService: VaultService,
     logger.debug(s"handleAccountDelete(accountId: $accountId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getAccountEntitySecretPath(accountId)}"
     deleteTokenAndAppropriateSecret(accountId, accountEntityName, requestSecretPath)
-    logger.debug(s"Account deletion has processed, accountId: $accountId)")
+    logger.debug(s"Account deletion has been processed, accountId: $accountId)")
   }
 
   /**
@@ -69,7 +69,7 @@ class CloudStackVaultController(vaultService: VaultService,
     logger.debug(s"handleVmDelete(vmId: $vmId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getVmEntitySecretPath(vmId)}"
     deleteTokenAndAppropriateSecret(vmId, vmEntityName, requestSecretPath)
-    logger.debug(s"Vm deletion has processed, vmId: $vmId)")
+    logger.debug(s"VM deletion has been processed, vmId: $vmId)")
   }
 
   /**
@@ -107,7 +107,7 @@ class CloudStackVaultController(vaultService: VaultService,
     } else {
       cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags)
     }
-    logger.debug(s"User creation has processed, userId: $userId)")
+    logger.debug(s"User creation has been processed, userId: $userId)")
   }
 
   /**
@@ -144,7 +144,7 @@ class CloudStackVaultController(vaultService: VaultService,
       }
     }
 
-    logger.debug(s"Account creation has processed, accountId: $accountId)")
+    logger.debug(s"Account creation has been processed, accountId: $accountId)")
   }
 
   /**
@@ -182,7 +182,7 @@ class CloudStackVaultController(vaultService: VaultService,
     )
 
     cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ++ vaultKeyspaceTags)
-    logger.debug(s"VM creation has processed, vmId: $vmId)")
+    logger.debug(s"VM creation has been processed, vmId: $vmId)")
   }
 
   /**
@@ -251,7 +251,7 @@ class CloudStackVaultController(vaultService: VaultService,
             val policyNames = vaultService.revokeToken(UUID.fromString(token))
             policyNames.foreach(vaultService.deletePolicy)
           case None =>
-            logger.warn(s"Token's node by path: $path does not exist for entity: $entityId")
+            logger.warn(s"Token's znode by path: $path does not exist for entity: $entityId")
         }
       }
       zooKeeperService.deleteNode(pathToEntityNode)
@@ -282,7 +282,7 @@ class CloudStackVaultController(vaultService: VaultService,
     } match {
       case Success(_) =>
       case Failure(e: Throwable) =>
-        logger.warn(s"Node by path: $path could not create in zooKeeper, exception thrown: $e, token is revoked")
+        logger.warn(s"Could not create znode by path: $path, the exception: $e occurred, token is revoked")
         vaultService.revokeToken(token)
         throw e
     }

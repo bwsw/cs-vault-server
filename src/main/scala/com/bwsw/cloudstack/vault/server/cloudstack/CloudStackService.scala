@@ -91,7 +91,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     val tagResponse = getTagsJson(Tag.Type.UserVM, vmId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
-    logger.debug(s"Tags: $tags retrieved for vm: $vmId)")
+    logger.debug(s"Tags: $tags retrieved for VM: $vmId)")
 
     tags
   }
@@ -111,7 +111,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     val vm = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(Command.ListVirtualMachines, Map(cloudStackTaskCreator.idParameter -> vmId.toString))
     ).virtualMashineList.virtualMashines.getOrElse(
-      throw new CloudStackEntityDoesNotExistException(s"Vm with id: $vmId does not exist")
+      throw new CloudStackEntityDoesNotExistException(s"VM with id: $vmId does not exist")
     ).head
 
     val accountId = jsonSerializer.deserialize[AccountResponse](
@@ -120,11 +120,11 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
                 cloudStackTaskCreator.domainParameter -> vm.domainId.toString
               ))
     ).accountList.accounts.getOrElse(
-      throw new CloudStackEntityDoesNotExistException(s"Vm: $vmId does not include an account with " +
+      throw new CloudStackEntityDoesNotExistException(s"VM: $vmId does not include the account with " +
         s"name: ${vm.accountName} within domain: ${vm.domainId}")
     ).map(_.id).head
 
-    logger.debug(s"Account id: $accountId retrieved for vm: $vmId)")
+    logger.debug(s"Account id: $accountId retrieved for VM: $vmId)")
     accountId
   }
 

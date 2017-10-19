@@ -34,7 +34,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
   val zooKeeperService = new ZooKeeperService(zooKeeperServiceSettings.copy(connectString)) {
   }
 
-  "createNodeWithData" should "create node with data" in {
+  "createNodeWithData" should "create znode with data" in {
     assert(zooKeeperService.createNodeWithData(path, expectedData).isInstanceOf[Unit])
     zooKeeperService.deleteNode(path)
   }
@@ -47,19 +47,19 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     zooKeeperService.deleteNode(path)
   }
 
-  "doesNodeExist" should "return true if node exists" in {
+  "doesNodeExist" should "return true if znode exists" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.doesNodeExist(path))
     zooKeeperService.deleteNode(path)
   }
 
-  "getNodeData" should "get data from node" in {
+  "getNodeData" should "get data from znode" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.getNodeData(path).get == expectedData)
     zooKeeperService.deleteNode(path)
   }
 
-  "deleteNode" should "delete node" in {
+  "deleteNode" should "delete znode" in {
     zooKeeperService.createNodeWithData(path, expectedData)
     assert(zooKeeperService.deleteNode(path).isInstanceOf[Unit])
   }
@@ -70,12 +70,12 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeA
     }
   }
 
-  "getNodeData" should "return None if node does not exist" in {
+  "getNodeData" should "return None if znode does not exist" in {
     val actualData = zooKeeperService.getNodeData(path)
     assert(actualData.isEmpty)
   }
 
-  "doesNodeExist" should "return false if node does not exist" in {
+  "doesNodeExist" should "return false if znode does not exist" in {
     assert(!zooKeeperService.doesNodeExist(path))
   }
 
