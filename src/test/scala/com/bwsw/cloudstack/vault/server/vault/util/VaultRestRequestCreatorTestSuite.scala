@@ -247,7 +247,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with BaseT
     }
   }
 
-  "createTokenRevokeRequest" should "throw VaultFatalException if Rest throws not same with RestException" in {
+  "createTokenRevokeRequest" should "throw VaultFatalException if Rest throws an exception that is different from RestException" in {
     val vaultRestRequestCreator = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
       override protected def createRest(path: String, data: String): Rest = {
         new Rest() {

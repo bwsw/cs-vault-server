@@ -22,8 +22,8 @@ import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
 import org.scalatest.FlatSpec
 
 class TaskRunnerTestSuite extends FlatSpec {
-  "tryRunUntilSuccess" should "run again task processing if non-CriticalException is thrown " +
-    "and then method returns an expected result after recovery" in {
+  "tryRunUntilSuccess" should "run again task processing if non-CriticalException was thrown " +
+    "and then method returns an expected result" in {
     var countOfTaskRunning = 4
     val expectedResult = "test"
 
@@ -41,7 +41,7 @@ class TaskRunnerTestSuite extends FlatSpec {
     assert(actualResult == expectedResult)
   }
 
-  "tryRunUntilSuccess" should "not run again task processing if CriticalException is thrown" in {
+  "tryRunUntilSuccess" should "not run again task processing if CriticalException was thrown" in {
 
     def testTask:() => String = () => {
       throw new CriticalException("test exception")

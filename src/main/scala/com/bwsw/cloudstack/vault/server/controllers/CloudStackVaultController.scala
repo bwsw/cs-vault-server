@@ -186,7 +186,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Aligns policy in Vault and tag key in CloudStack
+    * Associates policy acl in Vault with tag key in CloudStack
     */
   private def getTagKeyByPolicyACL(acl: Policy.ACL): Tag.Key = {
     acl match {
@@ -208,7 +208,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Creates token in Vault or gets it from ZooKeeper node for CloudStack entity which does not include tag with it
+    * Create missing token tags after creating tokens in Vault or retrieving them from ZooKeeper node
     */
   private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: Tag.Key): Tag = {
     logger.debug(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")

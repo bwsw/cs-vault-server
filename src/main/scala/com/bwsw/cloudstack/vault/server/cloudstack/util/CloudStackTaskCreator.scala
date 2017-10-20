@@ -34,7 +34,7 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for tasks creation for interaction with CloudStack server with help of CloudStack library
+  * Creates tasks for interaction with CloudStack
   *
   * @param settings contains settings for interaction with CloudStack
   */
@@ -116,10 +116,10 @@ class CloudStackTaskCreator(settings: CloudStackTaskCreator.Settings) {
   }
 
   /**
-    * Processes request execution
+    * Handles request
     * does not swallow ApacheCloudStackClientRuntimeException if it wraps NoRouteToHostException
     * @throws CloudStackEntityDoesNotExistException if ApacheCloudStackClientRequestRuntimeException with
-    *                                               431 status code was thrown
+    *                                               431 status code occurred
     *
     *
     */

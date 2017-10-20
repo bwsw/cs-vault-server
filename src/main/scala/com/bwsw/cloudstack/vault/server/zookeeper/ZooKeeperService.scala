@@ -69,7 +69,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *
     * @param path String with path to znode data
     *
-    * @return Some(data) if znode exist
+    * @return Some(data) if znode exists
     *         None if znode does not exist
     */
   def getNodeData(path: String): Option[String] = {

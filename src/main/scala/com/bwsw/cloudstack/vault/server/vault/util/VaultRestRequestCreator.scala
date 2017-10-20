@@ -161,7 +161,7 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private def createRequest(request: () => RestResponse,
                             expectedResponseStatuses: List[Int],
                             requestDescription: String)(): String = {
-    logger.debug(s"Request is executed : $requestDescription")
+    logger.debug(s"Request has been executed: $requestDescription")
     val response = Try {
       request()
     } match {

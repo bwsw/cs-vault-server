@@ -321,7 +321,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(expectedVaultTagsForAccount.toSet == checkedNewTags.toSet)
   }
 
-  "handleUserCreate" should "throw exception when try to put token to ZooKeeper node" in {
+  "handleUserCreate" should "throw exception when try to put token into ZooKeeper node" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
     val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
@@ -481,7 +481,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(List() == checkedNewTags)
   }
 
-  "handleAccountCreate" should "throw exception when try to put token to ZooKeeper node" in {
+  "handleAccountCreate" should "throw exception when try to put token into ZooKeeper node" in {
     val expectedUserIds = List(firstUserId, secondUserId)
     val expectedToken = readToken
     val expectedPolicy = Policy.createAccountReadPolicy(accountId, controllerSettings.accountSecretPath)
@@ -608,7 +608,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     assert(pathsForCheckIsExistNode == checkedIsExistNodePaths)
   }
 
-  "handleVmCreate" should "throw exception when try to put token to ZooKeeper node" in {
+  "handleVmCreate" should "throw exception when try to put token into ZooKeeper node" in {
     val expectedToken = readToken
     val expectedPolicy: Policy = Policy.createVmReadPolicy(accountId, vmId, controllerSettings.vmSecretPath)
 

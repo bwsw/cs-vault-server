@@ -86,7 +86,7 @@ class Consumer[T](val brokers: String,
         case ProcessingEventResult(event, result) =>
           result.onComplete {
             case Success(x) =>
-              logger.info(s"The event: $event is processed")
+              logger.info(s"The event: $event has been processed")
               eventLatch.succeed()
             case Failure(e: FatalException) =>
               logger.warn("An exception: \"" + s"${e.getMessage}" +

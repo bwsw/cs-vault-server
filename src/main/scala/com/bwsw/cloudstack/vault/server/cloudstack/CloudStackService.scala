@@ -55,7 +55,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
       getUserTags(userId)
     }.toSet
 
-    logger.debug(s"Tags: $tags retrieved for account: $accountId)")
+    logger.debug(s"Tags: $tags are retrieved for account: $accountId)")
     tags
   }
 
@@ -73,7 +73,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     val tagResponse = getTagsJson(Tag.Type.User, userId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
-    logger.debug(s"Tags: $tags retrieved for user: $userId)")
+    logger.debug(s"Tags: $tags are retrieved for user: $userId)")
     tags
   }
 
@@ -91,7 +91,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     val tagResponse = getTagsJson(Tag.Type.UserVM, vmId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
-    logger.debug(s"Tags: $tags retrieved for VM: $vmId)")
+    logger.debug(s"Tags: $tags are retrieved for VM: $vmId)")
 
     tags
   }
@@ -124,7 +124,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
         s"name: ${vm.accountName} within domain: ${vm.domainId}")
     ).map(_.id).head
 
-    logger.debug(s"Account id: $accountId retrieved for VM: $vmId)")
+    logger.debug(s"Account id: $accountId are retrieved for VM: $vmId)")
     accountId
   }
 
@@ -145,7 +145,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
       throw new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist")
     ).map(_.accountid).head
 
-    logger.debug(s"Account id: $accountId retrieved for user: $userId)")
+    logger.debug(s"Account id: $accountId are retrieved for user: $userId)")
     accountId
   }
 
@@ -171,7 +171,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
         x.users.map(_.id)
       }
 
-    logger.debug(s"Users: $allUsersIdInAccount retrieved for account: $accountId)")
+    logger.debug(s"Users: $allUsersIdInAccount are retrieved for account: $accountId)")
     allUsersIdInAccount
   }
 

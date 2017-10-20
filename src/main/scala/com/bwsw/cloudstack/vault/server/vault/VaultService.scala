@@ -67,7 +67,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     )
 
     val token = jsonSerializer.deserialize[Token](responseString).tokenId.id
-    logger.debug(s"Token: $token is created")
+    logger.debug(s"Token: $token has been created")
     token
   }
 
@@ -97,7 +97,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRevokeRequest,
       settings.retryDelay
     )
-    logger.debug(s"Token: $tokenId is revoked")
+    logger.debug(s"Token: $tokenId has been revoked")
 
     lookupToken.tokenData.policies.filter { x =>
       x != "default" && x != "root"
@@ -153,7 +153,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     loop(pathToRootSecret, subPathsOfRootPath)
     pathsForDeletion.reverse.foreach { x =>
       TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.retryDelay)
-      logger.debug(s"Data from path: $x is deleted")
+      logger.debug(s"Data from path: $x has been deleted")
     }
   }
 
@@ -173,7 +173,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.retryDelay
     )
 
-    logger.debug(s"Policy with name: $policyName is deleted")
+    logger.debug(s"Policy with name: $policyName has been deleted")
   }
 
   /**
@@ -191,7 +191,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       executeRequest,
       settings.retryDelay
     )
-    logger.debug(s"Policy: $policy is created")
+    logger.debug(s"Policy: $policy has been created")
   }
 }
 

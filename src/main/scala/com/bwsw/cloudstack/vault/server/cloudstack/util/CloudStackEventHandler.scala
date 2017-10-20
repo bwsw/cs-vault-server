@@ -51,7 +51,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       } match {
         case Success(x) => x
         case Failure(e: JsonParseException) =>
-          logger.warn("Can not to parse the record: \"" + s"$record" + "\", the empty CloudStackEvent will be returned")
+          logger.warn("Can not parse the record: \"" + s"$record" + "\", the empty CloudStackEvent will be returned")
           CloudStackEvent(None, None, None)
         case Failure(e: Throwable) =>
           logger.error(s"Exception $e occurred during the deserialization of the record: " + "\"" + s"$record" + "\"")
@@ -88,9 +88,9 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
     }
 
     /**
-      * Event must be handled when status of event is Completed.
+      * Event is processed when status of event is Completed.
       * The first event has a signature such as {"details":"...","status":"Completed","event":"..."},
-      * which does not contain an entityuuid field, so we must check entityuuid.
+      * which does not contain an entityuuid field, so we have to check entityuuid.
       */
     override def isDefinedAt(event: CloudStackEvent): Boolean = {
       if (event.entityuuid.isEmpty) {

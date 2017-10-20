@@ -194,7 +194,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
   }
 
   "createRequest" should "throw CloudStackEntityDoesNotExistException " +
-    "if ApacheCloudStackClientRequestRuntimeException with status 431 was thrown" in {
+    "if ApacheCloudStackClientRequestRuntimeException with 431 status code occurred" in {
     val createRequest = PrivateMethod[String]('createRequest)
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
