@@ -1,3 +1,21 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.common
 
 import java.util.UUID
@@ -31,7 +49,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     Await.result(Future(super.withFixture(test)), timeLimitPerTest)
   }
 
-  "LeaderLatch" should "create master node on ZK server" in {
+  "LeaderLatch" should "create master node on ZooKeeper server" in {
     val masterNode = newMasterNode
     val leaderLatchId = UUID.randomUUID().toString
 
@@ -52,7 +70,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "acquire leadership if there is only one participant of the master node" in {
+  it should "acquire leadership if there is only one participant of the master znode" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString
@@ -84,7 +102,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "return its ID if it acquires leadership" in {
+  it should "return its ID if LeaderLatch acquires leadership" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString
@@ -97,7 +115,7 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     leaderLatch.close()
   }
 
-  it should "delete its node from a server after closing" in {
+  it should "delete its znode from a server after close" in {
     val masterNode = newMasterNode
     val delay = 10
     val leaderLatchId = UUID.randomUUID().toString

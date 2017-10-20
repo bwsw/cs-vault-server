@@ -32,12 +32,12 @@ object ApplicationConfig {
   private val config = ConfigFactory.load()
 
   /**
-    * Gets the required string from the config file or throws
-    * an exception if the string is not found.
+    * Gets the required string parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to string
+    * @param path path to string parameter
     *
-    * @return string fetched by path
+    * @return string configuration parameter fetched by path
     */
   def getRequiredString(path: String): String = getRequiredString(config, path)
 
@@ -48,12 +48,12 @@ object ApplicationConfig {
   }
 
   /**
-    * Gets the required int from the config file or throws
-    * an exception if the int is not found.
+    * Gets the required int parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to int
+    * @param path path to int parameter
     *
-    * @return int fetched by path
+    * @return int configuration parameter fetched by path
     */
   def getRequiredInt(path: String): Int = getRequiredInt(config, path)
 
@@ -64,12 +64,12 @@ object ApplicationConfig {
   }
 
   /**
-    * Gets the required string list from the config file or throws
-    * an exception if the string list is not found.
+    * Gets the required string list parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to string list
+    * @param path path to string list parameter
     *
-    * @return string list fetched by path
+    * @return string list configuration parameter fetched by path
     */
   def getRequiredStringList(path: String): List[String] = getRequiredStringList(config, path)
 

@@ -18,7 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.vault.util
 
-import com.bettercloud.vault.VaultException
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
 import com.bwsw.cloudstack.vault.server.util.{HttpStatus, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
@@ -27,19 +26,19 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for creating tasks for interaction with Vault server with help of Vault library
+  * Class is responsible for tasks creation for interaction with Vault server with help of Vault library
   *
-  * @param settings contains the settings for interaction with Vault
+  * @param settings contains settings for interaction with Vault
   */
 class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private[vault] val endpoint: String = settings.endpoint
 
   /**
-    * Creates request for creating token with specified parameters
+    * Creates request for token creation with specified parameters
     *
     * @param tokenParameters parameters for new token
-    * @return task for creating token
+    * @return task for token creation
     * @throws VaultFatalException if response status is not expected.
     */
   def createTokenCreateRequest(tokenParameters: String):() => String = {
@@ -51,10 +50,10 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for revoking token with specified id
+    * Creates request for revocation of token with specified id
     *
-    * @param jsonTokenId id for token revoking
-    * @return task for revoking token
+    * @param jsonTokenId id for token revocation
+    * @return task for token revocation
     * @throws VaultFatalException if response status is not expected.
     */
   def createTokenRevokeRequest(jsonTokenId: String):() => String = {
@@ -66,11 +65,11 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for creating policy
+    * Creates request for policy creation
     *
     * @param policyName name of new Policy
     * @param policyJson json string with parameters of new Policy
-    * @return task for creating Policy
+    * @return task for Policy creation
     * @throws VaultFatalException if response status is not expected.
     */
   def createPolicyCreateRequest(policyName: String, policyJson: String):() => String = {
@@ -82,10 +81,10 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for deletion policy
+    * Creates request for policy deletion
     *
     * @param policyName name of Policy for deletion
-    * @return task for deletion Policy
+    * @return task for Policy deletion
     * @throws VaultFatalException if response status is not expected.
     */
   def createPolicyDeleteRequest(policyName: String):() => String = {
@@ -97,10 +96,10 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for getting lookup token
+    * Creates request to retrieve lookup token
     *
     * @param jsonTokenId json string with token id
-    * @return task for getting lookupToken
+    * @return task to retrieve lookupToken
     * @throws VaultFatalException if response status is not expected.
     */
   def createTokenLookupRequest(jsonTokenId: String):() => String = {
@@ -112,10 +111,10 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for deletion secret by specified path
+    * Creates request for deletion of secret by specified path
     *
     * @param pathToSecret path to secret
-    * @return task for deletion secret
+    * @return task for deletion of secret
     * @throws VaultFatalException if response status is not expected.
     */
   def createDeleteSecretRequest(pathToSecret: String):() => String = {
@@ -127,10 +126,10 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Creates request for getting secret by specified path
+    * Creates request to retrieve secret by specified path
     *
     * @param pathToRootSecret path to root secret
-    * @return task for getting json string of sub-paths of secrets
+    * @return task to retrieve json string of sub-paths of secrets
     * @throws VaultFatalException if response status is not expected.
     */
   def createGetSubSecretPathsRequest(pathToRootSecret: String):() => String = {
@@ -157,12 +156,12 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
   }
 
   /**
-    * Handles request execution
+    * Handles request
     */
   private def createRequest(request: () => RestResponse,
                             expectedResponseStatuses: List[Int],
                             requestDescription: String)(): String = {
-    logger.debug(s"Request was executed for: $requestDescription")
+    logger.debug(s"Request has been executed: $requestDescription")
     val response = Try {
       request()
     } match {
@@ -171,12 +170,12 @@ class VaultRestRequestCreator(settings: VaultRestRequestCreator.Settings) {
         logger.warn("Vault server is unavailable")
         throw e
       case Failure(e: Throwable) =>
-        logger.error(s"Request to vault server is not finish correctly, exception was thrown: $e")
+        logger.error(s"Request to Vault server does not complete successfully, exception occurred: $e")
         throw new VaultFatalException(e.toString)
     }
 
     if (!expectedResponseStatuses.contains(response.getStatus)) {
-      throw new VaultFatalException(s"Response status: ${response.getStatus} from vault server is not expected")
+      throw new VaultFatalException(s"Response status: ${response.getStatus} from Vault server is not expected")
     }
     new String(response.getBody)
   }

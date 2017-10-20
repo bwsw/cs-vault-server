@@ -33,9 +33,9 @@ import com.fasterxml.jackson.core.JsonParseException
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for handling cloudstack event.
+  * Class is responsible for processing CloudStack events.
   *
-  * @param controller allows for logic executing from event
+  * @param controller enables logic execution from event
   */
 class CloudStackEventHandler(controller: CloudStackVaultController)
                             (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
@@ -51,10 +51,10 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       } match {
         case Success(x) => x
         case Failure(e: JsonParseException) =>
-          logger.warn("Can not to parse record json, the empty CloudStackEvent will be return")
+          logger.warn("Can not parse the record: \"" + s"$record" + "\", the empty CloudStackEvent will be returned")
           CloudStackEvent(None, None, None)
         case Failure(e: Throwable) =>
-          logger.error("Exception was thrown while record was being deserialized")
+          logger.error(s"Exception $e occurred during the deserialization of the record: " + "\"" + s"$record" + "\"")
           throw e
       }
     }.toSet.collect(handleEvent)
@@ -87,15 +87,20 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
       }
     }
 
+    /**
+      * Event is processed when status of event is Completed.
+      * The first event has a signature such as {"details":"...","status":"Completed","event":"..."},
+      * which does not contain an entityuuid field, so we have to check entityuuid.
+      */
     override def isDefinedAt(event: CloudStackEvent): Boolean = {
       if (event.entityuuid.isEmpty) {
         false
       } else {
         event.action match {
           case Some(action) if action.oneOf(AccountCreate, AccountDelete, UserCreate, VMCreate, VMDelete) =>
-            event.status.getOrElse(Other) == CloudStackEvent.Status.Completed                              //Event must be handle when status of event Completed
-          case _ =>                                                                                        //but first event have a signature such as {"details":"...","status":"Completed","event":"..."}
-            false                                                                                          //and don't have an entityuuid, so we must to check entityuuid.
+            event.status.getOrElse(Other) == CloudStackEvent.Status.Completed
+          case _ =>
+            false
         }
       }
     }

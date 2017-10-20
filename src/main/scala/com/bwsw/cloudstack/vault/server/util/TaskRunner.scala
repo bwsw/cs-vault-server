@@ -27,7 +27,7 @@ object TaskRunner {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
-    * Re-runs task while not it will be successfully executed or critical exception will be thrown
+    * Runs the task until it successfully completes or critical exception is thrown
     *
     * @param task task for execution
     * @param retryDelay delay between task restarts
@@ -44,7 +44,7 @@ object TaskRunner {
         logger.error(s"The critical exception: ${e.getMessage} was thrown")
         throw e
       case Failure(e) =>
-        logger.warn(s"The task execute with an exception: ${e.getMessage}, restart function after $retryDelay seconds")
+        logger.warn(s"The task execute with an exception: ${e.getMessage}, the task will restart in $retryDelay seconds")
         Thread.sleep(retryDelay)
         tryRunUntilSuccess[T](task, retryDelay)
     }

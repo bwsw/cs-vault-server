@@ -1,3 +1,21 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
 import java.net.NoRouteToHostException
@@ -11,9 +29,6 @@ import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-/**
-  * Created by medvedev_vv on 31.08.17.
-  */
 class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite with PrivateMethodTester {
 
   //Positive tests
@@ -25,7 +40,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
-    val tagResponse = cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     assert(tagResponse == expectedResponse)
   }
 
@@ -37,7 +52,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
-    val tagResponse = cloudStackTaskCreator.createGetTagTask(Tag.Type.UserVM, vmId)()
+    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.UserVM, vmId)()
     assert(tagResponse == expectedResponse)
   }
 
@@ -151,8 +166,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     assert(requestTask() == response)
   }
 
-  "createRequest" should "re-throw CloudStackFatalException " +
-    "if non-ApacheCloudStackClientRuntimeException was thrown by cloudStack client " in {
+  "createRequest" should "throw CloudStackFatalException " +
+    "if non-ApacheCloudStackClientRuntimeException was thrown by CloudStack client " in {
     val createRequest = PrivateMethod[String]('createRequest)
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
@@ -178,8 +193,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createRequest" should "re-throw CloudStackEntityDoesNotExistException " +
-    "if ApacheCloudStackClientRequestRuntimeException which includes response status 431 was thrown" in {
+  "createRequest" should "throw CloudStackEntityDoesNotExistException " +
+    "if ApacheCloudStackClientRequestRuntimeException with 431 status code occurred" in {
     val createRequest = PrivateMethod[String]('createRequest)
 
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
@@ -205,7 +220,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createRequest" should "apacheCloudStackClient is changed after NoRouteToHostException" in {
+  "createRequest" should "change apacheCloudStackClient after NoRouteToHostException" in {
     var checkedPath = List.empty[String]
 
     val urlFirstClient = "http://127.0.0.1:8080/client/api/1"
@@ -265,8 +280,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
   }
 
   //Negative tests
-  "createGetTagTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the exception is not swallowed" in {
+  "createGetTagTask" should "not swallow ApacheCloudStackClientRuntimeException which includes NoRouteToHostException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 
@@ -281,12 +295,12 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     }
   }
 
-  "createGetTagTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
+  "createGetTagTask" should "throw CloudStackFatalException if ApacheCloudStackClient throws an exception of type " +
+    "that is different from ApacheCloudStackClientRuntimeException(NoRouteToHostException)" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 
@@ -301,12 +315,11 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackFatalException] {
-      cloudStackTaskCreator.createGetTagTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
     }
   }
 
-  "createGetEntityTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the exception is not swallowed" in {
+  "createGetEntityTask" should "not swallow ApacheCloudStackClientRuntimeException which includes NoRouteToHostException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 
@@ -325,8 +338,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createGetEntityTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
+  "createGetEntityTask" should "throw CloudStackFatalException if ApacheCloudStackClient throws an exception of type " +
+    "that is different from ApacheCloudStackClientRuntimeException(NoRouteToHostException)" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 
@@ -345,8 +358,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourceTagTask" should "if ApacheCloudStackClient throw ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the exception is not swallowed" in {
+  "createSetResourceTagTask" should "not swallow ApacheCloudStackClientRuntimeException which includes NoRouteToHostException" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 
@@ -365,8 +377,8 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
   }
 
-  "createSetResourceTagTask" should "if ApacheCloudStackClient throws an exception of type that is different from ApacheCloudStackClientRuntimeException which " +
-    "includes NoRouteToHostException, the CloudStackFatalException will be thrown" in {
+  "createSetResourceTagTask" should "throw CloudStackFatalException if ApacheCloudStackClient throws an exception of type " +
+    "that is different from ApacheCloudStackClientRuntimeException(NoRouteToHostException)" in {
     val cloudStackTaskCreator = new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
       override val endpointQueue = getEndpointQueue(cloudStackTaskCreatorSettings.endpoints.toList)
 

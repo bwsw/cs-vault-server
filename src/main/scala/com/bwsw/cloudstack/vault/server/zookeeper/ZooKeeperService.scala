@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for launch task which are created by ZooKeeperTaskCreator.
+  * Class is responsible for interaction with ZooKeeper server.
   *
-  * @param settings contains the settings for interaction with ZooKeeper
+  * @param settings contains settings for interaction with ZooKeeper
   */
 class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -38,12 +38,12 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   initCuratorClient()
 
   /**
-    * Creates zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Creates znode.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
-    * @param data String with data of zNode
-    * @throws ZooKeeperFatalException if zNode already does exist.
+    * @param path String with path of znode
+    * @param data String with data of znode
+    * @throws ZooKeeperFatalException if znode already exists.
     */
   def createNodeWithData(path: String, data: String): Unit = {
     logger.debug(s"createNode with path: $path")
@@ -64,13 +64,13 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Gets data from zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Retrieves data from znode.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path to zNode data
+    * @param path String with path to znode data
     *
-    * @return Data as string stored in zNode if zNode exist
-    *         None if zNode does not exist
+    * @return Some(data) if znode exists
+    *         None if znode does not exist
     */
   def getNodeData(path: String): Option[String] = {
     logger.debug(s"getNodeData from path: $path")
@@ -82,11 +82,11 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Launches task for deletion data from zNode in ZooKeeper server.
-    * Will be waiting if zookeeper server is unavailable.
+    * Deletes znode by specified path.
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
-    * @throws ZooKeeperFatalException if node does not exist
+    * @param path String with path of znode
+    * @throws ZooKeeperFatalException if znode does not exist
     */
   def deleteNode(path: String): Unit = {
     logger.debug(s"deleteNode with path: $path")
@@ -102,12 +102,12 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   }
 
   /**
-    * Launches task for check zNode existing
-    * Will be waiting if zookeeper server is unavailable.
+    * Checks znode existing
+    * Waiting if ZooKeeper server is unavailable.
     *
-    * @param path String with path of zNode
+    * @param path String with path of znode
     *
-    * @return boolean flag on the existence zNode
+    * @return boolean flag on the existence znode
     */
   def doesNodeExist(path: String): Boolean = {
     logger.debug(s"doesNodeExist by path: $path")

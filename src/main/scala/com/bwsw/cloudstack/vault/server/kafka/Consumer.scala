@@ -28,11 +28,11 @@ import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 /**
-  * Class is responsible for getting events from Kafka topic
+  * Class is responsible for events extraction from Kafka topic
   */
 class Consumer[T](val brokers: String,
                   val topic: String,
@@ -67,7 +67,7 @@ class Consumer[T](val brokers: String,
   }
 
   def process() {
-    logger.debug(s"Waiting for records that consumed from kafka for $pollTimeout milliseconds\n")
+    logger.debug(s"Waiting for records consumed from kafka for $pollTimeout milliseconds\n")
     val records = consumer.poll(pollTimeout)
 
     val futureEvents = eventHandler.handleEventsFromRecords(records.asScala.map(_.value()).toList)
@@ -86,18 +86,18 @@ class Consumer[T](val brokers: String,
         case ProcessingEventResult(event, result) =>
           result.onComplete {
             case Success(x) =>
-              logger.info(s"The event: $event was successful")
+              logger.info(s"The event: $event has been processed")
               eventLatch.succeed()
             case Failure(e: FatalException) =>
               logger.warn("An exception: \"" + s"${e.getMessage}" +
                 "\" occurred during the event: \"" + s"$event" + "\" processing is fatal, " +
-                "the event will be restarted after 2 seconds")
+                "the processing of event will be restarted after 2 seconds")
               Thread.sleep(2000)
               val restartedEvent = eventHandler.restartEvent(event)
               checkEvent(restartedEvent)
             case Failure(e: CriticalException) =>
               logger.warn("An exception: \"" + s"${e.getMessage}" +
-                "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal and will be ignored")
+                "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal, so it is ignored")
               eventLatch.succeed()
             case Failure(e: Throwable) =>
               logger.error(s"Unhandled exception was thrown: $e")

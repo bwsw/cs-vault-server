@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for start Consumer with specified configuration
+  * Class is responsible for Consumer start with specified configuration
   */
 class ConsumerManager[T](eventHandler: EventHandler[T],
                          settings: ConsumerManager.Settings) {
@@ -43,7 +43,7 @@ class ConsumerManager[T](eventHandler: EventHandler[T],
     } match {
       case Success(x) => x
       case Failure(e: Throwable) =>
-        logger.error(s"exception: ${e.getMessage} was thrown in consumer.process()")
+        logger.error(s"exception: ${e.getMessage} was thrown by consumer")
         consumer.shutdown()
     }
   }

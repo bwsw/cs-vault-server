@@ -25,27 +25,27 @@ import com.fasterxml.jackson.annotation.JsonProperty
 private[vault] object Token {
 
 /**
-  * Use for body in token creating request
+  * Class is used to serialize a request to create token
   *
-  * @param policies names of policies from vault server
+  * @param policies names of policies from Vault server
   *
-  * @param period time of life for token in seconds
+  * @param period token lifetime in seconds
   */
   case class TokenInitParameters(@JsonProperty("no_default_policy") noDefaultPolicy: Boolean,
                                  policies: List[String],
                                  period: Int)
 
 /**
-  * Use for deserialize body in token create response
+  * Class is used to deserialize a token creation response
   *
-  * @param id id of token
+  * @param id token id
   */
   case class TokenId(@JsonProperty("client_token") id: UUID)
 
 /**
-  * Use for deserialize body in token lookup response
+  * Class is used to deserialize a token lookup response
   *
-  * @param policies names of policies from vault server
+  * @param policies names of policies from Vault server
   */
   case class TokenData(policies: List[String])
 

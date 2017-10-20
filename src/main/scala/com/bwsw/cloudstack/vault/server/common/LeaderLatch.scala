@@ -36,7 +36,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   private var isClosed = false
 
   private def createCuratorClient(): CuratorFramework = {
-    logger.debug(s"Create a curator client (connection: $zkServer).")
+    logger.debug(s"Create a curator client (connection: $zkServer)")
     val curatorClient = CuratorFrameworkFactory.newClient(zkServer, new ExponentialBackoffRetry(1000, 3))
     curatorClient.start()
     curatorClient.getZookeeperClient.blockUntilConnectedOrTimedOut()
@@ -44,7 +44,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   }
 
   private def createMasterNode(): Any = {
-    logger.debug(s"Create a master node: $masterNode if it doesn't exist.")
+    logger.debug(s"Create a master znode: $masterNode if it doesn't exist")
     val doesPathExist = Option(curatorClient.checkExists().forPath(masterNode))
     if (doesPathExist.isEmpty) curatorClient.create.creatingParentsIfNeeded().forPath(masterNode)
   }
@@ -57,16 +57,16 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
 
   def acquireLeadership(delay: Long): Unit = {
     while (!hasLeadership && !isClosed) {
-      logger.debug("Waiting until the leader latch acquires leadership.")
+      logger.debug("Waiting until the leader latch acquires leadership")
       Thread.sleep(delay)
     }
   }
 
   def getLeaderInfo(): String = {
-    logger.debug("Get info of a leader.")
+    logger.debug("Get leader info")
     var leaderInfo = getLeaderId()
     while (leaderInfo == "") {
-      logger.debug("Waiting until the leader latch gets a leader info.")
+      logger.debug("Waiting until the leader latch gets leader info")
       leaderInfo = getLeaderId()
       Thread.sleep(50)
     }
@@ -80,11 +80,11 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
 
   @tailrec
   private def getLeaderId(): String = {
-    logger.debug("Try to get a leader id.")
+    logger.debug("Try to get a leader id")
     Try(leaderLatch.getLeader.getId) match {
       case Success(leaderId) => leaderId
       case Failure(_: KeeperException) =>
-        logger.debug("Waiting until the leader latch gets a leader id.")
+        logger.debug("Waiting until the leader latch gets leader id")
         Thread.sleep(50)
         getLeaderId()
       case Failure(e) => throw e
@@ -92,7 +92,7 @@ class LeaderLatch(zkServer: String, masterNode: String, id: String) {
   }
 
   def close(): Unit = {
-    logger.info("Close a leader latch if it's started.")
+    logger.info("Close a leader latch if it has started")
     if (isStarted) leaderLatch.close()
     curatorClient.close()
     isClosed = true

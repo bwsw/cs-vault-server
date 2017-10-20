@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Class is responsible for launching application.
-  * It creating all services needed to start application.
+  * Class is responsible for application launch.
+  * It creates all services needed to start application.
   * Also it provides support the Leader-Follower registration with help ZooKeeper + Curator
   */
 object Launcher {
