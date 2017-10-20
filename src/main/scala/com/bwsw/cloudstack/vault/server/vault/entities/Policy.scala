@@ -1,12 +1,26 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.vault.entities
 
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
-
-/**
-  * Created by medvedev_vv on 08.08.17.
-  */
 
 object Policy {
 
@@ -27,34 +41,34 @@ object Policy {
     }
   }
 
-  def getVmReadPolicy(account: UUID, vm: UUID): Policy = {
+  def createVmReadPolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
-      path = s"secret/cs/vms/$vm",
+      path = s"$path$vm*",
       acl = Policy.ACL.Read
     )
   }
 
-  def getVmWritePolicy(account: UUID, vm: UUID): Policy = {
+  def createVmWritePolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
-      path = s"secret/cs/vms/$vm",
+      path = s"$path$vm*",
       acl = Policy.ACL.Write
     )
   }
 
-  def createAccountReadPolicy(account: UUID): Policy = {
+  def createAccountReadPolicy(account: UUID, path: String): Policy = {
     new Policy(
-      name = s"acl_${account}_ro",
-      path = s"secret/cs/accounts/$account*",
+      name = s"acl_${account}_ro*",
+      path = s"$path$account*",
       acl = Policy.ACL.Read
     )
   }
 
-  def createAccountWritePolicy(account: UUID): Policy = {
+  def createAccountWritePolicy(account: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"secret/cs/accounts/$account",
+      path = s"$path$account*",
       acl = Policy.ACL.Write
     )
   }

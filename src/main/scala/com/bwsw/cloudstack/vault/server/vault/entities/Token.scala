@@ -1,42 +1,56 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.vault.entities
 
 import java.util.UUID
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-/**
-  * Created by medvedev_vv on 09.08.17.
-  */
-object Token {
+private[vault] object Token {
 
 /**
-  * Use for body in token creating request
+  * Class is used to serialize a request to create token
   *
-  * @param policies names of policies from vault server
+  * @param policies names of policies from Vault server
   *
-  * @param period time of life for token in seconds
+  * @param period token lifetime in seconds
   */
-  case class TokenInitParameters(policies: List[String], period: Int)
+  case class TokenInitParameters(@JsonProperty("no_default_policy") noDefaultPolicy: Boolean,
+                                 policies: List[String],
+                                 period: Int)
 
 /**
-  * Use for deserialize body in token create response
+  * Class is used to deserialize a token creation response
   *
-  * @param id id of token
+  * @param id token id
   */
   case class TokenId(@JsonProperty("client_token") id: UUID)
 
 /**
-  * Use for deserialize body in token lookup response
+  * Class is used to deserialize a token lookup response
   *
-  * @param policies names of policies from vault server
-  *
-  * @param path path to secret
+  * @param policies names of policies from Vault server
   */
-  case class TokenData(policies: List[String],
-                       @JsonProperty("path") path: String)
+  case class TokenData(policies: List[String])
 
 }
 
-case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
+private[vault] case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
 
-case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)
+private[vault] case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)

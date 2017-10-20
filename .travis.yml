@@ -1,0 +1,17 @@
+
+language: scala
+jdk: oraclejdk8
+scala:
+   - 2.12.2
+
+script:
+ - sbt clean coverage test
+ - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker build -t cs-vault-server:latest .;
+      docker images;
+      docker tag cs-vault-server:latest bwsw/cs-vault-server:latest;
+      docker push $DOCKER_USERNAME/cs-vault-server:latest;
+    fi
+
+after_success: "sbt coverageReport coveralls"

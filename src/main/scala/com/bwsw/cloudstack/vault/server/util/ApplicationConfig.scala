@@ -1,14 +1,30 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements. See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership. The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package com.bwsw.cloudstack.vault.server.util
 
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}
-import com.typesafe.scalalogging.StrictLogging
+import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
-/**
-  * Created by medvedev_vv on 28.07.17.
-  */
-object ApplicationConfig extends StrictLogging {
+object ApplicationConfig {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
     * Application config object.
@@ -16,12 +32,12 @@ object ApplicationConfig extends StrictLogging {
   private val config = ConfigFactory.load()
 
   /**
-    * Gets the required string from the config file or throws
-    * an exception if the string is not found.
+    * Gets the required string parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to string
+    * @param path path to string parameter
     *
-    * @return string fetched by path
+    * @return string configuration parameter fetched by path
     */
   def getRequiredString(path: String): String = getRequiredString(config, path)
 
@@ -32,12 +48,12 @@ object ApplicationConfig extends StrictLogging {
   }
 
   /**
-    * Gets the required int from the config file or throws
-    * an exception if the int is not found.
+    * Gets the required int parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to int
+    * @param path path to int parameter
     *
-    * @return int fetched by path
+    * @return int configuration parameter fetched by path
     */
   def getRequiredInt(path: String): Int = getRequiredInt(config, path)
 
@@ -48,12 +64,12 @@ object ApplicationConfig extends StrictLogging {
   }
 
   /**
-    * Gets the required string list from the config file or throws
-    * an exception if the string list is not found.
+    * Gets the required string list parameter from the config file or throws
+    * an exception if the configuration parameter name is not found
     *
-    * @param path path to string list
+    * @param path path to string list parameter
     *
-    * @return string list fetched by path
+    * @return string list configuration parameter fetched by path
     */
   def getRequiredStringList(path: String): List[String] = getRequiredStringList(config, path)
 
