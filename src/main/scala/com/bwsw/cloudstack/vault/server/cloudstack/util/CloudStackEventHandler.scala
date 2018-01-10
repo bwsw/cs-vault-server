@@ -81,9 +81,6 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
         case AccountDelete =>
           logger.info(s"handle AccountDelete event: $event")
           ProcessingEventResult(event, Future(controller.handleAccountDelete(event.entityuuid.get)))
-        case UserCreate =>
-          logger.info(s"handle UserCreate event: $event")
-          ProcessingEventResult(event, Future(controller.handleUserCreate(event.entityuuid.get)))
       }
     }
 
@@ -97,7 +94,7 @@ class CloudStackEventHandler(controller: CloudStackVaultController)
         false
       } else {
         event.action match {
-          case Some(action) if action.oneOf(AccountCreate, AccountDelete, UserCreate, VMCreate, VMDelete) =>
+          case Some(action) if action.oneOf(AccountCreate, AccountDelete, VMCreate, VMDelete) =>
             event.status.getOrElse(Other) == CloudStackEvent.Status.Completed
           case _ =>
             false

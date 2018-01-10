@@ -50,11 +50,11 @@ object Tag {
   sealed trait Type extends Product with Serializable
 
   object Type {
-    case object User      extends Type
+    case object Account   extends Type
     case object UserVM    extends Type
 
     def toString(x: Type): String = x match {
-      case  Type.User       => "User"
+      case  Type.Account    => "Account"
       case  Type.UserVM     => "UserVM"
     }
   }

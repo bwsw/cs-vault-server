@@ -73,44 +73,6 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   /**
-    * Processes tokens creation for user account.
-    * For details see part "User creation event processing" in docs/logic.md
-    *
-    * @param userId user id in CloudStack server
-    */
-  def handleUserCreate(userId: UUID): Unit = {
-    logger.debug(s"handleUserCreate(userId: $userId)")
-
-    val accountId = cloudStackService.getAccountByUser(userId)
-    val usersIds = cloudStackService.getUsersByAccount(accountId)
-
-    val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
-
-    val newVaultTokenTagKeyList = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
-      case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
-    }
-
-    val newVaultKeyspaceTagKeyList = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
-      case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
-        tagKey match {
-          case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
-          case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
-        }
-    }
-
-    val completeVaultTags = currentVaultTags ++ newVaultTokenTagKeyList ++ newVaultKeyspaceTagKeyList
-
-    if (currentVaultTags.isEmpty) {
-      usersIds.foreach { id =>
-        cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
-      }
-    } else {
-      cloudStackService.setResourceTags(userId, Tag.Type.User, completeVaultTags)
-    }
-    logger.debug(s"User creation has been processed, userId: $userId)")
-  }
-
-  /**
     * Processes tokens creation for account.
     * For details see part "Account creation event processing" in docs/logic.md
     *
@@ -119,32 +81,36 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleAccountCreate(accountId: UUID): Unit = {
     logger.debug(s"handleAccountCreate(accountId: $accountId)")
 
-    val usersIds = cloudStackService.getUsersByAccount(accountId)
+    if(cloudStackService.doesAccountExist(accountId)) {
+      val policyList = List(
+        Policy.createAccountReadPolicy(accountId, settings.accountSecretPath),
+        Policy.createAccountWritePolicy(accountId, settings.accountSecretPath)
+      )
 
-    val currentVaultTags = getCurrentVaultTagsOfUsers(usersIds)
-
-    if (currentVaultTags.isEmpty) {
-      val newVaultTokenTags = Set(Tag.Key.VaultRO, Tag.Key.VaultRW).collect {
-        case tagKey if !currentVaultTags.exists(_.key == tagKey) => createMissingAccountTokenTag(accountId, tagKey)
-      }
-
-      if (usersIds.nonEmpty) {
-        val newVaultKeyspaceTags = Set(Tag.Key.VaultHost, Tag.Key.VaultPrefix).collect {
-          case tagKey if !currentVaultTags.exists(_.key == tagKey) =>
-            tagKey match {
-              case Tag.Key.VaultHost => Tag.createTag(Tag.Key.VaultHost, vaultApiPath)
-              case Tag.Key.VaultPrefix => Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
-            }
+      val vaultTokenTags = policyList.map { x =>
+        val pathToData = createTokenEntityNodePath(accountId.toString, accountEntityName, getTagKeyByPolicyACL(x.acl))
+        zooKeeperService.getNodeData(pathToData) match {
+          case Some(token) =>
+            Tag.createTag(getTagKeyByPolicyACL(x.acl), token)
+          case None =>
+            val token = vaultService.createToken(x :: Nil)
+            val tag = Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+            writeTokenToZooKeeperNode(pathToData, token)
+            tag
         }
-        val completeVaultTags = newVaultTokenTags ++ newVaultKeyspaceTags
+      }.toSet
 
-        usersIds.foreach { id =>
-          cloudStackService.setResourceTags(id, Tag.Type.User, completeVaultTags)
-        }
-      }
+      val vaultKeyspaceTags = Set(
+        Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
+        Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
+      )
+
+      cloudStackService.setResourceTags(accountId, Tag.Type.Account, vaultTokenTags ++ vaultKeyspaceTags)
+
+      logger.debug(s"Account creation has been processed, accountId: $accountId)")
+    } else {
+      logger.warn(s"Account with id: $accountId does not exist")
     }
-
-    logger.debug(s"Account creation has been processed, accountId: $accountId)")
   }
 
   /**
@@ -156,7 +122,10 @@ class CloudStackVaultController(vaultService: VaultService,
   def handleVmCreate(vmId: UUID): Unit = {
     logger.debug(s"handleVmCreate(vmId: $vmId)")
 
-    val accountId = cloudStackService.getVmOwnerAccount(vmId)
+    val accountId = cloudStackService.getVmOwnerAccount(vmId) //here is thrown CloudStackEntityDoesNotExistException if vm does not exist.
+                                                              //If it method will not be used, then you should use
+                                                              //doesVirtualMachineExist method for checking vm existence before
+                                                              //vm token creation
 
     val policyList = List(
       Policy.createVmReadPolicy(accountId, vmId, settings.vmSecretPath),
@@ -195,17 +164,6 @@ class CloudStackVaultController(vaultService: VaultService,
     }
   }
 
-  /**
-    * Retrieves tokens’ tags for users
-    */
-  private def getCurrentVaultTagsOfUsers(usersIds: List[UUID]): Set[Tag] = {
-
-    usersIds.flatMap { userId =>
-      cloudStackService.getUserTags(userId).filter { tag =>
-        tag.key.oneOf(Tag.Key.VaultRO, Tag.Key.VaultRW, Tag.Key.VaultHost, Tag.Key.VaultPrefix)
-      }
-    }.toSet
-  }
 
   /**
     * Create missing token tags after creating tokens in Vault or retrieving them from ZooKeeper node

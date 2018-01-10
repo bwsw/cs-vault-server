@@ -32,15 +32,15 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
 class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite with PrivateMethodTester {
 
   //Positive tests
-  "createGetTagTask" should "create task which returns response with user tags" in {
+  "createGetTagTask" should "create task which returns response with account tags" in {
     val key = Tag.Key.VaultRW
     val value = "value1"
-    val expectedRequest = Request.getUserTagsRequest(userId)
+    val expectedRequest = Request.getAccountTagsRequest(accountId)
     val expectedResponse = Response.getTagResponseJson(key, value)
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
 
-    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
+    val tagResponse = cloudStackTaskCreator.createGetTagsTask(Tag.Type.Account, accountId)()
     assert(tagResponse == expectedResponse)
   }
 
@@ -58,7 +58,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
 
   "createGetEntityTask" should "create task which returns response with accounts by id" in {
     val expectedRequest = Request.getAccountRequest(accountId)
-    val expectedResponse = Response.getAccountResponseJson(accountId.toString, userId.toString)
+    val expectedResponse = Response.getAccountResponseJson(accountId.toString)
     val command = Command.ListAccounts
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
@@ -81,22 +81,10 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     assert(vmResponse == expectedResponse)
   }
 
-  "createGetEntityTask" should "create task which returns response with users by id" in {
-    val expectedRequest = Request.getUserRequest(userId)
-    val expectedResponse = Response.getUserResponseJson(userId.toString, accountId.toString)
-    val command = Command.ListUsers
-
-    val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
-
-    val userResponse = cloudStackTaskCreator.createGetEntityTask(command, Map(cloudStackTaskCreator.idParameter -> userId.toString))()
-
-    assert(userResponse == expectedResponse)
-  }
-
   "createGetEntityTask" should "create task which returns response with accounts by name" in {
     val accountName = "admin"
     val expectedRequest = Request.getAccountRequestByName(accountName, domainId.toString)
-    val expectedResponse = Response.getAccountResponseJson(accountId.toString, userId.toString)
+    val expectedResponse = Response.getAccountResponseJson(accountId.toString)
     val command = Command.ListAccounts
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, expectedResponse)
@@ -124,17 +112,17 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     assert(createTagResponse.isInstanceOf[Unit])
   }
 
-  "createSetResourceTagTask" should "create task which sets User tags" in {
+  "createSetResourceTagTask" should "create task which sets Account tags" in {
     val tagsTuple: Tuple3[Tag, Tag, Tag] = (
       Tag(Tag.Key.VaultRO, "value1"),
       Tag(Tag.Key.VaultRW, "value2"),
       Tag(Tag.Key.VaultRO, "value3")
     )
-    val expectedRequest = Request.getSetTagsRequest(userId, Tag.Type.User, tagsTuple)
+    val expectedRequest = Request.getSetTagsRequest(accountId, Tag.Type.Account, tagsTuple)
 
     val cloudStackTaskCreator = getMockCloudStackTaskCreator(expectedRequest, "")
 
-    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(tagsTuple._1, tagsTuple._2, tagsTuple._3))()
+    val createTagResponse = cloudStackTaskCreator.createSetResourceTagsTask(accountId, Tag.Type.Account, Set(tagsTuple._1, tagsTuple._2, tagsTuple._3))()
 
     assert(createTagResponse.isInstanceOf[Unit])
   }
@@ -295,7 +283,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.Account, accountId)()
     }
   }
 
@@ -315,7 +303,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackFatalException] {
-      cloudStackTaskCreator.createGetTagsTask(Tag.Type.User, userId)()
+      cloudStackTaskCreator.createGetTagsTask(Tag.Type.Account, accountId)()
     }
   }
 
@@ -373,7 +361,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[ApacheCloudStackClientRuntimeException] {
-      cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(Tag(Tag.Key.VaultRO, "value")))()
+      cloudStackTaskCreator.createSetResourceTagsTask(accountId, Tag.Type.Account, Set(Tag(Tag.Key.VaultRO, "value")))()
     }
   }
 
@@ -393,7 +381,7 @@ class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTes
     }
 
     assertThrows[CloudStackFatalException] {
-      cloudStackTaskCreator.createSetResourceTagsTask(userId, Tag.Type.User, Set(Tag(Tag.Key.VaultRO, "value")))()
+      cloudStackTaskCreator.createSetResourceTagsTask(accountId, Tag.Type.Account, Set(Tag(Tag.Key.VaultRO, "value")))()
     }
   }
 }

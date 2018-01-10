@@ -7,12 +7,12 @@ Also see:
 # cs-vault-server
 CloudStack Vault Plugin Server Handler
 
-# Technical
+## Technical
 
 [Travis Build History](https://travis-ci.org/bwsw/cs-vault-server/builds)
 
-Quick start
------------
+## Quick start
+
 To start a server in Docker container you should:
 
 1. Provide a file 'variables.env' containing the following required variables:
@@ -46,3 +46,6 @@ If you need to create your own docker container with Travis help in DockerHub af
 2. set the following environment variables in the Travis-CI: 'DOCKER_USERNAME', 'DOCKER_PASSWORD',
    'DOCKER_USERNAME' it is Docker Hub user name; 'DOCKER_PASSWORD' it is Docker Hub password
    
+## Versioning
+
+Server has the same version as Apache CloudStack server

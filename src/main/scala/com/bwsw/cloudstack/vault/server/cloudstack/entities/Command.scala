@@ -22,14 +22,12 @@ sealed trait Command extends Product with Serializable
 
 object Command {
   case object ListVirtualMachines     extends Command
-  case object ListUsers               extends Command
   case object ListAccounts            extends Command
   case object ListTags                extends Command
   case object CreateTags              extends Command
 
   def fromString: PartialFunction[String, Command] = {
     case "listVirtualMachines"           => Command.ListVirtualMachines
-    case "listUsers"                     => Command.ListUsers
     case "listAccounts"                  => Command.ListAccounts
     case "listTags"                      => Command.ListTags
     case "createTags"                    => Command.CreateTags
@@ -37,7 +35,6 @@ object Command {
 
   def toString(x: Command): String = x match {
     case Command.ListVirtualMachines     => "listVirtualMachines"
-    case Command.ListUsers               => "listUsers"
     case Command.ListAccounts            => "listAccounts"
     case Command.ListTags                => "listTags"
     case Command.CreateTags              => "createTags"
