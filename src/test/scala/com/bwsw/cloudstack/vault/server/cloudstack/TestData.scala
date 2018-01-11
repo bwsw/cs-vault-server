@@ -33,14 +33,6 @@ trait TestData {
   val vmId: UUID = UUID.randomUUID()
   val domainId: UUID = UUID.randomUUID()
 
-
-  val listAccountsCommand = "listAccounts"
-  val listVms = "listVirtualMachines"
-
-  val vmUserResourceType = "UserVM"
-  val idParameter = "id"
-  val nameParameter = "name"
-
   object Response {
     def getTagResponseJson(key: Tag.Key, value: String): String = "{\"listtagsresponse\":{\"count\":1,\"tag\":[{\"key\":\"" + s"${Tag.Key.toString(key)}" + "\",\"value\":\"" + s"$value" + "\"}]}}"
     def getAccountResponseJson(account: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"0399d562-a273-11e6-88da-6557869a736f\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
@@ -48,7 +40,6 @@ trait TestData {
 
     def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
     def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
-    def getResponseWithEmptyUserList = "{\"listusersresponse\":{}}"
   }
 
   object Request {
