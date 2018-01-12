@@ -29,36 +29,25 @@ import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 import scala.util.Random
 
 trait TestData {
-  val userId: UUID = UUID.randomUUID()
   val accountId: UUID = UUID.randomUUID()
   val vmId: UUID = UUID.randomUUID()
   val domainId: UUID = UUID.randomUUID()
 
-
-  val listUsersCommand = "listUsers"
-  val listVms = "listVirtualMachines"
-
-  val vmUserResourceType = "UserVM"
-  val idParameter = "id"
-  val nameParameter = "name"
-
   object Response {
     def getTagResponseJson(key: Tag.Key, value: String): String = "{\"listtagsresponse\":{\"count\":1,\"tag\":[{\"key\":\"" + s"${Tag.Key.toString(key)}" + "\",\"value\":\"" + s"$value" + "\"}]}}"
-    def getAccountResponseJson(account: String, user: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"" + s"$user" + "\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
-    def getUserResponseJson(user: String, account: String): String = "{\"listusersresponse\":{\"count\":1,\"user\":[{\"id\":\"" + s"$user" + "\", \"accountid\":\" " + s"$account" + "\"}]}}"
+    def getAccountResponseJson(account: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"0399d562-a273-11e6-88da-6557869a736f\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
     def getVmResponseJson(vm: String, accountName: String, domain: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\",\"domainid\":\"" + s"$domain" + "\"}]}}"
 
     def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
     def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
-    def getResponseWithEmptyUserList = "{\"listusersresponse\":{}}"
   }
 
   object Request {
-    def getUserTagsRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
+    def getAccountTagsRequest(accountId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
       .addParameter("response", "json")
-      .addParameter("resourcetype", "User")
+      .addParameter("resourcetype", "Account")
       .addParameter("listAll", "true")
-      .addParameter("resourceid", userId)
+      .addParameter("resourceid", accountId)
 
     def getVmTagsRequest(vmId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
       .addParameter("response", "json")
@@ -81,11 +70,6 @@ trait TestData {
       .addParameter("response", "json")
       .addParameter("listAll", "true")
       .addParameter("id", vmId)
-
-    def getUserRequest(userId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listUsers")
-      .addParameter("response", "json")
-      .addParameter("listAll", "true")
-      .addParameter("id", userId)
 
     def getSetTagsRequest(resourceId: UUID, resourceType: Tag.Type, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
       val request = new ApacheCloudStackRequest("createTags")

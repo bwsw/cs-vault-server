@@ -37,12 +37,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     var actualCreationAccountId: UUID = null
     var actualCreationVmId: UUID = null
-    var actualCreationUserId: UUID = null
     var actualDeletionAccountId: UUID = null
     var actualDeletionVmId: UUID = null
 
     val expectedCreationAccountId = accountId
-    val expectedCreationUserId = userId
     val expectedCreationVmId = vmId
     val expectedDeletionAccountId = UUID.randomUUID()
     val expectedDeletionVmId = UUID.randomUUID()
@@ -50,7 +48,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val records: List[String] = List(
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedDeletionAccountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"VM.DESTROY\",\"entityuuid\":\"" + s"$expectedDeletionVmId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
-      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"USER.CREATE\",\"entityuuid\":\"" + s"$expectedCreationUserId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"VM.CREATE\",\"entityuuid\":\"" + s"$expectedCreationVmId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.CREATE\",\"entityuuid\":\"" + s"$expectedCreationAccountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     )
@@ -69,11 +66,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       override def handleAccountDelete(accountId: UUID): Unit = {
         assert(expectedDeletionAccountId == accountId)
         actualDeletionAccountId = accountId
-      }
-
-      override def handleUserCreate(userId: UUID): Unit = {
-        assert(expectedCreationUserId == userId)
-        actualCreationUserId = userId
       }
 
       override def handleVmCreate(vmId: UUID): Unit = {
@@ -100,7 +92,6 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       x <- singleFuture
     } yield {
       assert(actualCreationAccountId == expectedCreationAccountId)
-      assert(actualCreationUserId == expectedCreationUserId)
       assert(actualCreationVmId == expectedCreationVmId)
       assert(actualDeletionAccountId == actualDeletionAccountId)
       assert(actualDeletionVmId == actualDeletionVmId)
@@ -112,8 +103,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val records: List[String] = List(
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Started\",\"description\":\"creating\",\"event\":\"USER.DELETE\",\"entityuuid\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
       "{\"details\":\"User Id: 13\",\"status\":\"Completed\",\"event\":\"USER.DELETE\"}",
-      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Started\",\"description\":\"creating\",\"event\":\"USER.CREATE\",\"entityuuid\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
-      "{\"details\":\"User Id: 13\",\"status\":\"Completed\",\"event\":\"USER.CREATE\"}",
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Started\",\"description\":\"creating\",\"event\":\"ACCOUNT.CREATE\",\"entityuuid\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
+      "{\"details\":\"User Id: 13\",\"status\":\"Completed\",\"event\":\"ACCOUNT.CREATE\"}",
       "notvalidJson123"
     )
 
@@ -131,12 +122,12 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
   }
 
   "restartEvent" should "handle event" in {
-    val expectedUserId = userId
+    val expectedAccountId = accountId
 
     val event = CloudStackEvent(
       Some(CloudStackEvent.Status.Completed),
-      Some(CloudStackEvent.Action.UserCreate),
-      Some(expectedUserId)
+      Some(CloudStackEvent.Action.AccountCreate),
+      Some(expectedAccountId)
     )
 
     val controller = new CloudStackVaultController(
@@ -145,8 +136,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       new MockZooKeeperService,
       settings.cloudStackVaultControllerSettings
     ){
-      override def handleUserCreate(userId: UUID): Unit = {
-        assert(userId == expectedUserId)
+      override def handleAccountCreate(accountId: UUID): Unit = {
+        assert(accountId == expectedAccountId)
       }
     }
 

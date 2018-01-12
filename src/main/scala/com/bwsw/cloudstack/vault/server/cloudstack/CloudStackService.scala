@@ -27,6 +27,8 @@ import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.util.TaskRunner
 import org.slf4j.LoggerFactory
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * Class is responsible for interaction with CloudStack server with help of CloudStackTaskCreator
   *
@@ -39,41 +41,20 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
 
   /**
-    * Retrieves all tags of account's users.
+    * Retrieves all tags of account.
     *
-    * @param accountId id of account to retrieve user tags
+    * @param accountId id of account to retrieve its tags
     *
     * @return Set of tags
     * @throws CloudStackEntityDoesNotExistException if account with specified id does not exist.
     */
-  def getUserTagsByAccount(accountId: UUID): Set[Tag] = {
-    logger.debug(s"getUserTagsByAccount(accountId: $accountId)")
+  def getAccountTags(accountId: UUID): Set[Tag] = {
+    logger.debug(s"getAccountTags(accountId: $accountId)")
 
-    val allUsersIdInAccount = getUsersByAccount(accountId)
-
-    val tags = allUsersIdInAccount.flatMap { userId =>
-      getUserTags(userId)
-    }.toSet
-
-    logger.debug(s"Tags: $tags are retrieved for account: $accountId)")
-    tags
-  }
-
-  /**
-    * Retrieves all tags of users.
-    *
-    * @param userId id of user to retrieve user tags
-    *
-    * @return Set of tags
-    * @throws CloudStackEntityDoesNotExistException if user with specified id does not exist.
-    */
-  def getUserTags(userId: UUID): Set[Tag] = {
-    logger.debug(s"getUserTags(userId: $userId)")
-
-    val tagResponse = getTagsJson(Tag.Type.User, userId)
+    val tagResponse = getTagsJson(Tag.Type.Account, accountId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
 
-    logger.debug(s"Tags: $tags are retrieved for user: $userId)")
+    logger.debug(s"Tags: $tags are retrieved for account: $accountId)")
     tags
   }
 
@@ -128,53 +109,43 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     accountId
   }
 
-  /**
-    * Retrieves account id for user.
-    *
-    * @param userId id of user to retrieve account id
-    *
-    * @return id of account which includes a user with indicated id
-    * @throws CloudStackEntityDoesNotExistException if user with specified id does not exist.
-    */
-  def getAccountByUser(userId: UUID): UUID = {
-    logger.debug(s"getAccountByUser(userId: $userId)")
-
-    val accountId = jsonSerializer.deserialize[UserResponse](
-      getEntityJson(Command.ListUsers, Map(cloudStackTaskCreator.idParameter -> userId.toString))
-    ).userList.users.getOrElse(
-      throw new CloudStackEntityDoesNotExistException(s"User with id: $userId does not exist")
-    ).map(_.accountid).head
-
-    logger.debug(s"Account id: $accountId are retrieved for user: $userId)")
-    accountId
+  def doesAccountExist(accountId: UUID): Boolean = {
+    logger.debug(s"doesAccountExist(accountId: $accountId)")
+    Try {
+      jsonSerializer.deserialize[AccountResponse](getEntityJson(Command.ListAccounts, Map(
+        cloudStackTaskCreator.idParameter -> accountId.toString
+      ))).accountList.accounts.getOrElse(List.empty[Account]).nonEmpty
+    } match {
+      case Success(x) =>
+        logger.debug(s"does account with id: $accountId exist: $x")
+        x
+      case Failure(e: CloudStackEntityDoesNotExistException) =>
+        logger.debug(s"account with id: $accountId does not exist")
+        false
+      case Failure(e: Throwable) =>
+        logger.error(s"exception: $e was thrown")
+        throw e
+    }
   }
 
-  /**
-    * Retrieves user ids for account.
-    *
-    * @param accountId id of account to retrieve users ids
-    *
-    * @return List with id of users which are included in account
-    * @throws CloudStackEntityDoesNotExistException if account with specified id does not exist.
-    */
-  def getUsersByAccount(accountId: UUID): List[UUID] = {
-    logger.debug(s"getUsersByAccount(accountId: $accountId)")
-    val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
-
-    val accountResponse = getEntityJson(Command.ListAccounts, Map(cloudStackTaskCreator.idParameter -> accountId.toString))
-
-    val allUsersIdInAccount = jsonSerializer.deserialize[AccountResponse](accountResponse)
-      .accountList
-      .accounts.getOrElse(
-        throw new CloudStackEntityDoesNotExistException(s"Account with id: $accountId does not exist")
-      ).flatMap { x =>
-        x.users.map(_.id)
-      }
-
-    logger.debug(s"Users: $allUsersIdInAccount are retrieved for account: $accountId)")
-    allUsersIdInAccount
+  def doesVirtualMachineExist(vmId: UUID): Boolean = {
+    logger.debug(s"doesVirtualMachineExist(vmId: $vmId)")
+    Try {
+      jsonSerializer.deserialize[VirtualMachinesResponse](getEntityJson(Command.ListVirtualMachines, Map(
+        cloudStackTaskCreator.idParameter -> vmId.toString
+      ))).virtualMashineList.virtualMashines.getOrElse(List.empty[VirtualMashine]).nonEmpty
+    } match {
+      case Success(x) =>
+        logger.debug(s"does vm with id: $vmId exist: $x")
+        x
+      case Failure(e: CloudStackEntityDoesNotExistException) =>
+        logger.debug(s"vm with id: $vmId does not exist")
+        false
+      case Failure(e: Throwable) =>
+        logger.error(s"exception: $e was thrown")
+        throw e
+    }
   }
-
   /**
     * Includes tags to specified entity.
     *

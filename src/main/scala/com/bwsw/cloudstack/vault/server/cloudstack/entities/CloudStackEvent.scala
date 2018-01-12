@@ -58,8 +58,6 @@ object CloudStackEvent {
 
   object Action {
     case object VMCreate      extends Action
-    case object UserCreate    extends Action
-    case object UserDelete    extends Action
     case object AccountCreate extends Action
     case object VMDelete      extends Action
     case object AccountDelete extends Action
@@ -68,8 +66,6 @@ object CloudStackEvent {
     def fromString(eventSting: String): Action = eventSting match {
       case "VM.CREATE"      => Action.VMCreate
       case "VM.DESTROY"     => Action.VMDelete
-      case "USER.CREATE"    => Action.UserCreate
-      case "USER.DELETE"    => Action.UserDelete
       case "ACCOUNT.CREATE" => Action.AccountCreate
       case "ACCOUNT.DELETE" => Action.AccountDelete
       case _                => Action.Other

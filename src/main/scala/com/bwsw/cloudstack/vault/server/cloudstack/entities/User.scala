@@ -22,8 +22,4 @@ import java.util.UUID
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-private[cloudstack] case class UserResponse(@JsonProperty("listusersresponse") userList: UserList)
-
-private[cloudstack] case class UserList(@JsonProperty("user") users: Option[List[User]])
-
 private[cloudstack] case class User(id: UUID, accountid: UUID)
