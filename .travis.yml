@@ -7,11 +7,14 @@ scala:
 script:
  - sbt clean coverage test
  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      TAG=`cat version`;
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-      docker build -t cs-vault-server:latest .;
+      CONTAINER_NAME=$DOCKER_USERNAME/cs-vault-server;
+      docker build -t $CONTAINER_NAME:latest .;
       docker images;
-      docker tag cs-vault-server:latest bwsw/cs-vault-server:latest;
-      docker push $DOCKER_USERNAME/cs-vault-server:latest;
+      docker push $CONTAINER_NAME:latest;
+      docker tag $CONTAINER_NAME $CONTAINER_NAME:$TAG;
+      docker push $CONTAINER_NAME:$TAG;
     fi
 
 after_success: "sbt coverageReport coveralls"
