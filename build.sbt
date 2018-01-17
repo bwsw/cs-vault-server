@@ -45,23 +45,6 @@ lazy val root = (project in file("."))
       "org.slf4j" % "slf4j-api" % "1.7.25"
     ),
     addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
-    pomIncludeRepository := { _ => false },
-    licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    homepage := Some(url("https://github.com/bwsw/cs-vault-server")),
-    scmInfo := Some(
-      ScmInfo(
-        url("https://github.com/bwsw/cs-vault-server"),
-        "scm:git@github.com:bwsw/cs-vault-server.git"
-      )
-    ),
-    developers := List(
-      Developer(
-        id = "bitworks",
-        name = "Bitworks Software, Ltd.",
-        email = "bitworks@bw-sw.com",
-        url = url("http://bitworks.software/")
-      )
-    ),
     inConfig(IntegrationTest)(Defaults.itSettings),
     coverageEnabled in Test := true,
     inConfig(IntegrationTest)(ScalastylePlugin.rawScalastyleSettings()) ++
