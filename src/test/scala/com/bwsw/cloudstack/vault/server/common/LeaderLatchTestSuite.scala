@@ -23,7 +23,8 @@ import java.util.UUID
 import org.apache.curator.CuratorZookeeperClient
 import org.apache.curator.retry.RetryOneTime
 import org.apache.curator.test.TestingServer
-import org.apache.zookeeper.ZooKeeper
+import org.apache.zookeeper.{WatchedEvent, Watcher, ZooKeeper}
+import org.apache.zookeeper.data.Stat
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, Outcome}
 
 import scala.collection.JavaConverters._
@@ -32,10 +33,14 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll {
+  class TestWatcher extends Watcher {
+    override def process(event: WatchedEvent): Unit = {}
+  }
+
   val start = true
   val server = new TestingServer(start)
   val connectString = server.getConnectString
-  val client = new CuratorZookeeperClient(connectString, 5000, 5000, null, new RetryOneTime(1000))
+  val client = new CuratorZookeeperClient(connectString, 5000, 5000, new TestWatcher, new RetryOneTime(1000))
   client.start()
   client.blockUntilConnectedOrTimedOut()
   val zooKeeper = client.getZooKeeper
@@ -53,11 +58,11 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
     val masterNode = newMasterNode
     val leaderLatchId = UUID.randomUUID().toString
 
-    zooKeeper.exists(masterNode, false) shouldBe null
+    Option(zooKeeper.exists(masterNode, false)) shouldBe None
 
     val leaderLatch = new LeaderLatch(connectString, masterNode, leaderLatchId)
 
-    zooKeeper.exists(masterNode, false) should not be null
+    Option(zooKeeper.exists(masterNode, false)) should not be None
     leaderLatch.close()
   }
 
@@ -160,11 +165,12 @@ class LeaderLatchTestSuite extends FlatSpec with Matchers with BeforeAndAfterAll
   case class NodeInfo(node: String, data: String, children: Seq[NodeInfo])
 
   object NodeInfo {
+    val stat = new Stat
     def apply(node: String, zooKeeper: ZooKeeper): NodeInfo = {
       new NodeInfo(
         node = node,
-        data = new String(zooKeeper.getData(node, null, null)),
-        children = zooKeeper.getChildren(node, null).asScala.map(c => apply(s"$node/$c", zooKeeper)))
+        data = new String(zooKeeper.getData(node, false, stat)),
+        children = zooKeeper.getChildren(node, false).asScala.map(c => apply(s"$node/$c", zooKeeper)))
     }
   }
 

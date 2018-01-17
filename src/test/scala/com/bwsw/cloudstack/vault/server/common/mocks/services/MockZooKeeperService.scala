@@ -23,7 +23,6 @@ import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import org.apache.curator.framework.CuratorFramework
 
 class MockZooKeeperService extends ZooKeeperService(MockConfig.zooKeeperServiceSettings) {
-  override protected val curatorClient: CuratorFramework = null
 
   override def getNodeData(path: String): Option[String] = throw new NotImplementedError("getDataIfNodeExist not implemented")
 
