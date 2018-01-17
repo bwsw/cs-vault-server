@@ -38,8 +38,8 @@ trait TestData {
     def getAccountResponseJson(account: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"0399d562-a273-11e6-88da-6557869a736f\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
     def getVmResponseJson(vm: String, accountName: String, domain: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\",\"domainid\":\"" + s"$domain" + "\"}]}}"
 
-    def getResponseWithEmptyVmList = "{\"listvirtualmachinesresponse\":{}}"
-    def getResponseWithEmptyAccountList = "{\"listaccountsresponse\":{}}"
+    def getResponseWithEmptyVmList: String = "{\"listvirtualmachinesresponse\":{}}"
+    def getResponseWithEmptyAccountList: String = "{\"listaccountsresponse\":{}}"
   }
 
   object Request {
@@ -106,7 +106,7 @@ trait TestData {
     }
   }
 
-  def getEndpointQueue(endpoints: List[String]) = new WeightedQueue[String](endpoints) {
+  def getEndpointQueue(endpoints: List[String]): WeightedQueue[String] = new WeightedQueue[String](endpoints) {
     override val r = new Random {
       override def nextInt(n: Int): Int = 0
     }

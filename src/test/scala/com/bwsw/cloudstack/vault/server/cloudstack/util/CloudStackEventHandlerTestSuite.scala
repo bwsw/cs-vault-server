@@ -34,11 +34,12 @@ import scala.concurrent.Future
 class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
   "handleEventsFromRecords" should "handle valid records" in {
+    val notExpectedId = UUID.randomUUID()
 
-    var actualCreationAccountId: UUID = null
-    var actualCreationVmId: UUID = null
-    var actualDeletionAccountId: UUID = null
-    var actualDeletionVmId: UUID = null
+    var actualCreationAccountId: UUID = notExpectedId
+    var actualCreationVmId: UUID = notExpectedId
+    var actualDeletionAccountId: UUID = notExpectedId
+    var actualDeletionVmId: UUID = notExpectedId
 
     val expectedCreationAccountId = accountId
     val expectedCreationVmId = vmId
