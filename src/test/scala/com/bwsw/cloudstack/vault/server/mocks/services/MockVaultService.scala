@@ -16,11 +16,11 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.mocks.services
+package com.bwsw.cloudstack.vault.server.mocks.services
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.MockConfig
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator

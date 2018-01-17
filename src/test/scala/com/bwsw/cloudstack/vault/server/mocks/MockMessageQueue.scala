@@ -16,11 +16,13 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.traits
+package com.bwsw.cloudstack.vault.server.mocks
 
-import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
+import com.bwsw.kafka.reader.entities.InputEnvelope
+import com.bwsw.kafka.reader.MessageQueue
 
-trait EventHandler[T] {
-  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[T]]
-  def restartEvent(event: T): ProcessingEventResult[T]
+class MockMessageQueue[K,V](inputEnvelopes: List[InputEnvelope[V]]) extends MessageQueue (
+    new MockConsumer[K,V]
+){
+  override def take(n :Int): List[InputEnvelope[V]] = inputEnvelopes
 }

@@ -18,13 +18,13 @@
 */
 package com.bwsw.cloudstack.vault.server.zookeeper
 
-import com.bwsw.cloudstack.vault.server.MockConfig._
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
 import org.apache.curator.test.TestingServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-class ZooKeeperServiceTestSuite extends FlatSpec with BaseTestSuite with BeforeAndAfterAll {
+class ZooKeeperServiceTestSuite extends FlatSpec with BeforeAndAfterAll {
   val start = true
   val server = new TestingServer(9000, start)
   val connectString = server.getConnectString

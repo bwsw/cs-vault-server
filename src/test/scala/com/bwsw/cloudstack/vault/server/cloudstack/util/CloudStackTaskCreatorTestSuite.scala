@@ -22,14 +22,13 @@ import java.net.NoRouteToHostException
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
 import br.com.autonomiccs.apacheCloudStack.exceptions.{ApacheCloudStackClientRequestRuntimeException, ApacheCloudStackClientRuntimeException}
-import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with BaseTestSuite with PrivateMethodTester {
+class CloudStackTaskCreatorTestSuite extends FlatSpec with TestData with PrivateMethodTester {
 
   //Positive tests
   "createGetTagTask" should "create task which returns response with account tags" in {

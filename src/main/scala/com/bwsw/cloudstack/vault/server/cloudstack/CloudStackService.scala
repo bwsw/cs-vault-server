@@ -49,7 +49,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     * @throws CloudStackEntityDoesNotExistException if account with specified id does not exist.
     */
   def getAccountTags(accountId: UUID): Set[Tag] = {
-    logger.debug(s"getAccountTags(accountId: $accountId)")
+    logger.trace(s"getAccountTags(accountId: $accountId)")
 
     val tagResponse = getTagsJson(Tag.Type.Account, accountId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
@@ -67,7 +67,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     * @throws CloudStackEntityDoesNotExistException if VM with specified id does not exist.
     */
   def getVmTags(vmId: UUID): Set[Tag] = {
-    logger.debug(s"getVmTags(vmId: $vmId)")
+    logger.trace(s"getVmTags(vmId: $vmId)")
 
     val tagResponse = getTagsJson(Tag.Type.UserVM, vmId)
     val tags = jsonSerializer.deserialize[TagResponse](tagResponse).tagSet.tags.getOrElse(Set.empty[Tag])
@@ -87,7 +87,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     *                                               or if account with specified name in VM does not exist.
     */
   def getVmOwnerAccount(vmId: UUID): UUID = {
-    logger.debug(s"getVmOwnerAccount(vmId: $vmId)")
+    logger.trace(s"getVmOwnerAccount(vmId: $vmId)")
 
     val vm = jsonSerializer.deserialize[VirtualMachinesResponse](
       getEntityJson(Command.ListVirtualMachines, Map(cloudStackTaskCreator.idParameter -> vmId.toString))
@@ -110,7 +110,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   }
 
   def doesAccountExist(accountId: UUID): Boolean = {
-    logger.debug(s"doesAccountExist(accountId: $accountId)")
+    logger.trace(s"doesAccountExist(accountId: $accountId)")
     Try {
       jsonSerializer.deserialize[AccountResponse](getEntityJson(Command.ListAccounts, Map(
         cloudStackTaskCreator.idParameter -> accountId.toString
@@ -129,7 +129,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
   }
 
   def doesVirtualMachineExist(vmId: UUID): Boolean = {
-    logger.debug(s"doesVirtualMachineExist(vmId: $vmId)")
+    logger.trace(s"doesVirtualMachineExist(vmId: $vmId)")
     Try {
       jsonSerializer.deserialize[VirtualMachinesResponse](getEntityJson(Command.ListVirtualMachines, Map(
         cloudStackTaskCreator.idParameter -> vmId.toString
@@ -154,7 +154,7 @@ class CloudStackService(cloudStackTaskCreator: CloudStackTaskCreator,
     * @param tagSet Set of tags to include into resource
     */
   def setResourceTags(resourceId: UUID, resourceType: Tag.Type, tagSet: Set[Tag]): Unit = {
-    logger.debug(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
+    logger.trace(s"setResourceTags(resourceId: $resourceId, resourceType: $resourceType)")
     def task = cloudStackTaskCreator.createSetResourceTagsTask(resourceId, resourceType, tagSet)
 
     TaskRunner.tryRunUntilSuccess[Unit](task, settings.retryDelay)

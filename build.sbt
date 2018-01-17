@@ -10,6 +10,7 @@ libraryDependencies += "com.typesafe" % "config" % "1.3.0"
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.25"
 libraryDependencies += ("org.apache.kafka" % "kafka_2.12" % "0.10.1.1")
   .exclude("org.slf4j", "slf4j-api")
+libraryDependencies += "com.bwsw" %% "kafka-reader" % "0.10.1"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.8"
 libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.8"
 libraryDependencies += "org.apache.zookeeper" % "zookeeper" % "3.4.10"

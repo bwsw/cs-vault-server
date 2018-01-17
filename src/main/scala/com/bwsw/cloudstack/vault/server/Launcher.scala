@@ -19,7 +19,6 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.common.{ConfigLoader, LeaderLatch}
-import com.bwsw.cloudstack.vault.server.kafka.ConsumerManager
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals, DataPath}
 import org.slf4j.LoggerFactory
 
@@ -52,20 +51,25 @@ object Launcher {
       ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperEndpoints)
     ))
 
-    val consumerManagerSettings = ConsumerManager.Settings(
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopic),
-      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
+    val eventManagerSettings = EventManager.Settings(
+      ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+").toList,
+      ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)
     )
     val components = new Components(ConfigLoader.loadConfig())
-    val consumerManager = new ConsumerManager(components.cloudStackEventHandler, consumerManagerSettings)
-    consumerManager.execute()
+    val eventManager = new EventManager(
+      components.consumer,
+      components.cloudStackVaultController,
+      eventManagerSettings
+    )
+
+    eventManager.execute()
     components.close()
 
     leaderLatch.foreach(_.close())
   }
 
   protected def createLeaderLatch(zookeeperServer: String, nodeId: String = ""): LeaderLatch = {
-    logger.debug(s"createLeaderLatch(zookeeperServer: $zookeeperServer)")
+    logger.trace(s"createLeaderLatch(zookeeperServer: $zookeeperServer, nodeId: $nodeId)")
     val leader = new LeaderLatch(zookeeperServer, DataPath.masterLatchNode, nodeId)
     leader.start()
     leader.acquireLeadership(1000)

@@ -19,14 +19,17 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.common.JsonSerializer
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 
 trait BaseTestSuite {
   val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
-  val settings = Components.Settings(MockConfig.cloudStackServiceSettings,
+  val settings = Components.Settings(
+    MockConfig.cloudStackServiceSettings,
     MockConfig.cloudStackTaskCreatorSettings,
     MockConfig.vaultServiceSettings,
     MockConfig.vaultRestRequestCreatorSettings,
     MockConfig.zooKeeperServiceSettings,
-    MockConfig.cloudStackVaultControllerSettings
+    MockConfig.cloudStackVaultControllerSettings,
+    MockConfig.consumerSettings
   )
 }

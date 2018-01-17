@@ -20,15 +20,14 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.MockConfig._
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import org.scalatest.FlatSpec
 
-class CloudStackServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
+class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   //Positive tests
   "getAccountTags" should "return account tags by id" in {
