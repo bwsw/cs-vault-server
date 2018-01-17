@@ -100,29 +100,29 @@ class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: ch
       case CloudStackEvent(Some(status), Some(action), Some(entityId))
         if status == Status.Completed && action == Action.AccountCreate =>
           logger.info(s"handle AccountCreateEvent(status: $status, entityId: $entityId)")
-          Future(RunEventHandle(eventLatch, event, entityId, controller.handleAccountCreate))
+          Future(runEventHandle(eventLatch, event, entityId, controller.handleAccountCreate))
 
       case CloudStackEvent(Some(status), Some(action), Some(entityId))
         if status == Status.Completed && action == Action.AccountDelete =>
           logger.info(s"handle AccountDeleteEvent(status: $status, entityId: $entityId)")
-          Future(RunEventHandle(eventLatch, event, entityId, controller.handleAccountDelete))
+          Future(runEventHandle(eventLatch, event, entityId, controller.handleAccountDelete))
 
       case CloudStackEvent(Some(status), Some(action), Some(entityId))
         if status == Status.Completed && action == Action.VMCreate =>
           logger.info(s"handle VirtualMachineCreateEvent(status: $status, entityId: $entityId)")
-          Future(RunEventHandle(eventLatch, event, entityId, controller.handleVmCreate))
+          Future(runEventHandle(eventLatch, event, entityId, controller.handleVmCreate))
 
       case CloudStackEvent(Some(status), Some(action), Some(entityId))
         if status == Status.Completed && action == Action.VMDelete =>
           logger.info(s"handle VirtualMachineDestroyEvent(status: $status, entityId: $entityId)")
-          Future(RunEventHandle(eventLatch, event, entityId, controller.handleVmDelete))
+          Future(runEventHandle(eventLatch, event, entityId, controller.handleVmDelete))
 
       case _ =>
         eventLatch.succeed()
     }
   }
 
-  private def RunEventHandle(leaderLatch: InterruptableCountDawnLatch,
+  private def runEventHandle(leaderLatch: InterruptableCountDawnLatch,
                              event: CloudStackEvent,
                              entityId: UUID,
                              eventHandleFunc: (UUID) => Unit): Unit = {
@@ -137,7 +137,7 @@ class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: ch
           "\" occurred during the event: \"" + s"$event" + "\" processing is fatal, " +
           "the processing of event will be restarted after 2 seconds")
         Thread.sleep(2000)
-        RunEventHandle(leaderLatch, event, entityId, eventHandleFunc)
+        runEventHandle(leaderLatch, event, entityId, eventHandleFunc)
       case Failure(e: CriticalException) =>
         logger.warn("An exception: \"" + s"${e.getMessage}" +
           "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal, so it is ignored")

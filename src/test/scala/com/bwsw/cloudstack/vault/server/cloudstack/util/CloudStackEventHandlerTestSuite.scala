@@ -29,7 +29,7 @@ import com.bwsw.cloudstack.vault.server.mocks.MockMessageQueue
 import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import com.bwsw.kafka.reader.entities.InputEnvelope
-import com.fasterxml.jackson.core.{JsonFactory, JsonLocation, JsonParseException}
+import com.fasterxml.jackson.core.{JsonFactory, JsonParseException}
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -134,7 +134,11 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     "if process of parse record to json thrown a non-JsonParseException" in {
     val dummyFlag = new AtomicBoolean(true)
 
-    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+      "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+      "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\"," +
+      "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+      "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     val records: List[String] = List(accountDeletionRecord)
 
     val controller = new CloudStackVaultController(
@@ -166,7 +170,11 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
   "handle" should "handle event such as unknown event if JsonSerializer thrown JsonParseException" in {
     val dummyFlag = new AtomicBoolean(true)
 
-    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+      "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+      "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\"," +
+      "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+      "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     val records: List[String] = List(accountDeletionRecord)
 
     val controller = new CloudStackVaultController(
@@ -195,12 +203,17 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
   }
 
-  "handle" should "change input flag to false and return empty OutputEnvelopes list if controller thrown an exception" in {
+  "handle" should "change input flag to false and return empty OutputEnvelopes list " +
+    "if controller thrown an exception" in {
     val dummyFlag = new AtomicBoolean(true)
     val expectedAccountId = accountId
 
     val accountDeletionRecords: List[String] = List(
-      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+        "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+        "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedAccountId" + "\"," +
+        "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+        "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     )
 
     val controller = new CloudStackVaultController(
@@ -232,7 +245,11 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     val expectedAccountId = accountId
 
     val accountDeletionRecords: List[String] = List(
-      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\"," +
+        "\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\"," +
+        "\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\"," +
+        "\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\"," +
+        "\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     )
 
     val controller = new CloudStackVaultController(
@@ -264,7 +281,11 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     var isFirstRun = true
 
     val accountDeletionRecords: List[String] = List(
-      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\"," +
+        "\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\"," +
+        "\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\"," +
+        "\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\"," +
+        "\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     )
 
     val controller = new CloudStackVaultController(
