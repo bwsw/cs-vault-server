@@ -37,16 +37,16 @@ trait TestData {
   val rootNodeAccountPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/accounts"
   val rootNodeVmPath = s"${cloudStackVaultControllerSettings.zooKeeperRootNode}/vms"
 
-  def getDefaultAccountSecretPath(accountId: UUID) = s"${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
-  def getDefaultVmSecretPath(vmId: UUID) = s"${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
-  def getDefaultRequestAccountSecretPath(accountId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
-  def getDefaultRequestVmSecretPath(vmId: UUID) = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
+  def getDefaultAccountSecretPath(accountId: UUID): String = s"${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
+  def getDefaultVmSecretPath(vmId: UUID): String = s"${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
+  def getDefaultRequestAccountSecretPath(accountId: UUID): String = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.accountSecretPath}$accountId"
+  def getDefaultRequestVmSecretPath(vmId: UUID): String = s"${RequestPath.vaultRoot}${cloudStackVaultControllerSettings.vmSecretPath}$vmId"
 
-  def getVmEntityNodePath(entityId: String) = s"$rootNodePath/vms/$entityId"
-  def getVmTokenReadNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultro"
-  def getVmTokenWriteNodePath(entityId: String) = s"$rootNodePath/vms/$entityId/vaultrw"
+  def getVmEntityNodePath(entityId: String): String = s"$rootNodePath/vms/$entityId"
+  def getVmTokenReadNodePath(entityId: String): String = s"$rootNodePath/vms/$entityId/vaultro"
+  def getVmTokenWriteNodePath(entityId: String): String = s"$rootNodePath/vms/$entityId/vaultrw"
 
-  def getAccountEntityNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId"
-  def getAccountTokenReadNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultro"
-  def getAccountTokenWriteNodePath(entityId: String) = s"$rootNodePath/accounts/$entityId/vaultrw"
+  def getAccountEntityNodePath(entityId: String): String = s"$rootNodePath/accounts/$entityId"
+  def getAccountTokenReadNodePath(entityId: String): String = s"$rootNodePath/accounts/$entityId/vaultro"
+  def getAccountTokenWriteNodePath(entityId: String): String = s"$rootNodePath/accounts/$entityId/vaultrw"
 }

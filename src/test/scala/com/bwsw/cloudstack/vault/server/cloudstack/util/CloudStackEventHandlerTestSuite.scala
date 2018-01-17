@@ -35,13 +35,15 @@ import org.scalatest.FlatSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTestSuite {
+
   "handle" should "handle valid records" in {
     val dummyFlag = new AtomicBoolean(true)
+    val notExpectedId = UUID.randomUUID()
 
-    var actualCreationAccountId: UUID = null
-    var actualCreationVmId: UUID = null
-    var actualDeletionAccountId: UUID = null
-    var actualDeletionVmId: UUID = null
+    var actualCreationAccountId: UUID = notExpectedId
+    var actualCreationVmId: UUID = notExpectedId
+    var actualDeletionAccountId: UUID = notExpectedId
+    var actualDeletionVmId: UUID = notExpectedId
 
     val expectedCreationAccountId = accountId
     val expectedCreationVmId = vmId
