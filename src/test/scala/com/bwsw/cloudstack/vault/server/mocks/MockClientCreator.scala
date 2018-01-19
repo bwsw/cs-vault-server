@@ -16,10 +16,13 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.cloudstack.entities
+package com.bwsw.cloudstack.vault.server.mocks
 
-import java.util.UUID
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackClient
+import com.bwsw.cloudstack.ClientCreator
 
-import com.fasterxml.jackson.annotation.JsonProperty
-
-private[cloudstack] case class User(id: UUID, accountid: UUID)
+class MockClientCreator extends ClientCreator {
+  override def createClient(endpoint: String): ApacheCloudStackClient = {
+    throw new NotImplementedError("createClient is not implemented")
+  }
+}

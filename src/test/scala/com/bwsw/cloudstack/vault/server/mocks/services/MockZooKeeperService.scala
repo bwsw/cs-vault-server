@@ -16,7 +16,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.mocks.services
+package com.bwsw.cloudstack.vault.server.mocks.services
 
 import com.bwsw.cloudstack.vault.server.MockConfig
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService

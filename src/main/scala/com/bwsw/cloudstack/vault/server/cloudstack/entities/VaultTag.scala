@@ -24,43 +24,7 @@ import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
 import com.fasterxml.jackson.databind._
 
-private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tagSet: TagSet)
-
-private[cloudstack] case class TagSet(@JsonProperty("tag") tags: Option[Set[Tag]])
-
-object Tag {
-  def createTag(key: Tag.Key, value: String): Tag = Tag(key, value)
-
-  class KeySerializer extends JsonSerializer[Key] {
-    def serialize(value: Key, gen: JsonGenerator, serializers: SerializerProvider): Unit = {
-      gen.writeString(Key.toString(value))
-    }
-  }
-
-  class KeyDeserializer extends JsonDeserializer[Key] {
-    def deserialize(parser: JsonParser, context: DeserializationContext): Key = {
-      val value = parser.getValueAsString.toUpperCase
-      Option(value).map[Tag.Key](Key.fromString) match {
-        case Some(x) => x
-        case None => throw new RuntimeJsonMappingException(s"$value is not valid Tag.Key")
-      }
-    }
-  }
-
-  sealed trait Type extends Product with Serializable
-
-  object Type {
-    case object Account   extends Type
-    case object UserVM    extends Type
-
-    def toString(x: Type): String = x match {
-      case  Type.Account    => "Account"
-      case  Type.UserVM     => "UserVM"
-    }
-  }
-
-  @JsonSerialize(using = classOf[KeySerializer])
-  @JsonDeserialize(using = classOf[KeyDeserializer])
+object VaultTag {
   sealed trait Key extends Product with Serializable {
 
     def oneOf(xs: Key*): Boolean = xs.contains(this)
@@ -89,12 +53,14 @@ object Tag {
     case object VaultPrefix  extends Key
     case object Other        extends Key
 
-    def fromString: PartialFunction[String, Key] = {
-      case `upperCaseVaultRoString`       => Key.VaultRO
-      case `upperCaseVaultRwString`       => Key.VaultRW
-      case `upperCaseVaultHostString`     => Key.VaultHost
-      case `upperCaseVaultPrefixString`   => Key.VaultPrefix
-      case _                              => Key.Other
+    def fromString(key: String): Key = {
+      key.toUpperCase match {
+        case `upperCaseVaultRoString`       => Key.VaultRO
+        case `upperCaseVaultRwString`       => Key.VaultRW
+        case `upperCaseVaultHostString`     => Key.VaultHost
+        case `upperCaseVaultPrefixString`   => Key.VaultPrefix
+        case _                              => Key.Other
+      }
     }
 
     def toString(x: Key): String = x match {
@@ -107,4 +73,4 @@ object Tag {
   }
 }
 
-case class Tag(key: Tag.Key, value: String)
+case class VaultTag(key: VaultTag.Key, value: String)

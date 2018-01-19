@@ -16,22 +16,21 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.mocks.services
+package com.bwsw.cloudstack.vault.server.mocks.dao
 
-import java.util.UUID
-
+import com.bwsw.cloudstack.entities.Executor
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.entities.dao.TagDao
+import com.bwsw.cloudstack.entities.responses.{Tag, TagResponse}
 import com.bwsw.cloudstack.vault.server.MockConfig
-import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.entities.Policy
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.mocks.MockClientCreator
 
-class MockVaultService extends VaultService (
-  new VaultRestRequestCreator(MockConfig.vaultRestRequestCreatorSettings),
-  MockConfig.vaultServiceSettings
-){
-  override def createToken(policies: List[Policy]): UUID = throw new NotImplementedError("createToken not implemented")
+class MockTagDao extends TagDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
+  override def create(request: C): Unit = {
+    throw new NotImplementedError("create method is not implemented")
+  }
 
-  override def revokeToken(tokenId: UUID): List[String] = throw new NotImplementedError("revokeToken not implemented")
-
-  override def deleteSecretsRecursively(pathToRootSecret: String): Unit = throw new NotImplementedError("deleteSecretsRecursive not implemented")
+  override def find(request: F)(implicit m: Manifest[TagResponse]): Set[Tag] = {
+    throw new NotImplementedError("find method is not implemented")
+  }
 }

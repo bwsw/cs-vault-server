@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.controllers
 import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.MockConfig
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
 import com.bwsw.cloudstack.vault.server.util.{DataPath, RequestPath}
 
 trait TestData {

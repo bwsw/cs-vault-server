@@ -25,7 +25,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.TestData
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
 import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
-import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global

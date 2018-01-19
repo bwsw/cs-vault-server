@@ -18,8 +18,12 @@
 */
 package com.bwsw.cloudstack.vault.server
 
+import com.bwsw.cloudstack.KeyAuthenticationClientCreator
+import com.bwsw.cloudstack.entities.Executor
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.util.{CloudStackEventHandler, CloudStackTaskCreator}
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -28,8 +32,8 @@ import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Components {
-  case class Settings(cloudStackServiceSettings: CloudStackService.Settings,
-                      cloudStackTaskCreatorSettings: CloudStackTaskCreator.Settings,
+  case class Settings(executorSettings: Executor.Settings,
+                      keyAuthenticationClientCreatorSettings: KeyAuthenticationClientCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
@@ -37,11 +41,22 @@ object Components {
 }
 
 class Components(settings: Components.Settings) {
+  //CloudStack authenticator
+  lazy val clientCreator = new KeyAuthenticationClientCreator(settings.keyAuthenticationClientCreatorSettings)
+
+  //CloudStack request executor
+  lazy val executor = new Executor(settings.executorSettings, clientCreator)
+
+  //Json String deserializer
+  lazy val mapper = new JsonMapper(ignoreUnknownProperties = true)
+
+  //dao
+  lazy val vmDao = new VirtualMachineDao(executor, mapper)
+  lazy val accountDao = new AccountDao(executor, mapper)
+  lazy val tagDao = new TagDao(executor, mapper)
+
   //services
-  lazy val cloudStackService = new CloudStackService(
-    new CloudStackTaskCreator(settings.cloudStackTaskCreatorSettings),
-    settings.cloudStackServiceSettings
-  )
+  lazy val cloudStackService = new CloudStackService(accountDao, tagDao, vmDao)
   lazy val vaultService = new VaultService(
     new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings),
     settings.vaultServiceSettings

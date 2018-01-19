@@ -20,11 +20,10 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 
 import java.util.UUID
 
-import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
-import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
-import com.bwsw.cloudstack.vault.server.common.WeightedQueue
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.common.WeightedQueue
+import com.bwsw.cloudstack.entities.requests.tag.types.TagType
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
 
 import scala.util.Random
 
@@ -32,15 +31,6 @@ trait TestData {
   val accountId: UUID = UUID.randomUUID()
   val vmId: UUID = UUID.randomUUID()
   val domainId: UUID = UUID.randomUUID()
-
-  object Response {
-    def getTagResponseJson(key: Tag.Key, value: String): String = "{\"listtagsresponse\":{\"count\":1,\"tag\":[{\"key\":\"" + s"${Tag.Key.toString(key)}" + "\",\"value\":\"" + s"$value" + "\"}]}}"
-    def getAccountResponseJson(account: String): String = "{\"listaccountsresponse\":{\"count\":1,\"account\":[{\"id\":\"" + s"$account" + "\",\"user\":[{\"id\":\"0399d562-a273-11e6-88da-6557869a736f\",\"accountid\":\"" + s"$account" + "\"}]}]}}"
-    def getVmResponseJson(vm: String, accountName: String, domain: String): String = "{\"listvirtualmachinesresponse\":{\"virtualmachine\":[{\"id\":\"" + s"$vm" + "\",\"account\":\"" + s"$accountName" + "\",\"domainid\":\"" + s"$domain" + "\"}]}}"
-
-    def getResponseWithEmptyVmList: String = "{\"listvirtualmachinesresponse\":{}}"
-    def getResponseWithEmptyAccountList: String = "{\"listaccountsresponse\":{}}"
-  }
 
   object Request {
     def getAccountTagsRequest(accountId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
@@ -71,38 +61,15 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", vmId)
 
-    def getSetTagsRequest(resourceId: UUID, resourceType: Tag.Type, tagTuple: (Tag, Tag, Tag)): ApacheCloudStackRequest = {
+    def getSetTagsRequest(resourceId: UUID, resourceType: TagType, tagTuple: (VaultTag, VaultTag)): ApacheCloudStackRequest = {
       val request = new ApacheCloudStackRequest("createTags")
       request.addParameter("response", "json")
-      request.addParameter("resourcetype", Tag.Type.toString(resourceType))
+      request.addParameter("resourcetype", resourceType.name)
       request.addParameter("resourceids", resourceId)
-      request.addParameter(s"tags[0].key", Tag.Key.toString(tagTuple._1.key))
+      request.addParameter(s"tags[0].key", VaultTag.Key.toString(tagTuple._1.key))
       request.addParameter(s"tags[0].value", tagTuple._1.value)
-      request.addParameter(s"tags[1].key", Tag.Key.toString(tagTuple._2.key))
+      request.addParameter(s"tags[1].key", VaultTag.Key.toString(tagTuple._2.key))
       request.addParameter(s"tags[1].value", tagTuple._2.value)
-      request.addParameter(s"tags[2].key", Tag.Key.toString(tagTuple._3.key))
-      request.addParameter(s"tags[2].value", tagTuple._3.value)
-    }
-  }
-
-  def getMockCloudStackTaskCreator(expectedRequest: ApacheCloudStackRequest, response: String)
-  : CloudStackTaskCreator = {
-    new CloudStackTaskCreator(cloudStackTaskCreatorSettings) {
-      override val endpointQueue = new WeightedQueue[String](cloudStackTaskCreatorSettings.endpoints.toList) {
-        override val r = new Random {
-          override def nextInt(n: Int): Int = 0
-        }
-      }
-
-      override def createClient(endpoint: String): ApacheCloudStackClient = {
-        assert(endpoint == endpointQueue.getElement)
-        new ApacheCloudStackClient(endpoint, apacheCloudStackUser) {
-          override def executeRequest(request: ApacheCloudStackRequest): String = {
-            assert(request.toString == expectedRequest.toString, "request is wrong")
-            response
-          }
-        }
-      }
     }
   }
 

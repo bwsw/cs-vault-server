@@ -16,14 +16,18 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.cloudstack.entities
+package com.bwsw.cloudstack.vault.server.mocks.requests
 
-import java.util.UUID
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 
-import com.fasterxml.jackson.annotation.JsonProperty
+class MockTagFindRequest(expectedRequest: ApacheCloudStackRequest) extends TagFindRequest {
+  private val tagFindRequestClass = classOf[TagFindRequest]
+  private val parentRequest = tagFindRequestClass.getDeclaredField("request")
+  parentRequest.setAccessible(true)
 
-private[cloudstack] case class VirtualMachinesResponse(@JsonProperty("listvirtualmachinesresponse")  virtualMashineList: VirtualMashineList)
-
-private[cloudstack] case class VirtualMashineList(@JsonProperty("virtualmachine") virtualMashines: Option[List[VirtualMashine]])
-
-private[cloudstack] case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String, @JsonProperty("domainid") domainId: UUID)
+  def requestIsEqualTo(request: TagFindRequest): Boolean = {
+    expectedRequest.getCommand == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getCommand &&
+      expectedRequest.getParameters == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getParameters
+  }
+}

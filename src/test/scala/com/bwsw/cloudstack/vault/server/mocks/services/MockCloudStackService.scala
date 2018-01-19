@@ -16,27 +16,26 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.mocks.services
+package com.bwsw.cloudstack.vault.server.mocks.services
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.MockConfig
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
+import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
 
-class MockCloudStackService extends CloudStackService(
-  new CloudStackTaskCreator(MockConfig.cloudStackTaskCreatorSettings),
-  MockConfig.cloudStackServiceSettings
-){
-  override def getAccountTags(accountId: UUID): Set[Tag] = throw new NotImplementedError("getAccountTags not implemented")
+class MockCloudStackService extends CloudStackService(new MockAccountDao,
+                                                      new MockTagDao,
+                                                      new MockVirtualMachineDao) {
+  override def getVaultAccountTags(accountId: UUID): Set[VaultTag] = throw new NotImplementedError("getAccountTags not implemented")
 
-  override def getVmTags(vmId: UUID): Set[Tag] = throw new NotImplementedError("getVmTagsById not implemented")
+  override def getVaultVmTags(vmId: UUID): Set[VaultTag] = throw new NotImplementedError("getVmTagsById not implemented")
 
   override def getVmOwnerAccount(vmId: UUID): UUID = throw new NotImplementedError("getAccountIdByVmId not implemented")
 
-  override def setResourceTags(resourceId: UUID, resourceType: Type, tagSet: Set[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+  override def setAccountVaultTags(resourceId: UUID, tagSet: Set[VaultTag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+
+  override def setVmVaultTags(resourceId: UUID, vaultTagSet: Set[VaultTag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 
   override def doesAccountExist(accountId: UUID): Boolean = throw new NotImplementedError("doesAccountExist not implemented")
 

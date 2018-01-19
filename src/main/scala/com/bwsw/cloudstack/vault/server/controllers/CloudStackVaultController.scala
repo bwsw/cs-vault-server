@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.controllers
 import java.util.UUID
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
@@ -91,21 +91,21 @@ class CloudStackVaultController(vaultService: VaultService,
         val pathToData = createTokenEntityNodePath(accountId.toString, accountEntityName, getTagKeyByPolicyACL(x.acl))
         zooKeeperService.getNodeData(pathToData) match {
           case Some(token) =>
-            Tag.createTag(getTagKeyByPolicyACL(x.acl), token)
+            VaultTag(getTagKeyByPolicyACL(x.acl), token)
           case None =>
             val token = vaultService.createToken(x :: Nil)
-            val tag = Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+            val tag = VaultTag(getTagKeyByPolicyACL(x.acl), token.toString)
             writeTokenToZooKeeperNode(pathToData, token)
             tag
         }
       }.toSet
 
       val vaultKeyspaceTags = Set(
-        Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
-        Tag.createTag(Tag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
+        VaultTag(VaultTag.Key.VaultHost, vaultApiPath),
+        VaultTag(VaultTag.Key.VaultPrefix, getAccountEntitySecretPath(accountId))
       )
 
-      cloudStackService.setResourceTags(accountId, Tag.Type.Account, vaultTokenTags ++ vaultKeyspaceTags)
+      cloudStackService.setAccountVaultTags(accountId, vaultTokenTags ++ vaultKeyspaceTags)
 
       logger.debug(s"Account creation has been processed, accountId: $accountId)")
     } else {
@@ -136,31 +136,31 @@ class CloudStackVaultController(vaultService: VaultService,
       val pathToData = createTokenEntityNodePath(vmId.toString, vmEntityName, getTagKeyByPolicyACL(x.acl))
       zooKeeperService.getNodeData(pathToData) match {
         case Some(token) =>
-          Tag.createTag(getTagKeyByPolicyACL(x.acl), token)
+          VaultTag(getTagKeyByPolicyACL(x.acl), token)
         case None =>
           val token = vaultService.createToken(x :: Nil)
-          val tag = Tag.createTag(getTagKeyByPolicyACL(x.acl), token.toString)
+          val tag = VaultTag(getTagKeyByPolicyACL(x.acl), token.toString)
           writeTokenToZooKeeperNode(pathToData, token)
           tag
       }
     }.toSet
 
     val vaultKeyspaceTags = Set(
-      Tag.createTag(Tag.Key.VaultHost, vaultApiPath),
-      Tag.createTag(Tag.Key.VaultPrefix, getVmEntitySecretPath(vmId))
+      VaultTag(VaultTag.Key.VaultHost, vaultApiPath),
+      VaultTag(VaultTag.Key.VaultPrefix, getVmEntitySecretPath(vmId))
     )
 
-    cloudStackService.setResourceTags(vmId, Tag.Type.UserVM, vaultTokenTags ++ vaultKeyspaceTags)
+    cloudStackService.setVmVaultTags(vmId, vaultTokenTags ++ vaultKeyspaceTags)
     logger.debug(s"VM creation has been processed, vmId: $vmId)")
   }
 
   /**
     * Associates policy acl in Vault with tag key in CloudStack
     */
-  private def getTagKeyByPolicyACL(acl: Policy.ACL): Tag.Key = {
+  private def getTagKeyByPolicyACL(acl: Policy.ACL): VaultTag.Key = {
     acl match {
-      case Policy.ACL.Read => Tag.Key.VaultRO
-      case Policy.ACL.Write => Tag.Key.VaultRW
+      case Policy.ACL.Read => VaultTag.Key.VaultRO
+      case Policy.ACL.Write => VaultTag.Key.VaultRW
     }
   }
 
@@ -168,14 +168,14 @@ class CloudStackVaultController(vaultService: VaultService,
   /**
     * Create missing token tags after creating tokens in Vault or retrieving them from ZooKeeper node
     */
-  private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: Tag.Key): Tag = {
+  private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: VaultTag.Key): VaultTag = {
     logger.debug(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")
-    import Tag.Key
+    import VaultTag.Key
 
     val pathToToken = createTokenEntityNodePath(accountId.toString, accountEntityName, absentTagKey)
     zooKeeperService.getNodeData(pathToToken) match {
       case Some(token) =>
-        Tag.createTag(absentTagKey, token)
+        VaultTag(absentTagKey, token)
       case None =>
         val policy = absentTagKey match {
           case Key.VaultRO =>
@@ -186,7 +186,7 @@ class CloudStackVaultController(vaultService: VaultService,
             throw new IllegalArgumentException(s"tag key: $absentTagKey is wrong")
         }
         val token = vaultService.createToken(policy :: Nil)
-        val tag = Tag.createTag(absentTagKey, token.toString)
+        val tag = VaultTag(absentTagKey, token.toString)
         writeTokenToZooKeeperNode(pathToToken, token)
         tag
     }
@@ -200,7 +200,7 @@ class CloudStackVaultController(vaultService: VaultService,
     val pathToEntityNode = createEntityNodePath(entityId.toString, entityName)
 
     if (zooKeeperService.doesNodeExist(pathToEntityNode)) {
-      val pathsToTokenData = List(Tag.Key.VaultRO, Tag.Key.VaultRW).map { x =>
+      val pathsToTokenData = List(VaultTag.Key.VaultRO, VaultTag.Key.VaultRW).map { x =>
         createTokenEntityNodePath(entityId.toString, entityName, x)
       }
       pathsToTokenData.foreach { path =>
@@ -219,7 +219,7 @@ class CloudStackVaultController(vaultService: VaultService,
     vaultService.deleteSecretsRecursively(secretPath)
   }
 
-  private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: Tag.Key) =
+  private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: VaultTag.Key) =
     s"${createEntityNodePath(entityId, entityName)}/${tagKey.toString.toLowerCase()}"
 
   private def createEntityNodePath(entityId: String, entityName: String) =
