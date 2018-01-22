@@ -39,7 +39,7 @@ object Launcher {
       start()
     } match {
       case Success(_) =>
-        logger.info(s"Application started")
+        logger.info("Application started")
       case Failure(e) =>
         logger.error(s"Application did not start, exception was thrown: $e")
         leaderLatch.foreach(_.close())

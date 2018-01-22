@@ -22,11 +22,10 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
-import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
+import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 import com.bwsw.cloudstack.entities.responses.{Account, Tag, VirtualMachine}
-import com.bwsw.cloudstack.vault.server.cloudstack.entities._
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import org.slf4j.LoggerFactory
 
@@ -52,19 +51,17 @@ class CloudStackService(accountDao: AccountDao,
     *
     * @return Set of tags
     */
-  def getVaultAccountTags(accountId: UUID): Set[VaultTag] = {
+  def getAccountTags(accountId: UUID): Set[Tag] = {
     logger.debug(s"getAccountTags(accountId: $accountId)")
 
     val tagFindRequest = new TagFindRequest().withResourceType(AccountTagType).withResource(accountId)
 
     def requestExecution(): Set[Tag] = tagDao.find(tagFindRequest)
 
-    val vaultTags = tryExecuteRequest(requestExecution).map { tag =>
-      VaultTag(VaultTag.Key.fromString(tag.key), tag.value)
-    }
+    val tags = tryExecuteRequest(requestExecution)
 
-    logger.debug(s"VaultTags: $vaultTags are retrieved for account: $accountId)")
-    vaultTags
+    logger.debug(s"VaultTags: $tags are retrieved for account: $accountId)")
+    tags
   }
 
   /**
@@ -74,19 +71,17 @@ class CloudStackService(accountDao: AccountDao,
     *
     * @return Set of tags
     */
-  def getVaultVmTags(vmId: UUID): Set[VaultTag] = {
+  def getVmTags(vmId: UUID): Set[Tag] = {
     logger.debug(s"getVmTags(vmId: $vmId)")
 
     val tagFindRequest = new TagFindRequest().withResourceType(VmTagType).withResource(vmId)
 
     def requestExecution(): Set[Tag] = tagDao.find(tagFindRequest)
 
-    val vaultTags = tryExecuteRequest(requestExecution).map { tag =>
-      VaultTag(VaultTag.Key.fromString(tag.key), tag.value)
-    }
+    val tags = tryExecuteRequest(requestExecution)
 
-    logger.debug(s"VaultTags: $vaultTags are retrieved for VM: $vmId)")
-    vaultTags
+    logger.debug(s"VaultTags: $tags are retrieved for VM: $vmId)")
+    tags
   }
 
   /**
@@ -162,14 +157,14 @@ class CloudStackService(accountDao: AccountDao,
     * Includes tags to specified VM.
     *
     * @param resourceId id of VM to include tag
-    * @param vaultTagSet Set of vault tags to include into resource
+    * @param tagSet Set of tags to include into resource
     */
-  def setVmVaultTags(resourceId: UUID, vaultTagSet: Set[VaultTag]): Unit = {
-    logger.trace(s"setVmVaultTags(resourceId: $resourceId, vaultTagSet: $vaultTagSet)")
+  def setVmTags(resourceId: UUID, tagSet: Set[Tag]): Unit = {
+    logger.trace(s"setVmTags(resourceId: $resourceId, tagSet: $tagSet)")
     val tagCreateRequest = new TagCreateRequest(TagCreateRequest.Settings(
       VmTagType,
       Set(resourceId),
-      vaultTagSet.collect(vaultTagsToTags).toList
+      tagSet.toList
     ))
 
     tagDao.create(tagCreateRequest)
@@ -179,14 +174,14 @@ class CloudStackService(accountDao: AccountDao,
     * Includes tags to specified account.
     *
     * @param resourceId id of account to include tag
-    * @param vaultTagSet Set of vault tags to include into resource
+    * @param tagSet Set of tags to include into resource
     */
-  def setAccountVaultTags(resourceId: UUID, vaultTagSet: Set[VaultTag]): Unit = {
-    logger.trace(s"setAccountVaultTags(resourceId: $resourceId, vaultTagSet: $vaultTagSet)")
+  def setAccountTags(resourceId: UUID, tagSet: Set[Tag]): Unit = {
+    logger.trace(s"setAccountTags(resourceId: $resourceId, tagSet: $tagSet)")
     val tagCreateRequest = new TagCreateRequest(TagCreateRequest.Settings(
       AccountTagType,
       Set(resourceId),
-      vaultTagSet.collect(vaultTagsToTags).toList
+      tagSet.toList
     ))
 
     tagDao.create(tagCreateRequest)
@@ -201,9 +196,5 @@ class CloudStackService(accountDao: AccountDao,
         logger.error(s"Request execution threw an exception: $e")
         throw new CloudStackFatalException(e.toString)
     }
-  }
-
-  private def vaultTagsToTags: PartialFunction[VaultTag, Tag] = {
-    case VaultTag(key, value) if key != VaultTag.Key.Other => Tag(VaultTag.Key.toString(key), value)
   }
 }

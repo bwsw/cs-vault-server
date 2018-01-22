@@ -21,25 +21,24 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
-import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
 import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
-import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, TagType, VmTagType}
+import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 import com.bwsw.cloudstack.entities.responses._
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.mocks.requests.{MockAccountFindRequest, MockTagCreateRequest, MockTagFindRequest, MockVmFindRequest}
 import org.scalatest.FlatSpec
 
 class CloudStackServiceTestSuite extends FlatSpec with TestData {
-  val key1 = VaultTag.Key.prefix + "vault.rw"
-  val vaultKey1 = VaultTag.Key.fromString(key1)
+  val key1 = VaultTagKey.prefix + "vault.rw"
+  val vaultKey1 = VaultTagKey.fromString(key1)
   val value1 = "value1"
 
-  val key2 = VaultTag.Key.prefix + "vault.ro"
-  val vaultKey2 = VaultTag.Key.fromString(key2)
+  val key2 = VaultTagKey.prefix + "vault.ro"
+  val vaultKey2 = VaultTagKey.fromString(key2)
   val value2 = "value2"
 
   //Positive tests
@@ -94,7 +93,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   "setVmVaultTags" should "create CloudStack request for creating new tag in VM" in {
     val isRun = new AtomicBoolean(false)
     val cloudStackService = getCloudStackServiceForSetVaultTagsTest(isRun, vmId, VmTagType)
-    cloudStackService.setVmVaultTags(vmId, Set(VaultTag(vaultKey1, key1), VaultTag(vaultKey2, key2)))
+    cloudStackService.setVmTags(vmId, Set(Tag(VaultTagKey.toString(vaultKey1), key1), Tag(VaultTagKey.toString(vaultKey2), key2)))
 
     assert(isRun.get())
   }
@@ -102,7 +101,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   "setAccountVaultTags" should "create CloudStack request for creating new tag in Account" in {
     val isRun = new AtomicBoolean(false)
     val cloudStackService = getCloudStackServiceForSetVaultTagsTest(isRun, accountId, AccountTagType)
-    cloudStackService.setVmVaultTags(accountId, Set(VaultTag(vaultKey1, key1), VaultTag(vaultKey2, key2)))
+    cloudStackService.setAccountTags(accountId, Set(Tag(VaultTagKey.toString(vaultKey1), key1), Tag(VaultTagKey.toString(vaultKey2), key2)))
 
     assert(isRun.get())
   }
@@ -204,7 +203,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     )
 
     assertThrows[CloudStackFatalException] {
-      cloudStackService.getVaultAccountTags(accountId)
+      cloudStackService.getAccountTags(accountId)
     }
   }
 
@@ -222,7 +221,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     )
 
     assertThrows[CloudStackFatalException] {
-      cloudStackService.getVaultVmTags(vmId)
+      cloudStackService.getVmTags(vmId)
     }
   }
 
@@ -366,8 +365,8 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
       new MockVirtualMachineDao
     )
 
-    val tags = cloudStackService.getVaultAccountTags(accountId)
-    assert(Set(VaultTag(vaultKey1,value1)) == tags)
+    val tags = cloudStackService.getAccountTags(accountId)
+    assert(Set(Tag(VaultTagKey.toString(vaultKey1),value1)) == tags)
   }
 
   private def getCloudStackServiceForSetVaultTagsTest(isRun: AtomicBoolean, expectedResourceId: UUID, tagType: TagType) = {
@@ -375,7 +374,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
       Request.getSetTagsRequest(
         expectedResourceId,
         tagType,
-        (VaultTag(vaultKey1, key1), VaultTag(vaultKey2, key2))
+        (Tag(VaultTagKey.toString(vaultKey1), key1), Tag(VaultTagKey.toString(vaultKey2), key2))
       ),
       TagCreateRequest.Settings(tagType, Set(expectedResourceId), List(Tag(key1,value1), Tag(key2, value2)))
     )

@@ -23,7 +23,7 @@ import java.util.UUID
 import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
 import com.bwsw.cloudstack.entities.common.WeightedQueue
 import com.bwsw.cloudstack.entities.requests.tag.types.TagType
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
+import com.bwsw.cloudstack.entities.responses.Tag
 
 import scala.util.Random
 
@@ -61,14 +61,14 @@ trait TestData {
       .addParameter("listAll", "true")
       .addParameter("id", vmId)
 
-    def getSetTagsRequest(resourceId: UUID, resourceType: TagType, tagTuple: (VaultTag, VaultTag)): ApacheCloudStackRequest = {
+    def getSetTagsRequest(resourceId: UUID, resourceType: TagType, tagTuple: (Tag, Tag)): ApacheCloudStackRequest = {
       val request = new ApacheCloudStackRequest("createTags")
       request.addParameter("response", "json")
       request.addParameter("resourcetype", resourceType.name)
       request.addParameter("resourceids", resourceId)
-      request.addParameter(s"tags[0].key", VaultTag.Key.toString(tagTuple._1.key))
+      request.addParameter(s"tags[0].key", tagTuple._1.key)
       request.addParameter(s"tags[0].value", tagTuple._1.value)
-      request.addParameter(s"tags[1].key", VaultTag.Key.toString(tagTuple._2.key))
+      request.addParameter(s"tags[1].key", tagTuple._2.key)
       request.addParameter(s"tags[1].value", tagTuple._2.value)
     }
   }

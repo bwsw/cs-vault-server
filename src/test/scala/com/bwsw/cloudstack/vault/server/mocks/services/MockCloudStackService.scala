@@ -20,22 +20,22 @@ package com.bwsw.cloudstack.vault.server.mocks.services
 
 import java.util.UUID
 
+import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTag
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
 
 class MockCloudStackService extends CloudStackService(new MockAccountDao,
                                                       new MockTagDao,
                                                       new MockVirtualMachineDao) {
-  override def getVaultAccountTags(accountId: UUID): Set[VaultTag] = throw new NotImplementedError("getAccountTags not implemented")
+  override def getAccountTags(accountId: UUID): Set[Tag] = throw new NotImplementedError("getAccountTags not implemented")
 
-  override def getVaultVmTags(vmId: UUID): Set[VaultTag] = throw new NotImplementedError("getVmTagsById not implemented")
+  override def getVmTags(vmId: UUID): Set[Tag] = throw new NotImplementedError("getVmTagsById not implemented")
 
   override def getVmOwnerAccount(vmId: UUID): UUID = throw new NotImplementedError("getAccountIdByVmId not implemented")
 
-  override def setAccountVaultTags(resourceId: UUID, tagSet: Set[VaultTag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+  override def setAccountTags(resourceId: UUID, tagSet: Set[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 
-  override def setVmVaultTags(resourceId: UUID, vaultTagSet: Set[VaultTag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
+  override def setVmTags(resourceId: UUID, vaultTagSet: Set[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
 
   override def doesAccountExist(accountId: UUID): Boolean = throw new NotImplementedError("doesAccountExist not implemented")
 
