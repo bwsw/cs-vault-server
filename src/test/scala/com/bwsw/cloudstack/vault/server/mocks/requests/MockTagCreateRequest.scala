@@ -27,7 +27,7 @@ class MockTagCreateRequest(expectedRequest: ApacheCloudStackRequest,
   private val parentRequest = tagCreateRequestClass.getDeclaredField("request")
   parentRequest.setAccessible(true)
 
-  def requestIsEqualTo(request: TagCreateRequest): Boolean = {
+  def requestEqualsTo(request: TagCreateRequest): Boolean = {
     expectedRequest.getCommand == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getCommand &&
       expectedRequest.getParameters == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getParameters
   }

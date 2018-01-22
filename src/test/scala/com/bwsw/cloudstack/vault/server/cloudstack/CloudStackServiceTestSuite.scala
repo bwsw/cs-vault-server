@@ -27,10 +27,6 @@ import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindReque
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 import com.bwsw.cloudstack.entities.responses._
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
-import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.{Command, Tag}
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.mocks.requests.{MockAccountFindRequest, MockTagCreateRequest, MockTagFindRequest, MockVmFindRequest}
@@ -386,7 +382,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     val tagDao = new MockTagDao {
       override def create(request: TagCreateRequest): Unit = {
         isRun.set(true)
-        assert(expectedVmTagsCreateRequest.requestIsEqualTo(request))
+        assert(expectedVmTagsCreateRequest.requestEqualsTo(request))
       }
     }
 

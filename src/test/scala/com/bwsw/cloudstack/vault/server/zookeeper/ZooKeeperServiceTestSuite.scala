@@ -19,7 +19,6 @@
 package com.bwsw.cloudstack.vault.server.zookeeper
 
 import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
 import org.apache.curator.test.TestingServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}

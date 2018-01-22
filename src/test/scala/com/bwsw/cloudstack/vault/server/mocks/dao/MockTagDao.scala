@@ -22,8 +22,7 @@ import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.TagDao
 import com.bwsw.cloudstack.entities.responses.{Tag, TagResponse}
-import com.bwsw.cloudstack.vault.server.MockConfig
-import com.bwsw.cloudstack.vault.server.mocks.MockClientCreator
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
 class MockTagDao extends TagDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
   override def create(request: C): Unit = {

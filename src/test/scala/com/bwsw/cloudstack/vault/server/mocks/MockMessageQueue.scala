@@ -18,8 +18,8 @@
 */
 package com.bwsw.cloudstack.vault.server.mocks
 
-import com.bwsw.kafka.reader.entities.InputEnvelope
 import com.bwsw.kafka.reader.MessageQueue
+import com.bwsw.kafka.reader.entities.InputEnvelope
 
 class MockMessageQueue[K,V](inputEnvelopes: List[InputEnvelope[V]]) extends MessageQueue (
     new MockConsumer[K,V]

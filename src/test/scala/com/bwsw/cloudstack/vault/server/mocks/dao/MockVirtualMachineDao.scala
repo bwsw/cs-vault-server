@@ -22,8 +22,7 @@ import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.VirtualMachineDao
 import com.bwsw.cloudstack.entities.responses.{VirtualMachine, VirtualMachinesResponse}
-import com.bwsw.cloudstack.vault.server.MockConfig
-import com.bwsw.cloudstack.vault.server.mocks.MockClientCreator
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
 class MockVirtualMachineDao extends VirtualMachineDao(new Executor(MockConfig.executorSettings, new MockClientCreator),
                                                       new JsonMapper) {

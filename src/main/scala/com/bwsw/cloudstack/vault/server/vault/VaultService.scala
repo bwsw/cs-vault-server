@@ -80,7 +80,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
-    logger.trace(s"revokeToken")
+    logger.trace(s"revokeToken(tokenId: $tokenId)")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
     def executeLookupRequest = vaultRest.createTokenLookupRequest(jsonTokenId)

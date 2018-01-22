@@ -30,7 +30,6 @@ import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, M
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import com.bwsw.kafka.reader.entities.InputEnvelope
 import com.fasterxml.jackson.core.{JsonFactory, JsonParseException}
-import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
