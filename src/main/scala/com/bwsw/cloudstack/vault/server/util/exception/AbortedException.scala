@@ -18,4 +18,4 @@
 */
 package com.bwsw.cloudstack.vault.server.util.exception
 
-class AbortedException (private val message: String) extends InterruptedException(message)
+class AbortedException (private val message: String) extends Exception(message)

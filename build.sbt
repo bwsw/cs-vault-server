@@ -26,17 +26,15 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "br.com.autonomiccs" % "apache-cloudstack-java-client" % "1.0.5",
       "com.bettercloud" % "vault-java-driver" % "3.0.0",
+      "com.bwsw" %% "kafka-reader" % "0.10.1",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.8",
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.8",
-      "com.google.guava" % "guava" % "23.0",
       "com.typesafe" % "config" % "1.3.0",
-      ("org.apache.curator" % "curator-recipes" % "4.0.0")
+      ("org.apache.curator" % "curator-recipes" % "2.12.0")
         .exclude("org.slf4j", "slf4j-api")
         .exclude("log4j", "log4j")
-        .exclude("io.netty", "netty")
-        .exclude("com.google.guava", "guava"),
-      ("org.apache.curator" % "curator-test" % "4.0.0" % "test")
-        .exclude("com.google.guava", "guava"),
+        .exclude("io.netty", "netty"),
+      "org.apache.curator" % "curator-test" % "2.12.0" % "test",
       ("org.apache.kafka" % "kafka_2.12" % "0.10.1.1")
         .exclude("org.slf4j", "slf4j-api"),
       "org.apache.zookeeper" % "zookeeper" % "3.4.10",

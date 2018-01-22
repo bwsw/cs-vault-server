@@ -20,11 +20,12 @@ package com.bwsw.cloudstack.vault.server.controllers
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.{BaseTestSuite, MockConfig}
+import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
-import com.bwsw.cloudstack.vault.server.common.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
+import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy

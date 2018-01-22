@@ -16,15 +16,15 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.mocks.services
+package com.bwsw.cloudstack.vault.server.mocks.services
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.MockConfig
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 
 class MockCloudStackService extends CloudStackService(
   new CloudStackTaskCreator(MockConfig.cloudStackTaskCreatorSettings),

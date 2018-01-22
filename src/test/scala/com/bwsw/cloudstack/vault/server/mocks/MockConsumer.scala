@@ -16,8 +16,12 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common
+package com.bwsw.cloudstack.vault.server.mocks
 
-import scala.concurrent.Future
+import com.bwsw.kafka.reader.Consumer
+import org.apache.kafka.clients.consumer.OffsetResetStrategy
 
-case class ProcessingEventResult[T](event: T, result: Future[Unit])
+class MockConsumer[K,V] extends Consumer[K,V](MockConfig.consumerSettings) {
+  override val consumer: org.apache.kafka.clients.consumer.Consumer[K, V] =
+    new org.apache.kafka.clients.consumer.MockConsumer[K,V](OffsetResetStrategy.EARLIEST)
+}

@@ -19,13 +19,15 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.util.{CloudStackEventHandler, CloudStackTaskCreator}
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
+import com.bwsw.kafka.reader.Consumer
+import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success, Try}
 
 object Components {
   case class Settings(cloudStackServiceSettings: CloudStackService.Settings,
@@ -33,10 +35,12 @@ object Components {
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
-                      cloudStackVaultControllerSettings: CloudStackVaultController.Settings)
+                      cloudStackVaultControllerSettings: CloudStackVaultController.Settings,
+                      consumerSettings: Consumer.Settings)
 }
 
 class Components(settings: Components.Settings) {
+  private val logger = LoggerFactory.getLogger(this.getClass)
   //services
   lazy val cloudStackService = new CloudStackService(
     new CloudStackTaskCreator(settings.cloudStackTaskCreatorSettings),
@@ -58,12 +62,25 @@ class Components(settings: Components.Settings) {
     settings.cloudStackVaultControllerSettings
   )
 
-  //handlers
-  lazy val cloudStackEventHandler = new CloudStackEventHandler(cloudStackVaultController)
-
+  lazy val consumer = new Consumer[String, String] (
+    settings.consumerSettings
+  )
 
   def close(): Unit = {
-    zooKeeperService.close()
+    close(List(zooKeeperService.close, consumer.close))
   }
 
+  private def close(closeFunctionList: List[() => Unit]): Unit = {
+    if (closeFunctionList.nonEmpty) {
+      val closeFunction = closeFunctionList.head
+      Try {
+        closeFunction()
+      } match {
+        case Success(x) =>
+        case Failure(e: Throwable) =>
+          logger.error(s"the function: $closeFunction was executed with exception: $e")
+          close(closeFunctionList.tail)
+      }
+    }
+  }
 }

@@ -18,16 +18,19 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.{JsonSerializer, ProcessingEventResult}
-import com.bwsw.cloudstack.vault.server.common.traits.EventHandler
+import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
+
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import CloudStackEvent.Action._
-import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.CloudStackEntityDoesNotExistException
-import com.bwsw.cloudstack.vault.server.util.exception.CriticalException
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
+import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, JsonSerializer}
+import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
+import com.bwsw.kafka.reader.entities.OutputEnvelope
+import com.bwsw.kafka.reader.{EventHandler, MessageQueue}
 import com.fasterxml.jackson.core.JsonParseException
 
 import scala.util.{Failure, Success, Try}
@@ -37,69 +40,111 @@ import scala.util.{Failure, Success, Try}
   *
   * @param controller enables logic execution from event
   */
-class CloudStackEventHandler(controller: CloudStackVaultController)
-                            (implicit executionContext: ExecutionContext) extends EventHandler[CloudStackEvent] {
-  private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: change type "String" to "V" after use Mapper instead of JsonSerializer
+                                messageCount: Int,
+                                controller: CloudStackVaultController)
+                               (implicit executionContext: ExecutionContext)
+  extends EventHandler[K,String,Unit](messageQueue, messageCount) {
 
-  @Override
-  def handleEventsFromRecords(records: List[String]): Set[ProcessingEventResult[CloudStackEvent]] = {
-    logger.debug(s"handleEventsFromRecords: $records")
-    records.map { record =>
-      Try {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+  protected val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
+
+  override def handle(flag: AtomicBoolean): List[OutputEnvelope[Unit]] = {
+    logger.trace(s"handle(flag: $flag")
+    Try {
+      handleRecordsFromQueue()
+    } match {
+      case Success(x) =>
+        x
+      case Failure(e: Throwable) =>
+        flag.set(false)
+        List.empty[OutputEnvelope[Unit]]
+    }
+  }
+
+  private def handleRecordsFromQueue(): List[OutputEnvelope[Unit]] = {
+    val inputEnvelopes = messageQueue.take(messageCount)
+    val eventLatch = new InterruptableCountDawnLatch(new CountDownLatch(inputEnvelopes.size))
+
+    val result = inputEnvelopes.map { envelope =>
+      val record = envelope.data
+      val event = Try {
         jsonSerializer.deserialize[CloudStackEvent](record)
       } match {
-        case Success(x) => x
+        case Success(x) =>
+          logger.debug(s"The record: $record was deserialized to event: $x")
+          x
         case Failure(e: JsonParseException) =>
           logger.warn("Can not parse the record: \"" + s"$record" + "\", the empty CloudStackEvent will be returned")
-          CloudStackEvent(None, None, None)
+          new CloudStackEvent(None, None, None)
         case Failure(e: Throwable) =>
           logger.error(s"Exception $e occurred during the deserialization of the record: " + "\"" + s"$record" + "\"")
           throw e
       }
-    }.toSet.collect(handleEvent)
-  }
 
-  @Override
-  def restartEvent(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
-    logger.debug(s"restartEvent: $event")
-    handleEvent(event)
-  }
-
-  private val handleEvent = new PartialFunction[CloudStackEvent, ProcessingEventResult[CloudStackEvent]] {
-    override def apply(event: CloudStackEvent): ProcessingEventResult[CloudStackEvent] = {
-      event.action.get match {
-        case VMCreate =>
-          logger.info(s"handle VMCreate event: $event")
-          ProcessingEventResult(event, Future(controller.handleVmCreate(event.entityuuid.get)))
-        case VMDelete =>
-          logger.info(s"handle VMDelete event: $event")
-          ProcessingEventResult(event, Future(controller.handleVmDelete(event.entityuuid.get)))
-        case AccountCreate =>
-          logger.info(s"handle AccountCreate event: $event")
-          ProcessingEventResult(event, Future(controller.handleAccountCreate(event.entityuuid.get)))
-        case AccountDelete =>
-          logger.info(s"handle AccountDelete event: $event")
-          ProcessingEventResult(event, Future(controller.handleAccountDelete(event.entityuuid.get)))
-      }
+      OutputEnvelope(
+        envelope.topic,
+        envelope.partition,
+        envelope.offset,
+        handleEvent(eventLatch, event)
+      )
     }
+    eventLatch.await()
+    result
+  }
 
-    /**
-      * Event is processed when status of event is Completed.
-      * The first event has a signature such as {"details":"...","status":"Completed","event":"..."},
-      * which does not contain an entityuuid field, so we have to check entityuuid.
-      */
-    override def isDefinedAt(event: CloudStackEvent): Boolean = {
-      if (event.entityuuid.isEmpty) {
-        false
-      } else {
-        event.action match {
-          case Some(action) if action.oneOf(AccountCreate, AccountDelete, VMCreate, VMDelete) =>
-            event.status.getOrElse(Other) == CloudStackEvent.Status.Completed
-          case _ =>
-            false
-        }
-      }
+
+  private def handleEvent(eventLatch: InterruptableCountDawnLatch, event: CloudStackEvent): Unit = {
+    import CloudStackEvent.{Action, Status}
+    event match {
+      case CloudStackEvent(Some(status), Some(action), Some(entityId))
+        if status == Status.Completed && action == Action.AccountCreate =>
+          logger.info(s"handle AccountCreateEvent(status: $status, entityId: $entityId)")
+          Future(runEventHandling(eventLatch, event, entityId, controller.handleAccountCreate))
+
+      case CloudStackEvent(Some(status), Some(action), Some(entityId))
+        if status == Status.Completed && action == Action.AccountDelete =>
+          logger.info(s"handle AccountDeleteEvent(status: $status, entityId: $entityId)")
+          Future(runEventHandling(eventLatch, event, entityId, controller.handleAccountDelete))
+
+      case CloudStackEvent(Some(status), Some(action), Some(entityId))
+        if status == Status.Completed && action == Action.VMCreate =>
+          logger.info(s"handle VirtualMachineCreateEvent(status: $status, entityId: $entityId)")
+          Future(runEventHandling(eventLatch, event, entityId, controller.handleVmCreate))
+
+      case CloudStackEvent(Some(status), Some(action), Some(entityId))
+        if status == Status.Completed && action == Action.VMDelete =>
+          logger.info(s"handle VirtualMachineDestroyEvent(status: $status, entityId: $entityId)")
+          Future(runEventHandling(eventLatch, event, entityId, controller.handleVmDelete))
+
+      case _ =>
+        eventLatch.succeed()
+    }
+  }
+
+  private def runEventHandling(leaderLatch: InterruptableCountDawnLatch,
+                               event: CloudStackEvent,
+                               entityId: UUID,
+                               eventHandlingFunc: (UUID) => Unit): Unit = {
+    Try {
+      eventHandlingFunc(entityId)
+    } match {
+      case Success(x) =>
+        logger.info(s"The event: $event has been processed")
+        leaderLatch.succeed()
+      case Failure(e: FatalException) =>
+        logger.warn("An exception: \"" + s"${e.getMessage}" +
+          "\" occurred during the event: \"" + s"$event" + "\" processing is fatal, " +
+          "the processing of event will be restarted after 2 seconds")
+        Thread.sleep(2000)
+        runEventHandling(leaderLatch, event, entityId, eventHandlingFunc)
+      case Failure(e: CriticalException) =>
+        logger.warn("An exception: \"" + s"${e.getMessage}" +
+          "\" occurred during the event: \"" + s"$event" + "\" processing is not fatal, so it is ignored")
+        leaderLatch.succeed()
+      case Failure(e: Throwable) =>
+        logger.error(s"Unhandled exception was thrown: $e")
+        leaderLatch.abort()
     }
   }
 }

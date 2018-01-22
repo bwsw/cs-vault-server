@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 
 import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
-import com.bwsw.cloudstack.vault.server.MockConfig.cloudStackTaskCreatorSettings
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig.cloudStackTaskCreatorSettings
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.common.WeightedQueue
