@@ -22,12 +22,16 @@ import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.bwsw.cloudstack.entities.common.traits.Mapper
+import com.bwsw.cloudstack.entities.events.CloudStackEvent
+import com.bwsw.cloudstack.entities.events.Constants.Statuses
+import com.bwsw.cloudstack.entities.events.account.{AccountCreateEvent, AccountDeleteEvent}
+import com.bwsw.cloudstack.entities.events.vm.{VirtualMachineCreateEvent, VirtualMachineDestroyEvent}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, JsonSerializer}
+import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import com.bwsw.kafka.reader.entities.OutputEnvelope
 import com.bwsw.kafka.reader.{EventHandler, MessageQueue}
@@ -40,14 +44,14 @@ import scala.util.{Failure, Success, Try}
   *
   * @param controller enables logic execution from event
   */
-class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: change type "String" to "V" after use Mapper instead of JsonSerializer
-                                messageCount: Int,
-                                controller: CloudStackVaultController)
-                               (implicit executionContext: ExecutionContext)
-  extends EventHandler[K,String,Unit](messageQueue, messageCount) {
+class CloudStackEventHandler[K,V](messageQueue: MessageQueue[K,V],
+                                  messageCount: Int,
+                                  mapper: Mapper[V],
+                                  controller: CloudStackVaultController)
+                                 (implicit executionContext: ExecutionContext)
+  extends EventHandler[K,V,Unit](messageQueue, messageCount) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
-  protected val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
 
   override def handle(flag: AtomicBoolean): List[OutputEnvelope[Unit]] = {
     logger.trace(s"handle(flag: $flag")
@@ -69,7 +73,7 @@ class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: ch
     val result = inputEnvelopes.map { envelope =>
       val record = envelope.data
       val event = Try {
-        jsonSerializer.deserialize[CloudStackEvent](record)
+        mapper.deserialize[CloudStackEvent](record)
       } match {
         case Success(x) =>
           logger.debug(s"The record: $record was deserialized to event: $x")
@@ -95,25 +99,20 @@ class CloudStackEventHandler[K](messageQueue: MessageQueue[K,String], //TODO: ch
 
 
   private def handleEvent(eventLatch: InterruptableCountDawnLatch, event: CloudStackEvent): Unit = {
-    import CloudStackEvent.{Action, Status}
     event match {
-      case CloudStackEvent(Some(status), Some(action), Some(entityId))
-        if status == Status.Completed && action == Action.AccountCreate =>
+      case AccountCreateEvent(Some(status), Some(entityId)) if status == Statuses.COMPLETED =>
           logger.info(s"handle AccountCreateEvent(status: $status, entityId: $entityId)")
           Future(runEventHandling(eventLatch, event, entityId, controller.handleAccountCreate))
 
-      case CloudStackEvent(Some(status), Some(action), Some(entityId))
-        if status == Status.Completed && action == Action.AccountDelete =>
+      case AccountDeleteEvent(Some(status), Some(entityId)) if status == Statuses.COMPLETED =>
           logger.info(s"handle AccountDeleteEvent(status: $status, entityId: $entityId)")
           Future(runEventHandling(eventLatch, event, entityId, controller.handleAccountDelete))
 
-      case CloudStackEvent(Some(status), Some(action), Some(entityId))
-        if status == Status.Completed && action == Action.VMCreate =>
+      case VirtualMachineCreateEvent(Some(status), Some(entityId)) if status == Statuses.COMPLETED =>
           logger.info(s"handle VirtualMachineCreateEvent(status: $status, entityId: $entityId)")
           Future(runEventHandling(eventLatch, event, entityId, controller.handleVmCreate))
 
-      case CloudStackEvent(Some(status), Some(action), Some(entityId))
-        if status == Status.Completed && action == Action.VMDelete =>
+      case VirtualMachineDestroyEvent(Some(status), Some(entityId)) if status == Statuses.COMPLETED =>
           logger.info(s"handle VirtualMachineDestroyEvent(status: $status, entityId: $entityId)")
           Future(runEventHandling(eventLatch, event, entityId, controller.handleVmDelete))
 

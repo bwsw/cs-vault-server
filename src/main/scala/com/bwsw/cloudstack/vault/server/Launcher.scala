@@ -32,15 +32,19 @@ import scala.util.{Failure, Success, Try}
 object Launcher {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private var leaderLatch: Option[LeaderLatch] = None
+  private val components = new Components(ConfigLoader.loadConfig())
 
   def main(args: Array[String]): Unit = {
     Try {
       start()
     } match {
       case Success(_) =>
-        logger.info(s"Application started")
+        logger.info(s"Application stopped")
+        components.close()
+        leaderLatch.foreach(_.close())
       case Failure(e) =>
-        logger.error(s"Application did not start, exception was thrown: $e")
+        logger.error(s"Application stopped, exception: '$e' was thrown")
+        components.close()
         leaderLatch.foreach(_.close())
     }
 
@@ -55,17 +59,15 @@ object Launcher {
       ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+").toList,
       ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)
     )
-    val components = new Components(ConfigLoader.loadConfig())
+
     val eventManager = new EventManager(
       components.consumer,
+      components.eventMapper,
       components.cloudStackVaultController,
       eventManagerSettings
     )
 
     eventManager.execute()
-    components.close()
-
-    leaderLatch.foreach(_.close())
   }
 
   protected def createLeaderLatch(zookeeperServer: String, nodeId: String = ""): LeaderLatch = {

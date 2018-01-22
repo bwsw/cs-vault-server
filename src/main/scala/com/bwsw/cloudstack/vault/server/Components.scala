@@ -18,6 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server
 
+import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
@@ -62,9 +63,11 @@ class Components(settings: Components.Settings) {
     settings.cloudStackVaultControllerSettings
   )
 
+  //event handling
   lazy val consumer = new Consumer[String, String] (
     settings.consumerSettings
   )
+  lazy val eventMapper = new JsonMapper(ignoreUnknownProperties = true)
 
   def close(): Unit = {
     close(List(zooKeeperService.close, consumer.close))
@@ -77,8 +80,9 @@ class Components(settings: Components.Settings) {
         closeFunction()
       } match {
         case Success(x) =>
+          close(closeFunctionList.tail)
         case Failure(e: Throwable) =>
-          logger.error(s"the function: $closeFunction was executed with exception: $e")
+          logger.error(s"the function: '$closeFunction' was executed with exception: $e")
           close(closeFunctionList.tail)
       }
     }
