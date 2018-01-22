@@ -130,8 +130,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
   }
 
-  "handle" should "change input flag to false and return empty outputEnvelopes list " +
-    "if process of parse record to json thrown a non-JsonParseException" in {
+  "handle" should "change the input flag to 'false' and return an empty outputEnvelopes list " +
+    "if the process of parsing a json record to entity threw a non-JsonParseException" in {
     val dummyFlag = new AtomicBoolean(true)
 
     val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
@@ -167,7 +167,7 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     assert(!dummyFlag.get())
   }
 
-  "handle" should "handle event such as unknown event if JsonSerializer thrown JsonParseException" in {
+  "handle" should "process an event such as unknown if JsonSerializer threw JsonParseException" in {
     val dummyFlag = new AtomicBoolean(true)
 
     val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
@@ -203,8 +203,8 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
   }
 
-  "handle" should "change input flag to false and return empty OutputEnvelopes list " +
-    "if controller thrown an exception" in {
+  "handle" should "change the input flag to 'false' and return an empty OutputEnvelopes list " +
+    "if the controller threw an exception" in {
     val dummyFlag = new AtomicBoolean(true)
     val expectedAccountId = accountId
 
