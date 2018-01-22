@@ -46,7 +46,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     * @throws ZooKeeperFatalException if znode already exists.
     */
   def createNodeWithData(path: String, data: String): Unit = {
-    logger.debug(s"createNode with path: $path")
+    logger.trace(s"createNodeWithData(path: $path")
 
     Try {
       curatorClient
@@ -73,7 +73,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     *         None if znode does not exist
     */
   def getNodeData(path: String): Option[String] = {
-    logger.debug(s"getNodeData from path: $path")
+    logger.trace(s"getNodeData(path: $path)")
     if (curatorClient.checkExists().forPath(path) == null) {
       None
     } else {
@@ -89,7 +89,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     * @throws ZooKeeperFatalException if znode does not exist
     */
   def deleteNode(path: String): Unit = {
-    logger.debug(s"deleteNode with path: $path")
+    logger.trace(s"deleteNode(path: $path)")
 
     Try {
       curatorClient.delete().deletingChildrenIfNeeded().forPath(path)
@@ -110,7 +110,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     * @return boolean flag on the existence znode
     */
   def doesNodeExist(path: String): Boolean = {
-    logger.debug(s"doesNodeExist by path: $path")
+    logger.trace(s"doesNodeExist(path: $path)")
 
     curatorClient.checkExists().forPath(path) != null
   }

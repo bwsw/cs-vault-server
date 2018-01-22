@@ -21,7 +21,7 @@ package com.bwsw.cloudstack.vault.server.vault.util
 import com.bettercloud.vault.json.Json
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
-import com.bwsw.cloudstack.vault.server.MockConfig.vaultRestRequestCreatorSettings
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig.vaultRestRequestCreatorSettings
 import com.bwsw.cloudstack.vault.server.vault.TestData
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.entities.Token.TokenInitParameters

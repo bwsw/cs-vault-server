@@ -51,7 +51,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def createToken(policies: List[Policy]): UUID = {
-    logger.debug(s"createToken with policies: $policies")
+    logger.trace(s"createToken(policies: $policies)")
     policies.foreach(writePolicy)
 
     val tokenParameters = Token.TokenInitParameters(
@@ -80,7 +80,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
-    logger.debug(s"revokeToken")
+    logger.trace(s"revokeToken")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
     def executeLookupRequest = vaultRest.createTokenLookupRequest(jsonTokenId)
@@ -112,7 +112,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def deleteSecretsRecursively(pathToRootSecret: String): Unit = {
-    logger.debug(s"deleteSecretsRecursively: $pathToRootSecret")
+    logger.trace(s"deleteSecretsRecursively(pathToRootSecret: $pathToRootSecret)")
     val stringPattern = Pattern.compile(".+/")
     var pathsForDeletion = List(pathToRootSecret)
 
@@ -165,7 +165,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def deletePolicy(policyName: String): Unit = {
-    logger.debug(s"deletePolicy: $policyName")
+    logger.trace(s"deletePolicy(policyName: $policyName)")
 
     def executeRequest = vaultRest.createPolicyDeleteRequest(policyName)
 
@@ -184,7 +184,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   private def writePolicy(policy: Policy): Unit = {
-    logger.debug(s"writePolicy: $policy")
+    logger.trace(s"writePolicy(policy: $policy)")
 
     def executeRequest = vaultRest.createPolicyCreateRequest(policy.name, policy.jsonString)
 

@@ -24,6 +24,11 @@ import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
 import com.bwsw.cloudstack.entities.common.WeightedQueue
 import com.bwsw.cloudstack.entities.requests.tag.types.TagType
 import com.bwsw.cloudstack.entities.responses.Tag
+import br.com.autonomiccs.apacheCloudStack.client.{ApacheCloudStackClient, ApacheCloudStackRequest}
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig.cloudStackTaskCreatorSettings
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 
 import scala.util.Random
 

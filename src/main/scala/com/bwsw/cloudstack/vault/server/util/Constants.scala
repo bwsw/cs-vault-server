@@ -36,7 +36,10 @@ object ConfigLiterals {
 
 
   val kafkaEndpoints  = s"$kafkaDomain.endpoints"
-  val kafkaTopic      = s"$kafkaDomain.topic"
+  val kafkaTopics     = s"$kafkaDomain.topics"
+  val kafkaPollTimeot = s"$kafkaDomain.pollTimeOut"
+  val kafkaGroupId    = s"$kafkaDomain.groupId"
+  val kafkaEventCount = s"$kafkaDomain.eventCount"
 
   val zooKeeperEndpoints       = s"$zooKeeperDomain.endpoints"
   val zooKeeperRetryDelay      = s"$zooKeeperDomain.retryDelay"

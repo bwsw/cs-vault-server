@@ -20,7 +20,7 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.MockConfig._
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator

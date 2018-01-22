@@ -26,6 +26,7 @@ import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
+import com.bwsw.kafka.reader.Consumer
 
 object ConfigLoader {
 
@@ -47,6 +48,11 @@ object ConfigLoader {
     val vmSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.vaultVmsBasicPath)
     val accountSecretPath = ApplicationConfig.getRequiredString(ConfigLiterals.vaultAccountsBasicPath)
     val zooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
+    //Kafka
+    val kafkaEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
+    val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
+    val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
+
 
     Components.Settings(
       Executor.Settings(cloudStackEndpoints, cloudStackRetryDelay),
@@ -54,7 +60,8 @@ object ConfigLoader {
       VaultService.Settings(vaultTokenPeriod, vaultRetryDelay),
       VaultRestRequestCreator.Settings(vaultEndpoint, vaultRootToken),
       ZooKeeperService.Settings(zooKeeperEndpoints, zooKeeperRetryDelay),
-      CloudStackVaultController.Settings(vmSecretPath, accountSecretPath, zooKeeperRootNode)
+      CloudStackVaultController.Settings(vmSecretPath, accountSecretPath, zooKeeperRootNode),
+      Consumer.Settings(kafkaEndpoints, kafkaGroupId, kafkaPollTimeout)
     )
   }
 }

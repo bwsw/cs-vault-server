@@ -23,6 +23,10 @@ import java.util.UUID
 import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.Tag.Type
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 
 class MockCloudStackService extends CloudStackService(new MockAccountDao,
                                                       new MockTagDao,

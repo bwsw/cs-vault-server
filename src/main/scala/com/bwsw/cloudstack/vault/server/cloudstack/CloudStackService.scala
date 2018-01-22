@@ -52,7 +52,7 @@ class CloudStackService(accountDao: AccountDao,
     * @return Set of tags
     */
   def getAccountTags(accountId: UUID): Set[Tag] = {
-    logger.debug(s"getAccountTags(accountId: $accountId)")
+    logger.trace(s"getAccountTags(accountId: $accountId)")
 
     val tagFindRequest = new TagFindRequest().withResourceType(AccountTagType).withResource(accountId)
 
@@ -72,7 +72,7 @@ class CloudStackService(accountDao: AccountDao,
     * @return Set of tags
     */
   def getVmTags(vmId: UUID): Set[Tag] = {
-    logger.debug(s"getVmTags(vmId: $vmId)")
+    logger.trace(s"getVmTags(vmId: $vmId)")
 
     val tagFindRequest = new TagFindRequest().withResourceType(VmTagType).withResource(vmId)
 
@@ -94,7 +94,7 @@ class CloudStackService(accountDao: AccountDao,
     *                                               or if account with specified name in VM does not exist.
     */
   def getVmOwnerAccount(vmId: UUID): UUID = {
-    logger.debug(s"getVmOwnerAccount(vmId: $vmId)")
+    logger.trace(s"getVmOwnerAccount(vmId: $vmId)")
 
     val vmFindRequest = new VmFindRequest().withId(vmId)
 

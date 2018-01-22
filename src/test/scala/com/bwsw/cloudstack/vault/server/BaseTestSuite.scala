@@ -19,6 +19,7 @@
 package com.bwsw.cloudstack.vault.server
 
 import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 
 trait BaseTestSuite {
   val mapper = new JsonMapper(ignoreUnknownProperties = true)
@@ -28,6 +29,7 @@ trait BaseTestSuite {
     MockConfig.vaultServiceSettings,
     MockConfig.vaultRestRequestCreatorSettings,
     MockConfig.zooKeeperServiceSettings,
-    MockConfig.cloudStackVaultControllerSettings
+    MockConfig.cloudStackVaultControllerSettings,
+    MockConfig.consumerSettings
   )
 }

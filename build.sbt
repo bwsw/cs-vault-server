@@ -28,6 +28,7 @@ lazy val root = (project in file("."))
       "com.bettercloud" % "vault-java-driver" % "3.0.0",
       ("com.bwsw" %% "cs-entities" % "4.10.3-NP")
         .exclude("com.google.guava", "guava"),
+      "com.bwsw" %% "kafka-reader" % "0.10.1",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.8",
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.8",
       "com.typesafe" % "config" % "1.3.0",

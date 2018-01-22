@@ -24,12 +24,15 @@ import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
+import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
+import com.bwsw.kafka.reader.Consumer
+import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success, Try}
 
 object Components {
   case class Settings(executorSettings: Executor.Settings,
@@ -37,10 +40,13 @@ object Components {
                       vaultServiceSettings: VaultService.Settings,
                       vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
-                      cloudStackVaultControllerSettings: CloudStackVaultController.Settings)
+                      cloudStackVaultControllerSettings: CloudStackVaultController.Settings,
+                      consumerSettings: Consumer.Settings)
 }
 
 class Components(settings: Components.Settings) {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   //CloudStack authenticator
   lazy val clientCreator = new KeyAuthenticationClientCreator(settings.keyAuthenticationClientCreatorSettings)
 
@@ -48,12 +54,12 @@ class Components(settings: Components.Settings) {
   lazy val executor = new Executor(settings.executorSettings, clientCreator)
 
   //Json String deserializer
-  lazy val mapper = new JsonMapper(ignoreUnknownProperties = true)
+  lazy val daoMapper = new JsonMapper(ignoreUnknownProperties = true)
 
   //dao
-  lazy val vmDao = new VirtualMachineDao(executor, mapper)
-  lazy val accountDao = new AccountDao(executor, mapper)
-  lazy val tagDao = new TagDao(executor, mapper)
+  lazy val vmDao = new VirtualMachineDao(executor, daoMapper)
+  lazy val accountDao = new AccountDao(executor, daoMapper)
+  lazy val tagDao = new TagDao(executor, daoMapper)
 
   //services
   lazy val cloudStackService = new CloudStackService(accountDao, tagDao, vmDao)
@@ -73,12 +79,25 @@ class Components(settings: Components.Settings) {
     settings.cloudStackVaultControllerSettings
   )
 
-  //handlers
-  lazy val cloudStackEventHandler = new CloudStackEventHandler(cloudStackVaultController)
-
+  lazy val consumer = new Consumer[String, String] (
+    settings.consumerSettings
+  )
 
   def close(): Unit = {
-    zooKeeperService.close()
+    close(List(zooKeeperService.close, consumer.close))
   }
 
+  private def close(closeFunctionList: List[() => Unit]): Unit = {
+    if (closeFunctionList.nonEmpty) {
+      val closeFunction = closeFunctionList.head
+      Try {
+        closeFunction()
+      } match {
+        case Success(x) =>
+        case Failure(e: Throwable) =>
+          logger.error(s"the function: $closeFunction was executed with exception: $e")
+          close(closeFunctionList.tail)
+      }
+    }
+  }
 }

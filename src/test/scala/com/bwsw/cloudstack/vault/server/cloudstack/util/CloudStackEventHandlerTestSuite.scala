@@ -19,21 +19,26 @@
 package com.bwsw.cloudstack.vault.server.cloudstack.util
 
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.ProcessingEventResult
+import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
+import com.bwsw.cloudstack.vault.server.mocks.MockMessageQueue
+import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
+import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
+import com.bwsw.kafka.reader.entities.InputEnvelope
+import com.fasterxml.jackson.core.{JsonFactory, JsonParseException}
 import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTestSuite {
 
-  "handleEventsFromRecords" should "handle valid records" in {
+  "handle" should "handle valid records" in {
+    val dummyFlag = new AtomicBoolean(true)
     val notExpectedId = UUID.randomUUID()
 
     var actualCreationAccountId: UUID = notExpectedId
@@ -80,26 +85,24 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       }
     }
 
-    val cloudStackEventHandler = new CloudStackEventHandler(controller)
-    val handleEventFutures = cloudStackEventHandler.handleEventsFromRecords(records).map {
-      case ProcessingEventResult(event, future) => future
-    }
+    val mockMessageQueue = getMockMessageQueue(records)
 
-    val singleFuture = Future.sequence(handleEventFutures)
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    )
 
-    singleFuture.onComplete(x => assert(x.isSuccess))
+    cloudStackEventHandler.handle(dummyFlag)
 
-    for {
-      x <- singleFuture
-    } yield {
-      assert(actualCreationAccountId == expectedCreationAccountId)
-      assert(actualCreationVmId == expectedCreationVmId)
-      assert(actualDeletionAccountId == actualDeletionAccountId)
-      assert(actualDeletionVmId == actualDeletionVmId)
-    }
+    assert(actualCreationAccountId == expectedCreationAccountId)
+    assert(actualCreationVmId == expectedCreationVmId)
+    assert(actualDeletionAccountId == actualDeletionAccountId)
+    assert(actualDeletionVmId == actualDeletionVmId)
   }
 
-  "handleEventsFromRecords" should "not handle invalid records" in {
+  "handle" should "handle invalid records" in {
+    val dummyFlag = new AtomicBoolean(true)
 
     val records: List[String] = List(
       "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Started\",\"description\":\"creating\",\"event\":\"USER.DELETE\",\"entityuuid\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}",
@@ -117,18 +120,101 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
     ){
     }
 
-    val cloudStackEventHandler = new CloudStackEventHandler(controller)
+    val mockMessageQueue = getMockMessageQueue(records)
 
-    assert(cloudStackEventHandler.handleEventsFromRecords(records).isEmpty)
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    )
+
+    assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
   }
 
-  "restartEvent" should "handle event" in {
+  "handle" should "change the input flag to 'false' and return an empty outputEnvelopes list " +
+    "if the process of parsing a json record to entity threw a non-JsonParseException" in {
+    val dummyFlag = new AtomicBoolean(true)
+
+    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+      "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+      "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\"," +
+      "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+      "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    val records: List[String] = List(accountDeletionRecord)
+
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    )
+
+    val mockMessageQueue = getMockMessageQueue(records)
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    ){
+      override val jsonSerializer: JsonSerializer = new JsonSerializer(true){
+        override def deserialize[T: Manifest](value: String): T = {
+          assert(value == accountDeletionRecord)
+          throw new Exception
+        }
+      }
+    }
+
+    assert(cloudStackEventHandler.handle(dummyFlag).isEmpty)
+    assert(!dummyFlag.get())
+  }
+
+  "handle" should "process an event such as unknown if JsonSerializer threw JsonParseException" in {
+    val dummyFlag = new AtomicBoolean(true)
+
+    val accountDeletionRecord = "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+      "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+      "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$accountId" + "\"," +
+      "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+      "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    val records: List[String] = List(accountDeletionRecord)
+
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    )
+
+    val mockMessageQueue = getMockMessageQueue(records)
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    ){
+      override val jsonSerializer: JsonSerializer = new JsonSerializer(true){
+        override def deserialize[T: Manifest](value: String): T = {
+          assert(value == accountDeletionRecord)
+          val jsonFactory = new JsonFactory()
+          throw new JsonParseException(jsonFactory.createParser(value), "")
+        }
+      }
+    }
+
+    assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
+  }
+
+  "handle" should "change the input flag to 'false' and return an empty OutputEnvelopes list " +
+    "if the controller threw an exception" in {
+    val dummyFlag = new AtomicBoolean(true)
     val expectedAccountId = accountId
 
-    val event = CloudStackEvent(
-      Some(CloudStackEvent.Status.Completed),
-      Some(CloudStackEvent.Action.AccountCreate),
-      Some(expectedAccountId)
+    val accountDeletionRecords: List[String] = List(
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\"," +
+        "\"status\":\"Completed\",\"description\":\"deleting account. Account Id: 13\"," +
+        "\"event\":\"ACCOUNT.DELETE\",\"entityuuid\":\"" + s"$expectedAccountId" + "\"," +
+        "\"entity\":\"com.cloud.user.Account\",\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\"," +
+        "\"account\":\"0399d562-a273-11e6-88da-6557869a736f\",\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
     )
 
     val controller = new CloudStackVaultController(
@@ -137,19 +223,104 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
       new MockZooKeeperService,
       settings.cloudStackVaultControllerSettings
     ){
-      override def handleAccountCreate(accountId: UUID): Unit = {
-        assert(accountId == expectedAccountId)
+      override def handleAccountDelete(id: UUID): Unit = {
+        assert(expectedAccountId == id)
+        throw new Exception
       }
     }
 
-    val cloudStackEventHandler = new CloudStackEventHandler(controller)
+    val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
 
-    val resultFuture = cloudStackEventHandler.restartEvent(event) match {
-      case ProcessingEventResult(handledEvent, future) =>
-        assert(handledEvent == event, "event is wrong")
-        future
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    )
+
+    assert(cloudStackEventHandler.handle(dummyFlag).isEmpty)
+    assert(!dummyFlag.get())
+  }
+
+  "handle" should "swallow CriticalException" in {
+    val dummyFlag = new AtomicBoolean(true)
+    val expectedAccountId = accountId
+
+    val accountDeletionRecords: List[String] = List(
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\"," +
+        "\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\"," +
+        "\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\"," +
+        "\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\"," +
+        "\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    )
+
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ){
+      override def handleAccountDelete(id: UUID): Unit = {
+        assert(expectedAccountId == id)
+        throw new CriticalException("")
+      }
     }
 
-    resultFuture.onComplete(x => assert(x.isSuccess))
+    val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    )
+
+    assert(cloudStackEventHandler.handle(dummyFlag).size == accountDeletionRecords.size)
+  }
+
+  "handle" should "restart event handling if FatalException was thrown" in {
+    val dummyFlag = new AtomicBoolean(true)
+    val expectedAccountId = accountId
+    var isFirstRun = true
+
+    val accountDeletionRecords: List[String] = List(
+      "{\"eventDateTime\":\"2017-09-05 11:44:29 +0700\",\"status\":\"Completed\"," +
+        "\"description\":\"deleting account. Account Id: 13\",\"event\":\"ACCOUNT.DELETE\"," +
+        "\"entityuuid\":\"" + s"$expectedAccountId" + "\",\"entity\":\"com.cloud.user.Account\"," +
+        "\"Account\":\"ed427f76-f8af-4f87-abe0-26cbc4c7ff9a\",\"account\":\"0399d562-a273-11e6-88da-6557869a736f\"," +
+        "\"user\":\"0399e3e8-a273-11e6-88da-6557869a736f\"}"
+    )
+
+    val controller = new CloudStackVaultController(
+      new MockVaultService,
+      new MockCloudStackService,
+      new MockZooKeeperService,
+      settings.cloudStackVaultControllerSettings
+    ){
+      override def handleAccountDelete(id: UUID): Unit = {
+        assert(expectedAccountId == id)
+        if (isFirstRun) {
+          isFirstRun = false
+          throw new FatalException("")
+        }
+      }
+    }
+
+    val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String](
+      mockMessageQueue,
+      messageCount = 10,
+      controller
+    )
+
+    assert(cloudStackEventHandler.handle(dummyFlag).size == accountDeletionRecords.size)
+    assert(!isFirstRun)
+  }
+
+  private def getMockMessageQueue(records: List[String]): MockMessageQueue[String, String] = {
+    new MockMessageQueue[String, String](
+      records.map { x =>
+        InputEnvelope(topic = "topic", partition = 0, offset = 0, x)
+      }
+    )
   }
 }

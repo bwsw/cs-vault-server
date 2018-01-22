@@ -18,10 +18,9 @@
 */
 package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
-import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import org.scalatest.FlatSpec
 
-class VaultTagKeyTestSuite extends FlatSpec with BaseTestSuite {
+class VaultTagKeyTestSuite extends FlatSpec {
   val upperCasePrefix = VaultTagKey.prefix.toUpperCase
 
   "Tag.Key.fromString" should "return Tag.Key.VaultRO" in {

@@ -54,7 +54,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * @param accountId account id in CloudStack server for which vault token is created
     */
   def handleAccountDelete(accountId: UUID): Unit = {
-    logger.debug(s"handleAccountDelete(accountId: $accountId)")
+    logger.trace(s"handleAccountDelete(accountId: $accountId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getAccountEntitySecretPath(accountId)}"
     deleteTokenAndAppropriateSecret(accountId, accountEntityName, requestSecretPath)
     logger.debug(s"Account deletion has been processed, accountId: $accountId)")
@@ -67,7 +67,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * @param vmId VM id in CloudStack server for which vault token is created
     */
   def handleVmDelete(vmId: UUID): Unit = {
-    logger.debug(s"handleVmDelete(vmId: $vmId)")
+    logger.trace(s"handleVmDelete(vmId: $vmId)")
     val requestSecretPath = s"${RequestPath.vaultRoot}${getVmEntitySecretPath(vmId)}"
     deleteTokenAndAppropriateSecret(vmId, vmEntityName, requestSecretPath)
     logger.debug(s"VM deletion has been processed, vmId: $vmId)")
@@ -80,7 +80,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * @param accountId account id in CloudStack server
     */
   def handleAccountCreate(accountId: UUID): Unit = {
-    logger.debug(s"handleAccountCreate(accountId: $accountId)")
+    logger.trace(s"handleAccountCreate(accountId: $accountId)")
 
     if(cloudStackService.doesAccountExist(accountId)) {
       val policyList = List(
@@ -121,7 +121,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * @param vmId VM id in CloudStack server
     */
   def handleVmCreate(vmId: UUID): Unit = {
-    logger.debug(s"handleVmCreate(vmId: $vmId)")
+    logger.trace(s"handleVmCreate(vmId: $vmId)")
 
     val accountId = cloudStackService.getVmOwnerAccount(vmId) //here is thrown CloudStackEntityDoesNotExistException if vm does not exist.
                                                               //If it method will not be used, then you should use
@@ -171,7 +171,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * Create missing token tags after creating tokens in Vault or retrieving them from ZooKeeper node
     */
   private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: VaultTagKey): Tag = {
-    logger.debug(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")
+    logger.trace(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")
 
     val pathToToken = createTokenEntityNodePath(accountId.toString, accountEntityName, absentTagKey)
     zooKeeperService.getNodeData(pathToToken) match {
@@ -197,7 +197,7 @@ class CloudStackVaultController(vaultService: VaultService,
     * Revokes token and deletes secret in Vault, and removes entity node from ZooKeeper
     */
   private def deleteTokenAndAppropriateSecret(entityId: UUID, entityName: String, secretPath: String): Unit = {
-    logger.debug(s"deleteTokenAndAppropriateSecret(entityId: $entityId, entityName: $entityName)")
+    logger.trace(s"deleteTokenAndAppropriateSecret(entityId: $entityId, entityName: $entityName)")
     val pathToEntityNode = createEntityNodePath(entityId.toString, entityName)
 
     if (zooKeeperService.doesNodeExist(pathToEntityNode)) {
@@ -235,7 +235,7 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   private def writeTokenToZooKeeperNode(path: String, token: UUID): Unit = {
-    logger.debug(s"writeTokensToZooKeeperNode(path: $path)")
+    logger.trace(s"writeTokensToZooKeeperNode(path: $path)")
     Try {
       zooKeeperService.createNodeWithData(path, token.toString)
     } match {

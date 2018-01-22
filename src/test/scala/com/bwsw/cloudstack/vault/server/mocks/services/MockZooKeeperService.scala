@@ -18,7 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.mocks.services
 
-import com.bwsw.cloudstack.vault.server.MockConfig
+import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import org.apache.curator.framework.CuratorFramework
 
