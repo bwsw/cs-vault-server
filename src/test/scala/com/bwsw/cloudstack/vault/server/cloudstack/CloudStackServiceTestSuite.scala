@@ -22,14 +22,14 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
+import com.bwsw.cloudstack.entities.requests.tag.TagCreateRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, TagType, VmTagType}
-import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 import com.bwsw.cloudstack.entities.responses._
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
-import com.bwsw.cloudstack.vault.server.mocks.requests.{MockAccountFindRequest, MockTagCreateRequest, MockTagFindRequest, MockVmFindRequest}
+import com.bwsw.cloudstack.vault.server.mocks.requests.{MockAccountFindRequest, MockTagCreateRequest, MockVmFindRequest}
 import org.scalatest.FlatSpec
 
 class CloudStackServiceTestSuite extends FlatSpec with TestData {
@@ -42,20 +42,6 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   val value2 = "value2"
 
   //Positive tests
-  "getVaultAccountTags" should "return account vault tags by id" in {
-    val expectedAccountId = accountId
-    val expectedRequest = new MockTagFindRequest(Request.getAccountTagsRequest(expectedAccountId))
-
-    getVaultTagsTest(expectedRequest)
-  }
-
-  "getVaultVmTags" should "return VM vault tags by id" in {
-    val expectedVmId = vmId
-    val expectedRequest = new MockTagFindRequest(Request.getVmTagsRequest(vmId))
-
-    getVaultTagsTest(expectedRequest)
-  }
-
   "getVmOwnerAccount" should "return account id by VM id" in {
     val accountName = "admin"
     val expectedVmId = vmId
@@ -189,42 +175,6 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   }
 
   //Negative tests
-  "getVaultAccountTags" should "throw CloudStackFatalException if accountDao throws an exception" in {
-    val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
-        throw new Exception
-      }
-    }
-
-    val cloudStackService = new CloudStackService(
-      accountDao,
-      new MockTagDao,
-      new MockVirtualMachineDao
-    )
-
-    assertThrows[CloudStackFatalException] {
-      cloudStackService.getAccountTags(accountId)
-    }
-  }
-
-  "getVaultVmTags" should "throw CloudStackFatalException if vmDao throws an exception" in {
-    val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        throw new Exception
-      }
-    }
-
-    val cloudStackService = new CloudStackService(
-      new MockAccountDao,
-      new MockTagDao,
-      vmDao
-    )
-
-    assertThrows[CloudStackFatalException] {
-      cloudStackService.getVmTags(vmId)
-    }
-  }
-
   "getVmOwnerAccount" should "throw CloudStackFatalException if accountDao throws an exception" in {
     val accountName = "admin"
 
@@ -349,24 +299,6 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     assertThrows[CloudStackEntityDoesNotExistException] {
       cloudStackService.getVmOwnerAccount(vmId)
     }
-  }
-
-  private def getVaultTagsTest(expectedRequest: MockTagFindRequest) = {
-    val tagDao = new MockTagDao {
-      override def find(request: TagFindRequest)(implicit m: Manifest[TagResponse]): Set[Tag] = {
-        assert(expectedRequest.requestIsEqualTo(request))
-        Set(Tag(key1, value1))
-      }
-    }
-
-    val cloudStackService = new CloudStackService(
-      new MockAccountDao,
-      tagDao,
-      new MockVirtualMachineDao
-    )
-
-    val tags = cloudStackService.getAccountTags(accountId)
-    assert(Set(Tag(VaultTagKey.toString(vaultKey1),value1)) == tags)
   }
 
   private def getCloudStackServiceForSetVaultTagsTest(isRun: AtomicBoolean, expectedResourceId: UUID, tagType: TagType) = {

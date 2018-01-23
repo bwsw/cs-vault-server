@@ -22,8 +22,8 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
+import com.bwsw.cloudstack.entities.requests.tag.TagCreateRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
-import com.bwsw.cloudstack.entities.requests.tag.{TagCreateRequest, TagFindRequest}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 import com.bwsw.cloudstack.entities.responses.{Account, Tag, VirtualMachine}
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
@@ -43,46 +43,6 @@ class CloudStackService(accountDao: AccountDao,
                         tagDao: TagDao,
                         vmDao: VirtualMachineDao) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-
-  /**
-    * Retrieves all tags of account.
-    *
-    * @param accountId id of account to retrieve its tags
-    *
-    * @return Set of tags
-    */
-  def getAccountTags(accountId: UUID): Set[Tag] = {
-    logger.trace(s"getAccountTags(accountId: $accountId)")
-
-    val tagFindRequest = new TagFindRequest().withResourceType(AccountTagType).withResource(accountId)
-
-    def requestExecution(): Set[Tag] = tagDao.find(tagFindRequest)
-
-    val tags = tryExecuteRequest(requestExecution)
-
-    logger.debug(s"VaultTags: $tags are retrieved for account: $accountId)")
-    tags
-  }
-
-  /**
-    * Retrieves all tags of VM.
-    *
-    * @param vmId id of VM to retrieve its tags
-    *
-    * @return Set of tags
-    */
-  def getVmTags(vmId: UUID): Set[Tag] = {
-    logger.trace(s"getVmTags(vmId: $vmId)")
-
-    val tagFindRequest = new TagFindRequest().withResourceType(VmTagType).withResource(vmId)
-
-    def requestExecution(): Set[Tag] = tagDao.find(tagFindRequest)
-
-    val tags = tryExecuteRequest(requestExecution)
-
-    logger.debug(s"VaultTags: $tags are retrieved for VM: $vmId)")
-    tags
-  }
 
   /**
     * Retrieves account id for VM.

@@ -33,18 +33,6 @@ trait TestData {
   val domainId: UUID = UUID.randomUUID()
 
   object Request {
-    def getAccountTagsRequest(accountId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
-      .addParameter("response", "json")
-      .addParameter("resourcetype", "Account")
-      .addParameter("listAll", "true")
-      .addParameter("resourceid", accountId)
-
-    def getVmTagsRequest(vmId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listTags")
-      .addParameter("response", "json")
-      .addParameter("resourcetype", "UserVM")
-      .addParameter("listAll", "true")
-      .addParameter("resourceid", vmId)
-
     def getAccountRequest(accountId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listAccounts")
       .addParameter("response", "json")
       .addParameter("listAll", "true")

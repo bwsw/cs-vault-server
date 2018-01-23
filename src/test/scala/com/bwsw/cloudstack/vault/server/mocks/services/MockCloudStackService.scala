@@ -27,10 +27,6 @@ import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, M
 class MockCloudStackService extends CloudStackService(new MockAccountDao,
                                                       new MockTagDao,
                                                       new MockVirtualMachineDao) {
-  override def getAccountTags(accountId: UUID): Set[Tag] = throw new NotImplementedError("getAccountTags not implemented")
-
-  override def getVmTags(vmId: UUID): Set[Tag] = throw new NotImplementedError("getVmTagsById not implemented")
-
   override def getVmOwnerAccount(vmId: UUID): UUID = throw new NotImplementedError("getAccountIdByVmId not implemented")
 
   override def setAccountTags(resourceId: UUID, tagSet: Set[Tag]): Unit = throw new NotImplementedError("setResourceTag not implemented")
