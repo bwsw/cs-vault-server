@@ -27,13 +27,7 @@ import com.bwsw.cloudstack.entities.events.CloudStackEvent
 import com.bwsw.cloudstack.entities.events.Constants.Statuses
 import com.bwsw.cloudstack.entities.events.account.{AccountCreateEvent, AccountDeleteEvent}
 import com.bwsw.cloudstack.entities.events.vm.{VirtualMachineCreateEvent, VirtualMachineDestroyEvent}
-import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
-import org.slf4j.LoggerFactory
-
-import scala.concurrent.{ExecutionContext, Future}
 import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
-import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
-import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, JsonSerializer}
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import com.bwsw.kafka.reader.entities.OutputEnvelope

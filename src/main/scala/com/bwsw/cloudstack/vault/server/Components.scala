@@ -18,7 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server
 
-import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.KeyAuthenticationClientCreator
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
