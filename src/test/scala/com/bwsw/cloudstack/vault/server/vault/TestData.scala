@@ -20,9 +20,11 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
-import com.bettercloud.vault.rest.Rest
+import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
+
+import scala.util.Random
 
 trait TestData {
   val token = UUID.randomUUID()
@@ -41,4 +43,10 @@ trait TestData {
   def getPolicyJson(policy: Policy): String = "{\"rules\":\"path \\\"" + s"${policy.path}" + "\\\" {\\\"policy\\\"=\\\"" + s"${Policy.ACL.toString(policy.acl)}" + "\\\"}\"}"
 
   def getSubSecretPathsJson(firstSecretPaths: String, secondSecretPaths:String): String = "{\"data\":{\"keys\": [\"" + s"$firstSecretPaths" + "\", \"" + s"$secondSecretPaths" + "\"]}}"
+
+  def getEndpointQueue(endpoints: List[String]): WeightedQueue[String] = new WeightedQueue[String](endpoints) {
+    override val r = new Random {
+      override def nextInt(n: Int): Int = 0
+    }
+  }
 }

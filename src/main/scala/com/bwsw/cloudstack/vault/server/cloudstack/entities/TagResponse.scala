@@ -21,8 +21,8 @@ package com.bwsw.cloudstack.vault.server.cloudstack.entities
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
-import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
 import com.fasterxml.jackson.databind._
+import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
 
 private[cloudstack] case class TagResponse(@JsonProperty("listtagsresponse") tagSet: TagSet)
 
@@ -76,7 +76,7 @@ object Tag {
     }
     private val lowerCaseVaultRoString     = s"${prefix}vault.ro"
     private val lowerCaseVaultRwString     = s"${prefix}vault.rw"
-    private val lowerCaseVaultHostString   = s"${prefix}vault.host"
+    private val lowerCaseVaultHostString   = s"${prefix}vault.hosts"
     private val lowerCaseVaultPrefixString = s"${prefix}vault.prefix"
     private val upperCaseVaultRoString     = lowerCaseVaultRoString.toUpperCase
     private val upperCaseVaultRwString     = lowerCaseVaultRwString.toUpperCase

@@ -19,7 +19,8 @@
 package com.bwsw.cloudstack.vault.server.zookeeper
 
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.RetryPolicy
+import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryForever
 import org.apache.zookeeper.{CreateMode, ZooDefs}
 import org.slf4j.LoggerFactory
@@ -33,7 +34,7 @@ import scala.util.{Failure, Success, Try}
   */
 class ZooKeeperService(settings: ZooKeeperService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val retryPolicy = new RetryForever(settings.retryDelay)
+  private val retryPolicy: RetryPolicy = new RetryForever(settings.retryDelay)
   protected val curatorClient = CuratorFrameworkFactory.newClient(settings.endpoints, retryPolicy)
   initCuratorClient()
 

@@ -22,7 +22,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.kafka.reader.Consumer
 import org.slf4j.LoggerFactory
@@ -33,7 +33,7 @@ object Components {
   case class Settings(cloudStackServiceSettings: CloudStackService.Settings,
                       cloudStackTaskCreatorSettings: CloudStackTaskCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
-                      vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
+                      vaultRestRequestCreatorSettings: VaultRestRequestExecutor.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
                       cloudStackVaultControllerSettings: CloudStackVaultController.Settings,
                       consumerSettings: Consumer.Settings)
@@ -47,7 +47,7 @@ class Components(settings: Components.Settings) {
     settings.cloudStackServiceSettings
   )
   lazy val vaultService = new VaultService(
-    new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings),
+    new VaultRestRequestExecutor(settings.vaultRestRequestCreatorSettings),
     settings.vaultServiceSettings
   )
   lazy val zooKeeperService = new ZooKeeperService(

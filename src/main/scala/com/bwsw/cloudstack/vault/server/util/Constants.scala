@@ -27,7 +27,7 @@ object ConfigLiterals {
 
   val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
 
-  val vaultEndpoint          = s"$vaultDomain.endpoint"
+  val vaultEndpoints         = s"$vaultDomain.endpoints"
   val vaultRootToken         = s"$vaultDomain.rootToken"
   val vaultRetryDelay        = s"$vaultDomain.retryDelay"
   val vaultTokenPeriod       = s"$vaultDomain.tokenPeriod"

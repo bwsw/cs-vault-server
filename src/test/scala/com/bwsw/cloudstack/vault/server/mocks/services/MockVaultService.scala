@@ -23,10 +23,10 @@ import java.util.UUID
 import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 import com.bwsw.cloudstack.vault.server.vault.VaultService
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 
 class MockVaultService extends VaultService (
-  new VaultRestRequestCreator(MockConfig.vaultRestRequestCreatorSettings),
+  new VaultRestRequestExecutor(MockConfig.vaultRestRequestExecutorSettings),
   MockConfig.vaultServiceSettings
 ){
   override def createToken(policies: List[Policy]): UUID = throw new NotImplementedError("createToken not implemented")

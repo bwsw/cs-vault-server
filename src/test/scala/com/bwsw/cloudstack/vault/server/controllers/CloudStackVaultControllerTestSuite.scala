@@ -61,14 +61,18 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
     Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.accountSecretPath}$accountId"),
-    Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestCreatorSettings.endpoint}${RequestPath.vaultRoot}")
+    Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+      s"$x${RequestPath.vaultRoot}"
+    }.mkString(",")}")
   )
 
   val expectedVaultTagsForVm = List(
     Tag.createTag(Tag.Key.VaultRO, readToken.toString),
     Tag.createTag(Tag.Key.VaultRW, writeToken.toString),
     Tag.createTag(Tag.Key.VaultPrefix, s"${controllerSettings.vmSecretPath}$vmId"),
-    Tag.createTag(Tag.Key.VaultHost, s"${MockConfig.vaultRestRequestCreatorSettings.endpoint}${RequestPath.vaultRoot}")
+    Tag.createTag(Tag.Key.VaultHost,  s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+      s"$x${RequestPath.vaultRoot}"
+    }.mkString(",")}")
   )
 
   "handleAccountDelete" should "get account tokens from ZooKeeper, revoke them and then delete secret and policies" in {

@@ -26,7 +26,7 @@ To start a server in Docker container you should:
     * `ZOOKEEPER_RETRY_DELAY` - a delay between unsuccessful connection attempt to zookeeper and repeated attempt
     * `ZOOKEEPER_ROOT_NODE` - a root node for keeping application data in zookeeper ("/cs_vault_server" by default)
     * `ZOOKEEPER_MASTER_LATCH_NODE` - a node for master latch keeping ("/cs_vault_server_latch" by default)
-    * `VAULT_ENDPOINT` - vault endpoint
+    * `VAULT_ENDPOINTS` - list of vault endpoints, which is separated by comma
     * `VAULT_ROOT_TOKEN` - root token providing an access to a vault server
     * `VAULT_RETRY_DELAY` -  a delay between unsuccessful connection attempt to vault and repeated attempt
     * `VAULT_TOKEN_PERIOD` - lifetime of vault token in days (3562 days by default)

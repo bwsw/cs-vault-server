@@ -27,7 +27,7 @@ trait BaseTestSuite {
     MockConfig.cloudStackServiceSettings,
     MockConfig.cloudStackTaskCreatorSettings,
     MockConfig.vaultServiceSettings,
-    MockConfig.vaultRestRequestCreatorSettings,
+    MockConfig.vaultRestRequestExecutorSettings,
     MockConfig.zooKeeperServiceSettings,
     MockConfig.cloudStackVaultControllerSettings,
     MockConfig.consumerSettings
