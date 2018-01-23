@@ -116,7 +116,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     Option(curatorClient.checkExists().forPath(path)).nonEmpty
   }
 
-  def close(): Unit = {
+  def close: Unit = {
     curatorClient.close()
   }
 

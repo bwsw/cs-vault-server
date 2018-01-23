@@ -28,7 +28,7 @@ import com.bwsw.cloudstack.vault.server.vault.entities.Token.TokenInitParameters
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with PrivateMethodTester with BaseTestSuite {
+class VaultRestRequestExecutorTestSuite extends FlatSpec with TestData with PrivateMethodTester with BaseTestSuite {
   val vmSecretPath = settings.cloudStackVaultControllerSettings.vmSecretPath
   // Positive tests
   "executeTokenCreateRequest" should "create request which returns token" in {

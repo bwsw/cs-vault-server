@@ -84,8 +84,9 @@ class Components(settings: Components.Settings) {
   lazy val eventMapper = new JsonMapper(ignoreUnknownProperties = true)
 
   def close(): Unit = {
-    List[() => Unit](zooKeeperService.close, consumer.close).foreach(func => {
+    List(zooKeeperService.close _, consumer.close _).foreach(func => {
       Try(func()) match {
+        case Success(x) =>
         case Failure(e: Throwable) =>
           logger.error(s"the function: '$func' was executed with exception: $e")
       }

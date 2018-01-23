@@ -92,7 +92,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(vaultService.deletePolicy(policy.name).isInstanceOf[Unit])
   }
 
-  "deleteSecretRecursive" should "delete secret in Vault by path and sub-paths" in {
+  "deleteSecretsRecursively" should "delete secret in Vault by path and sub-paths" in {
     val firstRootPath = "/test!1"
     val secondRootPath = "test!!2/"
     val fullSecondRootPath = s"$firstRootPath/${secondRootPath.dropRight(1)}"
@@ -144,7 +144,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(actualGetPaths == expectedGetPaths)
   }
 
-  "deleteSecretRecursive" should "delete secret in Vault by path if sub-path does not exist" in {
+  "deleteSecretsRecursively" should "delete secret in Vault by path if sub-path does not exist" in {
     val firstPath = "test1"
     val responseWithEmptySubThree = "{\"errors\":[]}"
 
@@ -214,7 +214,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deleteSecretRecursive" should "not swallow VaultFatalException" in {
+  "deleteSecretsRecursively" should "not swallow VaultFatalException" in {
     val path = "/test/path"
     val responseWithEmptySubTree = "{\"errors\":[]}"
 

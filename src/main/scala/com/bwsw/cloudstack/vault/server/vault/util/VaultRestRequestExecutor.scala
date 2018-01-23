@@ -18,6 +18,8 @@
 */
 package com.bwsw.cloudstack.vault.server.vault.util
 
+import java.nio.file.Paths
+
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
 import com.bwsw.cloudstack.entities.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.{HttpStatus, RequestPath}
@@ -76,7 +78,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     */
   def executePolicyCreateRequest(policyName: String, policyJson: String): String = {
     tryExecuteRequest(
-      createRest(s"${RequestPath.vaultPolicy}/$policyName", policyJson)(_).put,
+      createRest(Paths.get(RequestPath.vaultPolicy, policyName).toString, policyJson)(_).put,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "write policy"
     )
@@ -91,7 +93,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     */
   def executePolicyDeleteRequest(policyName: String): String = {
     tryExecuteRequest(
-      createRest(s"${RequestPath.vaultPolicy}/$policyName", "")(_).delete,
+      createRest(Paths.get(RequestPath.vaultPolicy, policyName).toString, "")(_).delete,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
       "delete policy"
     )
@@ -151,7 +153,6 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   protected def createRest(path: String, data: String)(endpoint: String): Rest = {
-    val endpoint = "test"
     new Rest()
       .url(s"$endpoint$path")
       .header("X-Vault-Token", settings.rootToken)
@@ -170,7 +171,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     Try {
       request(currentEndpoint)()
     } match {
-      case Success(response) => response
+      case Success(response) =>
         if (!expectedResponseStatuses.contains(response.getStatus)) {
           throw new VaultFatalException(s"Response status: ${response.getStatus} from Vault server is not expected")
         }

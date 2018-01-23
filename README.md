@@ -1,5 +1,3 @@
-![](https://travis-ci.org/bwsw/cs-vault-server.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/bwsw/cs-vault-server/badge.svg?branch=master)](https://coveralls.io/github/bwsw/cs-vault-server?branch=master)
-
 Also see:
 * [Event processing logic](docs/logic.md)
 * [UML diagrams](docs/diagrams/)
@@ -17,22 +15,22 @@ To start a server in Docker container you should:
 
 1. Provide a file 'variables.env' containing the following required variables:
     * `TAG_NAME_PREFIX` - prefix for token name tag
-    * `KAFKA_ENDPOINTS` - list of kafka endpoints, which is separated by comma
-    * `KAFKA_TOPICS` - kafka topics containing cloudstack events, which is separated by comma
+    * `KAFKA_ENDPOINTS` - list of kafka endpoints, which are separated by comma (for example "localhost:9092")
+    * `KAFKA_TOPICS` - kafka topics containing cloudstack events, which are separated by comma
     * `KAFKA_CONSUMER_POLL_TIMEOUT` - time of Kafka consumer poll (10000ms by default)
     * `KAFKA_GROUP_ID` - id of Kafka group
     * `EVENT_COUNT` - max event count for one-off processing (10 by default)
-    * `ZOOKEEPER_ENDPOINTS` - list of zookeeper endpoints, which is separated by comma
+    * `ZOOKEEPER_ENDPOINTS` - list of zookeeper endpoints, which are separated by comma
     * `ZOOKEEPER_RETRY_DELAY` - a delay between unsuccessful connection attempt to zookeeper and repeated attempt
     * `ZOOKEEPER_ROOT_NODE` - a root node for keeping application data in zookeeper ("/cs_vault_server" by default)
     * `ZOOKEEPER_MASTER_LATCH_NODE` - a node for master latch keeping ("/cs_vault_server_latch" by default)
-    * `VAULT_ENDPOINTS` - list of vault endpoints, which is separated by comma
+    * `VAULT_ENDPOINTS` - list of vault endpoints with "http://" prefix, which are separated by comma
     * `VAULT_ROOT_TOKEN` - root token providing an access to a vault server
     * `VAULT_RETRY_DELAY` -  a delay between unsuccessful connection attempt to vault and repeated attempt
     * `VAULT_TOKEN_PERIOD` - lifetime of vault token in days (3562 days by default)
     * `VAULT_ACCOUNTS_BASIC_PATH` - path to cloudstack accounts' secrets in vault ("secret/cs/accounts/" by default). Last "/" is required
     * `VAULT_VMS_BASIC_PATH` - path to vms' secrets in vault ("secret/cs/vms/" by default). Last "/" is required
-    * `CS_ENDPOINTS` - list of cloudstack endpoints, which is separated by comma
+    * `CS_ENDPOINTS` - list of cloudstack endpoints, which are separated by comma
     * `CS_API_KEY` - api key providing an access to a cloudstack server
     * `CS_SECRET_KEY` - secret key providing an access to a cloudstack server
     * `CS_RETRY_DELAY` - a delay between unsuccessful connection attempt to cloudstack and repeated attempt

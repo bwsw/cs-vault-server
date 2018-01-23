@@ -300,7 +300,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
     val services = getServicesForTestZooKeeperWritingToNodeThrowException(
       readAccountTokenNodePath,
-      writeAccountTokenNodePath,
       expectedPolicy,
       expectedToken
     )
@@ -458,7 +457,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
     val services = getServicesForTestZooKeeperWritingToNodeThrowException(
       readVmTokenNodePath,
-      writeVmTokenNodePath,
       expectedPolicy,
       expectedToken
     )
@@ -521,7 +519,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
   private def getServicesForTestZooKeeperWritingToNodeThrowException(readTokenPath: String,
-                                                                     writeTokenPath: String,
                                                                      exeptedPolicy: Policy,
                                                                      expectedToken: UUID) = {
     val vaultService = new MockVaultService {
