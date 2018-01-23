@@ -59,7 +59,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag(VaultTagKey.toString(VaultTagKey.VaultRO), readToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultRW), writeToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), s"${controllerSettings.accountSecretPath}$accountId"),
-    Tag(VaultTagKey.toString(VaultTagKey.VaultHost), s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+    Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
       s"$x${RequestPath.vaultRoot}"
     }.mkString(",")}")
   )
@@ -68,7 +68,7 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag(VaultTagKey.toString(VaultTagKey.VaultRO), readToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultRW), writeToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), s"${controllerSettings.vmSecretPath}$vmId"),
-    Tag(VaultTagKey.toString(VaultTagKey.VaultHost),  s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+    Tag(VaultTagKey.toString(VaultTagKey.VaultHosts),  s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
       s"$x${RequestPath.vaultRoot}"
     }.mkString(",")}")
   )

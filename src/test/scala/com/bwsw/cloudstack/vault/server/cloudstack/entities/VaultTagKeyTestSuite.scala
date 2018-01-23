@@ -35,7 +35,7 @@ class VaultTagKeyTestSuite extends FlatSpec {
 
   "Tag.Key.fromString" should "return Tag.Key.VaultHost" in {
     val testString = "VAULT.HOSTS"
-    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultHost)
+    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultHosts)
   }
 
   "Tag.Key.fromString" should "return Tag.Key.VaultPrefix" in {
@@ -53,11 +53,9 @@ class VaultTagKeyTestSuite extends FlatSpec {
     assert(VaultTagKey.toString(VaultTagKey.VaultRW) == s"${VaultTagKey.prefix}$testString")
   }
 
-  "Tag.Key.toString" should "return vault.host" in {
-    val testString = "vault.host"
-    assert(VaultTagKey.toString(VaultTagKey.VaultHost) == s"${VaultTagKey.prefix}$testString")
+  "Tag.Key.toString" should "return vault.hosts" in {
     val testString = "vault.hosts"
-    assert(Tag.Key.toString(Tag.Key.VaultHost) == s"${Tag.Key.prefix}$testString")
+    assert(VaultTagKey.toString(VaultTagKey.VaultHosts) == s"${VaultTagKey.prefix}$testString")
   }
 
   "Tag.Key.toString" should "return vault.prefix" in {

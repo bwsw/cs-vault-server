@@ -19,7 +19,7 @@
 package com.bwsw.cloudstack.vault.server.vault.util
 
 import com.bettercloud.vault.rest.{Rest, RestException, RestResponse}
-import com.bwsw.cloudstack.vault.server.common.WeightedQueue
+import com.bwsw.cloudstack.entities.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.{HttpStatus, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.slf4j.LoggerFactory

@@ -104,7 +104,7 @@ class CloudStackVaultController(vaultService: VaultService,
       }.toSet
 
       val vaultKeyspaceTags = Set(
-        Tag(VaultTagKey.toString(VaultTagKey.VaultHost), vaultApiPathsString),
+        Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), vaultApiPathsString),
         Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), getAccountEntitySecretPath(accountId))
       )
 
@@ -149,7 +149,7 @@ class CloudStackVaultController(vaultService: VaultService,
     }.toSet
 
     val vaultKeyspaceTags = Set(
-      Tag(VaultTagKey.toString(VaultTagKey.VaultHost), vaultApiPathsString),
+      Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), vaultApiPathsString),
       Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), getVmEntitySecretPath(vmId))
     )
 

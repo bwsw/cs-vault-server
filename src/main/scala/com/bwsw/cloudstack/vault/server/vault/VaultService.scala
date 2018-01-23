@@ -22,10 +22,8 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 import com.bettercloud.vault.json.Json
-import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities._
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
@@ -83,7 +81,7 @@ class VaultService(vaultRest: VaultRestRequestExecutor,
 
     val lookupToken = mapper.deserialize[LookupToken](lookupResponseString)
 
-    val revokeResponseString = vaultRest.executeTokenRevokeRequest(jsonTokenId)
+    vaultRest.executeTokenRevokeRequest(jsonTokenId)
 
     logger.debug(s"Token: $tokenId has been revoked")
 
