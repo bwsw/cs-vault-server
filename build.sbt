@@ -26,6 +26,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "br.com.autonomiccs" % "apache-cloudstack-java-client" % "1.0.5",
       "com.bettercloud" % "vault-java-driver" % "3.0.0",
+      ("com.bwsw" %% "cs-entities" % "4.10.3-NP")
+        .exclude("com.google.guava", "guava"),
       "com.bwsw" %% "kafka-reader" % "0.10.1",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.8",
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.8",

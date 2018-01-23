@@ -16,20 +16,21 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server
+package com.bwsw.cloudstack.vault.server.mocks.dao
 
+import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
-import com.bwsw.cloudstack.vault.server.mocks.MockConfig
+import com.bwsw.cloudstack.entities.dao.VirtualMachineDao
+import com.bwsw.cloudstack.entities.responses.{VirtualMachine, VirtualMachinesResponse}
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
-trait BaseTestSuite {
-  val mapper = new JsonMapper(ignoreUnknownProperties = true)
-  val settings = Components.Settings(
-    MockConfig.executorSettings,
-    MockConfig.clientCreatorSettings,
-    MockConfig.vaultServiceSettings,
-    MockConfig.vaultRestRequestCreatorSettings,
-    MockConfig.zooKeeperServiceSettings,
-    MockConfig.cloudStackVaultControllerSettings,
-    MockConfig.consumerSettings
-  )
+class MockVirtualMachineDao extends VirtualMachineDao(new Executor(MockConfig.executorSettings, new MockClientCreator),
+                                                      new JsonMapper) {
+  override def create(request: C): Unit = {
+    throw new NotImplementedError("create method is not implemented")
+  }
+
+  override def find(request: F)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
+    throw new NotImplementedError("find method is not implemented")
+  }
 }

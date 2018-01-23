@@ -16,14 +16,20 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.cloudstack.entities
+package com.bwsw.cloudstack.vault.server.mocks.dao
 
-import java.util.UUID
+import com.bwsw.cloudstack.entities.Executor
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.entities.dao.AccountDao
+import com.bwsw.cloudstack.entities.responses.{Account, AccountResponse}
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
-import com.fasterxml.jackson.annotation.JsonProperty
+class MockAccountDao extends AccountDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
+  override def create(request: C): Unit = {
+    throw new NotImplementedError("create method is not implemented")
+  }
 
-private[cloudstack] case class VirtualMachinesResponse(@JsonProperty("listvirtualmachinesresponse")  virtualMashineList: VirtualMashineList)
-
-private[cloudstack] case class VirtualMashineList(@JsonProperty("virtualmachine") virtualMashines: Option[List[VirtualMashine]])
-
-private[cloudstack] case class VirtualMashine(id: UUID, @JsonProperty("account") accountName: String, @JsonProperty("domainid") domainId: UUID)
+  override def find(request: F)(implicit m: Manifest[AccountResponse]): List[Account] = {
+    throw new NotImplementedError("find method is not implemented")
+  }
+}

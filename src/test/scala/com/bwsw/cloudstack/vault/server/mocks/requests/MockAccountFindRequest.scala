@@ -16,20 +16,18 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server
+package com.bwsw.cloudstack.vault.server.mocks.requests
 
-import com.bwsw.cloudstack.entities.common.JsonMapper
-import com.bwsw.cloudstack.vault.server.mocks.MockConfig
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
 
-trait BaseTestSuite {
-  val mapper = new JsonMapper(ignoreUnknownProperties = true)
-  val settings = Components.Settings(
-    MockConfig.executorSettings,
-    MockConfig.clientCreatorSettings,
-    MockConfig.vaultServiceSettings,
-    MockConfig.vaultRestRequestCreatorSettings,
-    MockConfig.zooKeeperServiceSettings,
-    MockConfig.cloudStackVaultControllerSettings,
-    MockConfig.consumerSettings
-  )
+class MockAccountFindRequest(expectedRequest: ApacheCloudStackRequest) extends AccountFindRequest {
+  private val accountFindRequestClass = classOf[AccountFindRequest]
+  private val parentRequest = accountFindRequestClass.getDeclaredField("request")
+  parentRequest.setAccessible(true)
+
+  def requestIsEqualTo(request: AccountFindRequest): Boolean = {
+    expectedRequest.getCommand == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getCommand &&
+      expectedRequest.getParameters == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getParameters
+  }
 }
