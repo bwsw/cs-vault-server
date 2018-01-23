@@ -16,12 +16,20 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.common.traits
+package com.bwsw.cloudstack.vault.server.mocks.dao
 
-trait Serializer {
-  def serialize(value: Any): String
-  def deserialize[T: Manifest](value: String) : T
-  def setIgnoreUnknownPropertiesFlag(ignoreUnknownProperties: Boolean)
-  def getIgnoreUnknownPropertiesFlag: Boolean
+import com.bwsw.cloudstack.entities.Executor
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.entities.dao.TagDao
+import com.bwsw.cloudstack.entities.responses.{Tag, TagResponse}
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
+
+class MockTagDao extends TagDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
+  override def create(request: C): Unit = {
+    throw new NotImplementedError("create method is not implemented")
+  }
+
+  override def find(request: F)(implicit m: Manifest[TagResponse]): Set[Tag] = {
+    throw new NotImplementedError("find method is not implemented")
+  }
 }
-

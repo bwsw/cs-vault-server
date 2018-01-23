@@ -39,7 +39,7 @@ object Launcher {
       start()
     } match {
       case Success(_) =>
-        logger.info(s"Application stopped")
+        logger.info("Application stopped")
         components.close()
         leaderLatch.foreach(_.close())
       case Failure(e) =>

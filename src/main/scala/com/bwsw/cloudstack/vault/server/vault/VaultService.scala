@@ -22,7 +22,8 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 import com.bettercloud.vault.json.Json
-import com.bwsw.cloudstack.vault.server.common.{Converter, JsonSerializer}
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.vault.server.common.Converter
 import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities._
 import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory
 class VaultService(vaultRest: VaultRestRequestCreator,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val jsonSerializer = new JsonSerializer(ignoreUnknownProperties = true)
+  private val mapper = new JsonMapper(ignoreUnknownProperties = true)
   val endpoint: String = vaultRest.endpoint
 
   /**
@@ -59,14 +60,14 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       Converter.daysToSeconds(settings.tokenPeriod)
     )
 
-    def executeRequest = vaultRest.createTokenCreateRequest(jsonSerializer.serialize(tokenParameters))
+    def executeRequest = vaultRest.createTokenCreateRequest(mapper.serialize(tokenParameters))
 
     val responseString = TaskRunner.tryRunUntilSuccess[String](
       executeRequest,
       settings.retryDelay
     )
 
-    val token = jsonSerializer.deserialize[Token](responseString).tokenId.id
+    val token = mapper.deserialize[Token](responseString).tokenId.id
     logger.debug(s"Token: $token has been created")
     token
   }
@@ -79,7 +80,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @throws VaultFatalException if response status is not expected.
     */
   def revokeToken(tokenId: UUID): List[String] = {
-    logger.trace(s"revokeToken")
+    logger.trace(s"revokeToken(tokenId: $tokenId)")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
     def executeLookupRequest = vaultRest.createTokenLookupRequest(jsonTokenId)
@@ -89,7 +90,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       settings.retryDelay
     )
 
-    val lookupToken = jsonSerializer.deserialize[LookupToken](lookupResponseString)
+    val lookupToken = mapper.deserialize[LookupToken](lookupResponseString)
 
     def executeRevokeRequest = vaultRest.createTokenRevokeRequest(jsonTokenId)
 
@@ -132,7 +133,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     }
 
     def getPathListPair(pathToSecret: String): (List[String], List[String]) = {
-      jsonSerializer.deserialize[SecretResponse](TaskRunner.tryRunUntilSuccess[String](
+      mapper.deserialize[SecretResponse](TaskRunner.tryRunUntilSuccess[String](
         vaultRest.createGetSubSecretPathsRequest(pathToSecret),
         settings.retryDelay
       )).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
@@ -182,7 +183,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @param policy policy for creating
     * @throws VaultFatalException if response status is not expected.
     */
-  private def writePolicy(policy: Policy) = {
+  private def writePolicy(policy: Policy): Unit = {
     logger.trace(s"writePolicy(policy: $policy)")
 
     def executeRequest = vaultRest.createPolicyCreateRequest(policy.name, policy.jsonString)

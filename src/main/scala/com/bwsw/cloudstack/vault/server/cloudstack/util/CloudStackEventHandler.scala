@@ -32,11 +32,16 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import com.bwsw.cloudstack.vault.server.common.InterruptableCountDawnLatch
+import com.bwsw.cloudstack.vault.server.cloudstack.entities.CloudStackEvent
+import com.bwsw.cloudstack.vault.server.common.{InterruptableCountDawnLatch, JsonSerializer}
+import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.exception.{CriticalException, FatalException}
 import com.bwsw.kafka.reader.entities.OutputEnvelope
 import com.bwsw.kafka.reader.{EventHandler, MessageQueue}
 import com.fasterxml.jackson.core.JsonParseException
+import org.slf4j.LoggerFactory
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**

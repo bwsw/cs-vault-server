@@ -16,14 +16,18 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.cloudstack.entities
+package com.bwsw.cloudstack.vault.server.mocks.requests
 
-import java.util.UUID
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
 
-import com.fasterxml.jackson.annotation.JsonProperty
+class MockVmFindRequest(expectedRequest: ApacheCloudStackRequest) extends VmFindRequest {
+  private val vmFindRequestClass = classOf[VmFindRequest]
+  private val parentRequest = vmFindRequestClass.getDeclaredField("request")
+  parentRequest.setAccessible(true)
 
-private[cloudstack] case class AccountResponse(@JsonProperty("listaccountsresponse") accountList: AccountList)
-
-private[cloudstack] case class AccountList(@JsonProperty("account") accounts: Option[List[Account]])
-
-private[cloudstack] case class Account(id: UUID, @JsonProperty("user") users: List[User])
+  def requestIsEqualTo(request: VmFindRequest): Boolean = {
+    expectedRequest.getCommand == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getCommand &&
+      expectedRequest.getParameters == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getParameters
+  }
+}
