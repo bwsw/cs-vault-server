@@ -18,9 +18,9 @@
 */
 package com.bwsw.cloudstack.vault.server.common
 
+import com.bwsw.cloudstack.KeyAuthenticationClientCreator
+import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.vault.server.Components
-import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
-import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackTaskCreator
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
@@ -55,8 +55,8 @@ object ConfigLoader {
 
 
     Components.Settings(
-      CloudStackService.Settings(cloudStackRetryDelay),
-      CloudStackTaskCreator.Settings(cloudStackEndpoints, cloudStackSecretKey, cloudStackApiKey),
+      Executor.Settings(cloudStackEndpoints, cloudStackRetryDelay),
+      KeyAuthenticationClientCreator.Settings(cloudStackSecretKey, cloudStackApiKey),
       VaultService.Settings(vaultTokenPeriod),
       VaultRestRequestExecutor.Settings(vaultEndpoints, vaultRootToken, vaultRetryDelay),
       ZooKeeperService.Settings(zooKeeperEndpoints, zooKeeperRetryDelay),

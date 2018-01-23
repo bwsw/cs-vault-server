@@ -20,7 +20,6 @@ package com.bwsw.cloudstack.vault.server.vault
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.common.WeightedQueue
 import com.bwsw.cloudstack.vault.server.util.RequestPath
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 

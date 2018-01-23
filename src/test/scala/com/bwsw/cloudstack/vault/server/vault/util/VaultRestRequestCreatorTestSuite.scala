@@ -55,7 +55,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with Priva
     }
 
     val tokenInitParameters = TokenInitParameters(noDefaultPolicy = true, List(policyName), period)
-    val resultTokenResponse = vaultRestRequestCreator.executeTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))
+    val resultTokenResponse = vaultRestRequestCreator.executeTokenCreateRequest(mapper.serialize(tokenInitParameters))
 
     assert(resultTokenResponse == new String(expectedResponseBody, "UTF-8"))
   }
@@ -243,7 +243,7 @@ class VaultRestRequestCreatorTestSuite extends FlatSpec with TestData with Priva
     val tokenInitParameters = TokenInitParameters(noDefaultPolicy = true, List("name"), 1000)
 
     assertThrows[VaultFatalException] {
-      vaultRestRequestCreator.executeTokenCreateRequest(jsonSerializer.serialize(tokenInitParameters))
+      vaultRestRequestCreator.executeTokenCreateRequest(mapper.serialize(tokenInitParameters))
     }
   }
 

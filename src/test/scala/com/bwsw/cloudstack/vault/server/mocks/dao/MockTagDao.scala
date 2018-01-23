@@ -16,13 +16,20 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.mocks
+package com.bwsw.cloudstack.vault.server.mocks.dao
 
-import com.bwsw.kafka.reader.MessageQueue
-import com.bwsw.kafka.reader.entities.InputEnvelope
+import com.bwsw.cloudstack.entities.Executor
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.entities.dao.TagDao
+import com.bwsw.cloudstack.entities.responses.{Tag, TagResponse}
+import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
-class MockMessageQueue[K,V](inputEnvelopes: List[InputEnvelope[V]]) extends MessageQueue (
-    new MockConsumer[K,V]
-){
-  override def take(n :Int): List[InputEnvelope[V]] = inputEnvelopes
+class MockTagDao extends TagDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
+  override def create(request: C): Unit = {
+    throw new NotImplementedError("create method is not implemented")
+  }
+
+  override def find(request: F)(implicit m: Manifest[TagResponse]): Set[Tag] = {
+    throw new NotImplementedError("find method is not implemented")
+  }
 }

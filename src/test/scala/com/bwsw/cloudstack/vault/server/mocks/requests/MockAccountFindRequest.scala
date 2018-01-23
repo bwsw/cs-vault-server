@@ -16,13 +16,18 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.mocks
+package com.bwsw.cloudstack.vault.server.mocks.requests
 
-import com.bwsw.kafka.reader.MessageQueue
-import com.bwsw.kafka.reader.entities.InputEnvelope
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
 
-class MockMessageQueue[K,V](inputEnvelopes: List[InputEnvelope[V]]) extends MessageQueue (
-    new MockConsumer[K,V]
-){
-  override def take(n :Int): List[InputEnvelope[V]] = inputEnvelopes
+class MockAccountFindRequest(expectedRequest: ApacheCloudStackRequest) extends AccountFindRequest {
+  private val accountFindRequestClass = classOf[AccountFindRequest]
+  private val parentRequest = accountFindRequestClass.getDeclaredField("request")
+  parentRequest.setAccessible(true)
+
+  def requestIsEqualTo(request: AccountFindRequest): Boolean = {
+    expectedRequest.getCommand == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getCommand &&
+      expectedRequest.getParameters == parentRequest.get(request).asInstanceOf[ApacheCloudStackRequest].getParameters
+  }
 }

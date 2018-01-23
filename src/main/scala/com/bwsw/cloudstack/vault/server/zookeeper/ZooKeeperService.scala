@@ -75,7 +75,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
     */
   def getNodeData(path: String): Option[String] = {
     logger.trace(s"getNodeData(path: $path)")
-    if (curatorClient.checkExists().forPath(path) == null) {
+    if (Option(curatorClient.checkExists().forPath(path)).isEmpty) {
       None
     } else {
       Some(new String(curatorClient.getData.forPath(path), "UTF-8"))
@@ -113,7 +113,7 @@ class ZooKeeperService(settings: ZooKeeperService.Settings) {
   def doesNodeExist(path: String): Boolean = {
     logger.trace(s"doesNodeExist(path: $path)")
 
-    curatorClient.checkExists().forPath(path) != null
+    Option(curatorClient.checkExists().forPath(path)).nonEmpty
   }
 
   def close(): Unit = {

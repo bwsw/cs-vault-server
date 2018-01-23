@@ -20,46 +20,48 @@ package com.bwsw.cloudstack.vault.server.cloudstack.entities
 
 import org.scalatest.FlatSpec
 
-class TagTestSuite extends FlatSpec {
-  val upperCasePrefix = Tag.Key.prefix.toUpperCase
+class VaultTagKeyTestSuite extends FlatSpec {
+  val upperCasePrefix = VaultTagKey.prefix.toUpperCase
 
   "Tag.Key.fromString" should "return Tag.Key.VaultRO" in {
     val testString = "VAULT.RO"
-    assert(Tag.Key.fromString(s"$upperCasePrefix$testString") == Tag.Key.VaultRO)
+    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultRO)
   }
 
   "Tag.Key.fromString" should "return Tag.Key.VaultRW" in {
     val testString = "VAULT.RW"
-    assert(Tag.Key.fromString(s"$upperCasePrefix$testString") == Tag.Key.VaultRW)
+    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultRW)
   }
 
   "Tag.Key.fromString" should "return Tag.Key.VaultHost" in {
     val testString = "VAULT.HOSTS"
-    assert(Tag.Key.fromString(s"$upperCasePrefix$testString") == Tag.Key.VaultHost)
+    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultHost)
   }
 
   "Tag.Key.fromString" should "return Tag.Key.VaultPrefix" in {
     val testString = "VAULT.PREFIX"
-    assert(Tag.Key.fromString(s"$upperCasePrefix$testString") == Tag.Key.VaultPrefix)
+    assert(VaultTagKey.fromString(s"$upperCasePrefix$testString") == VaultTagKey.VaultPrefix)
   }
 
   "Tag.Key.toString" should "return vault.ro" in {
     val testString = "vault.ro"
-    assert(Tag.Key.toString(Tag.Key.VaultRO) == s"${Tag.Key.prefix}$testString")
+    assert(VaultTagKey.toString(VaultTagKey.VaultRO) == s"${VaultTagKey.prefix}$testString")
   }
 
   "Tag.Key.toString" should "return vault.rw" in {
     val testString = "vault.rw"
-    assert(Tag.Key.toString(Tag.Key.VaultRW) == s"${Tag.Key.prefix}$testString")
+    assert(VaultTagKey.toString(VaultTagKey.VaultRW) == s"${VaultTagKey.prefix}$testString")
   }
 
   "Tag.Key.toString" should "return vault.host" in {
+    val testString = "vault.host"
+    assert(VaultTagKey.toString(VaultTagKey.VaultHost) == s"${VaultTagKey.prefix}$testString")
     val testString = "vault.hosts"
     assert(Tag.Key.toString(Tag.Key.VaultHost) == s"${Tag.Key.prefix}$testString")
   }
 
   "Tag.Key.toString" should "return vault.prefix" in {
     val testString = "vault.prefix"
-    assert(Tag.Key.toString(Tag.Key.VaultPrefix) == s"${Tag.Key.prefix}$testString")
+    assert(VaultTagKey.toString(VaultTagKey.VaultPrefix) == s"${VaultTagKey.prefix}$testString")
   }
 }
