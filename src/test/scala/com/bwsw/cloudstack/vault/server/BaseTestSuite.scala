@@ -22,7 +22,7 @@ import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.mocks.MockConfig
 
 trait BaseTestSuite {
-  val mapper = new JsonMapper(ignoreUnknownProperties = true)
+  val testMapper = new JsonMapper(ignoreUnknownProperties = true)
   val settings = Components.Settings(
     MockConfig.executorSettings,
     MockConfig.clientCreatorSettings,

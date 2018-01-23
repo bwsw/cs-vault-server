@@ -21,9 +21,9 @@ package com.bwsw.cloudstack.vault.server.cloudstack.util
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.cloudstack.TestData
-import com.bwsw.cloudstack.vault.server.common.JsonSerializer
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.mocks.MockMessageQueue
 import com.bwsw.cloudstack.vault.server.mocks.services.{MockCloudStackService, MockVaultService, MockZooKeeperService}
@@ -86,9 +86,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(records)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
       mockMessageQueue,
       messageCount = 10,
+      testMapper,
       controller
     )
 
@@ -121,9 +122,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(records)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
       mockMessageQueue,
       messageCount = 10,
+      testMapper,
       controller
     )
 
@@ -150,18 +152,19 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(records)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
-      mockMessageQueue,
-      messageCount = 10,
-      controller
-    ){
-      override val jsonSerializer: JsonSerializer = new JsonSerializer(true){
-        override def deserialize[T: Manifest](value: String): T = {
-          assert(value == accountDeletionRecord)
-          throw new Exception
-        }
+    val jsonMapper: JsonMapper = new JsonMapper(true){
+      override def deserialize[T: Manifest](value: String): T = {
+        assert(value == accountDeletionRecord)
+        throw new Exception
       }
     }
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
+      mockMessageQueue,
+      messageCount = 10,
+      jsonMapper,
+      controller
+    )
 
     assert(cloudStackEventHandler.handle(dummyFlag).isEmpty)
     assert(!dummyFlag.get())
@@ -186,19 +189,20 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(records)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
-      mockMessageQueue,
-      messageCount = 10,
-      controller
-    ){
-      override val jsonSerializer: JsonSerializer = new JsonSerializer(true){
-        override def deserialize[T: Manifest](value: String): T = {
-          assert(value == accountDeletionRecord)
-          val jsonFactory = new JsonFactory()
-          throw new JsonParseException(jsonFactory.createParser(value), "")
-        }
+    val jsonMapper: JsonMapper = new JsonMapper(true){
+      override def deserialize[T: Manifest](value: String): T = {
+        assert(value == accountDeletionRecord)
+        val jsonFactory = new JsonFactory()
+        throw new JsonParseException(jsonFactory.createParser(value), "")
       }
     }
+
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
+      mockMessageQueue,
+      messageCount = 10,
+      jsonMapper,
+      controller
+    )
 
     assert(cloudStackEventHandler.handle(dummyFlag).size == records.size)
   }
@@ -230,9 +234,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
       mockMessageQueue,
       messageCount = 10,
+      testMapper,
       controller
     )
 
@@ -266,9 +271,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
       mockMessageQueue,
       messageCount = 10,
+      testMapper,
       controller
     )
 
@@ -305,9 +311,10 @@ class CloudStackEventHandlerTestSuite extends FlatSpec with TestData with BaseTe
 
     val mockMessageQueue = getMockMessageQueue(accountDeletionRecords)
 
-    val cloudStackEventHandler = new CloudStackEventHandler[String](
+    val cloudStackEventHandler = new CloudStackEventHandler[String, String](
       mockMessageQueue,
       messageCount = 10,
+      testMapper,
       controller
     )
 
