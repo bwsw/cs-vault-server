@@ -85,9 +85,7 @@ class VaultService(vaultRest: VaultRestRequestExecutor,
 
     logger.debug(s"Token: $tokenId has been revoked")
 
-    lookupToken.tokenData.policies.filter { x =>
-      x != "default" && x != "root"
-    }
+    lookupToken.tokenData.policies
   }
 
   /**
@@ -162,7 +160,7 @@ class VaultService(vaultRest: VaultRestRequestExecutor,
     * @param policy policy for creating
     * @throws VaultFatalException if response status is not expected.
     */
-  private def writePolicy(policy: Policy): Unit = {
+  def writePolicy(policy: Policy): Unit = {
     logger.trace(s"writePolicy(policy: $policy)")
 
     vaultRest.executePolicyCreateRequest(policy.name, policy.jsonString)

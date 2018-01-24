@@ -22,7 +22,7 @@ import java.util.UUID
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-private[vault] object Token {
+object Token {
 
 /**
   * Class is used to serialize a request to create token
@@ -51,6 +51,6 @@ private[vault] object Token {
 
 }
 
-private[vault] case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
+case class Token(@JsonProperty("auth") tokenId: Token.TokenId)
 
-private[vault] case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)
+case class LookupToken(@JsonProperty("data") tokenData: Token.TokenData)

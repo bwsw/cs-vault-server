@@ -40,7 +40,7 @@ lazy val root = (project in file("."))
       ("org.apache.kafka" % "kafka_2.12" % "0.10.1.1")
         .exclude("org.slf4j", "slf4j-api"),
       "org.apache.zookeeper" % "zookeeper" % "3.4.10",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.1" % "it,test",
       "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0",
       "org.slf4j" % "slf4j-api" % "1.7.25"
     ),
