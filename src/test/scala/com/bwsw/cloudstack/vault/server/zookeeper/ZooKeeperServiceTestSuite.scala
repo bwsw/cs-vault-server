@@ -79,7 +79,7 @@ class ZooKeeperServiceTestSuite extends FlatSpec with BeforeAndAfterAll {
   }
 
   override def afterAll(): Unit = {
-    zooKeeperService.close()
+    zooKeeperService.close
     server.close()
   }
 }

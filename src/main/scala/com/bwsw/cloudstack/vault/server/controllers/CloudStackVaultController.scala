@@ -18,6 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.controllers
 
+import java.nio.file.Paths
 import java.util.UUID
 
 import com.bwsw.cloudstack.entities.responses.Tag
@@ -45,7 +46,9 @@ class CloudStackVaultController(vaultService: VaultService,
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val accountEntityName = "accounts"
   private val vmEntityName = "vms"
-  private val vaultApiPath = s"${vaultService.endpoint}${RequestPath.vaultRoot}"
+  private val vaultApiPathsString = vaultService.endpoints.map { endpoint =>
+    s"$endpoint${RequestPath.vaultRoot}"
+  }.mkString(",")
 
   /**
     * Revokes tokens and deletes secrets in Vault server.
@@ -55,7 +58,7 @@ class CloudStackVaultController(vaultService: VaultService,
     */
   def handleAccountDelete(accountId: UUID): Unit = {
     logger.trace(s"handleAccountDelete(accountId: $accountId)")
-    val requestSecretPath = s"${RequestPath.vaultRoot}${getAccountEntitySecretPath(accountId)}"
+    val requestSecretPath = Paths.get(RequestPath.vaultRoot, getAccountEntitySecretPath(accountId)).toString
     deleteTokenAndAppropriateSecret(accountId, accountEntityName, requestSecretPath)
     logger.debug(s"Account deletion has been processed, accountId: $accountId)")
   }
@@ -68,7 +71,7 @@ class CloudStackVaultController(vaultService: VaultService,
     */
   def handleVmDelete(vmId: UUID): Unit = {
     logger.trace(s"handleVmDelete(vmId: $vmId)")
-    val requestSecretPath = s"${RequestPath.vaultRoot}${getVmEntitySecretPath(vmId)}"
+    val requestSecretPath = Paths.get(RequestPath.vaultRoot, getVmEntitySecretPath(vmId)).toString
     deleteTokenAndAppropriateSecret(vmId, vmEntityName, requestSecretPath)
     logger.debug(s"VM deletion has been processed, vmId: $vmId)")
   }
@@ -102,7 +105,7 @@ class CloudStackVaultController(vaultService: VaultService,
       }.toSet
 
       val vaultKeyspaceTags = Set(
-        Tag(VaultTagKey.toString(VaultTagKey.VaultHost), vaultApiPath),
+        Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), vaultApiPathsString),
         Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), getAccountEntitySecretPath(accountId))
       )
 
@@ -147,7 +150,7 @@ class CloudStackVaultController(vaultService: VaultService,
     }.toSet
 
     val vaultKeyspaceTags = Set(
-      Tag(VaultTagKey.toString(VaultTagKey.VaultHost), vaultApiPath),
+      Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), vaultApiPathsString),
       Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), getVmEntitySecretPath(vmId))
     )
 
@@ -163,33 +166,6 @@ class CloudStackVaultController(vaultService: VaultService,
       case Policy.ACL.Read => VaultTagKey.VaultRO
       case Policy.ACL.Write => VaultTagKey.VaultRW
       case _ => throw new IllegalArgumentException(s"unknown policy ACL: $acl")
-    }
-  }
-
-
-  /**
-    * Create missing token tags after creating tokens in Vault or retrieving them from ZooKeeper node
-    */
-  private def createMissingAccountTokenTag(accountId: UUID, absentTagKey: VaultTagKey): Tag = {
-    logger.trace(s"createMissingAccountTokenTag(accountId: $accountId, absentTagKey: $absentTagKey)")
-
-    val pathToToken = createTokenEntityNodePath(accountId.toString, accountEntityName, absentTagKey)
-    zooKeeperService.getNodeData(pathToToken) match {
-      case Some(token) =>
-        Tag(VaultTagKey.toString(absentTagKey), token)
-      case None =>
-        val policy = absentTagKey match {
-          case VaultTagKey.VaultRO =>
-            Policy.createAccountReadPolicy(accountId, settings.accountSecretPath)
-          case VaultTagKey.VaultRW =>
-            Policy.createAccountWritePolicy(accountId, settings.accountSecretPath)
-          case _ =>
-            throw new IllegalArgumentException(s"tag key: $absentTagKey is wrong")
-        }
-        val token = vaultService.createToken(policy :: Nil)
-        val tag = Tag(VaultTagKey.toString(absentTagKey), token.toString)
-        writeTokenToZooKeeperNode(pathToToken, token)
-        tag
     }
   }
 
@@ -221,17 +197,17 @@ class CloudStackVaultController(vaultService: VaultService,
   }
 
   private def createTokenEntityNodePath(entityId: String, entityName: String, tagKey: VaultTagKey) =
-    s"${createEntityNodePath(entityId, entityName)}/${tagKey.toString.toLowerCase()}"
+    Paths.get(createEntityNodePath(entityId, entityName), tagKey.toString.toLowerCase()).toString
 
   private def createEntityNodePath(entityId: String, entityName: String) =
-    s"${settings.zooKeeperRootNode}/$entityName/$entityId"
+    Paths.get(settings.zooKeeperRootNode, entityName, entityId).toString
 
   private def getVmEntitySecretPath(vmId: UUID): String = {
-    s"${settings.vmSecretPath}$vmId"
+    Paths.get(settings.vmSecretPath, vmId.toString).toString
   }
 
   private def getAccountEntitySecretPath(accountId: UUID): String = {
-    s"${settings.accountSecretPath}$accountId"
+    Paths.get(settings.accountSecretPath, accountId.toString).toString
   }
 
   private def writeTokenToZooKeeperNode(path: String, token: UUID): Unit = {

@@ -54,10 +54,10 @@ trait TestData {
       request.addParameter("response", "json")
       request.addParameter("resourcetype", resourceType.name)
       request.addParameter("resourceids", resourceId)
-      request.addParameter(s"tags[0].key", tagTuple._1.key)
-      request.addParameter(s"tags[0].value", tagTuple._1.value)
-      request.addParameter(s"tags[1].key", tagTuple._2.key)
-      request.addParameter(s"tags[1].value", tagTuple._2.value)
+      request.addParameter("tags[0].key", tagTuple._1.key)
+      request.addParameter("tags[0].value", tagTuple._1.value)
+      request.addParameter("tags[1].key", tagTuple._2.key)
+      request.addParameter("tags[1].value", tagTuple._2.value)
     }
   }
 

@@ -24,9 +24,8 @@ import java.util.regex.Pattern
 import com.bettercloud.vault.json.Json
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util._
 import com.bwsw.cloudstack.vault.server.vault.entities._
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.slf4j.LoggerFactory
 
@@ -37,11 +36,11 @@ import org.slf4j.LoggerFactory
   *
   * @param settings contains settings for interaction with Vault
   */
-class VaultService(vaultRest: VaultRestRequestCreator,
+class VaultService(vaultRest: VaultRestRequestExecutor,
                    settings: VaultService.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val mapper = new JsonMapper(ignoreUnknownProperties = true)
-  val endpoint: String = vaultRest.endpoint
+  val endpoints: Array[String] = vaultRest.endpoints
 
   /**
     * Creates token with specified policy
@@ -60,12 +59,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
       Converter.daysToSeconds(settings.tokenPeriod)
     )
 
-    def executeRequest = vaultRest.createTokenCreateRequest(mapper.serialize(tokenParameters))
-
-    val responseString = TaskRunner.tryRunUntilSuccess[String](
-      executeRequest,
-      settings.retryDelay
-    )
+    val responseString = vaultRest.executeTokenCreateRequest(mapper.serialize(tokenParameters))
 
     val token = mapper.deserialize[Token](responseString).tokenId.id
     logger.debug(s"Token: $token has been created")
@@ -83,21 +77,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     logger.trace(s"revokeToken(tokenId: $tokenId)")
     val jsonTokenId = Json.`object`().add("token", tokenId.toString).toString
 
-    def executeLookupRequest = vaultRest.createTokenLookupRequest(jsonTokenId)
-
-    val lookupResponseString = TaskRunner.tryRunUntilSuccess[String](
-      executeLookupRequest,
-      settings.retryDelay
-    )
+    val lookupResponseString = vaultRest.executeTokenLookupRequest(jsonTokenId)
 
     val lookupToken = mapper.deserialize[LookupToken](lookupResponseString)
 
-    def executeRevokeRequest = vaultRest.createTokenRevokeRequest(jsonTokenId)
+    vaultRest.executeTokenRevokeRequest(jsonTokenId)
 
-    val revokeResponseString = TaskRunner.tryRunUntilSuccess[String](
-      executeRevokeRequest,
-      settings.retryDelay
-    )
     logger.debug(s"Token: $tokenId has been revoked")
 
     lookupToken.tokenData.policies.filter { x =>
@@ -133,10 +118,9 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     }
 
     def getPathListPair(pathToSecret: String): (List[String], List[String]) = {
-      mapper.deserialize[SecretResponse](TaskRunner.tryRunUntilSuccess[String](
-        vaultRest.createGetSubSecretPathsRequest(pathToSecret),
-        settings.retryDelay
-      )).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
+      mapper.deserialize[SecretResponse](
+        vaultRest.executeGetSubSecretPathsRequest(pathToSecret)
+      ).secretList.getOrElse(SecretList(List.empty[String])).secrets.partition { x =>
         stringPattern.matcher(x).matches()
       }
     }
@@ -153,7 +137,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     }
     loop(pathToRootSecret, subPathsOfRootPath)
     pathsForDeletion.reverse.foreach { x =>
-      TaskRunner.tryRunUntilSuccess[String](vaultRest.createDeleteSecretRequest(x), settings.retryDelay)
+      vaultRest.executeDeleteSecretRequest(x)
       logger.debug(s"Data from path: $x has been deleted")
     }
   }
@@ -167,12 +151,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   def deletePolicy(policyName: String): Unit = {
     logger.trace(s"deletePolicy(policyName: $policyName)")
 
-    def executeRequest = vaultRest.createPolicyDeleteRequest(policyName)
-
-    TaskRunner.tryRunUntilSuccess[String](
-      executeRequest,
-      settings.retryDelay
-    )
+    vaultRest.executePolicyDeleteRequest(policyName)
 
     logger.debug(s"Policy with name: $policyName has been deleted")
   }
@@ -186,16 +165,12 @@ class VaultService(vaultRest: VaultRestRequestCreator,
   def writePolicy(policy: Policy): Unit = {
     logger.trace(s"writePolicy(policy: $policy)")
 
-    def executeRequest = vaultRest.createPolicyCreateRequest(policy.name, policy.jsonString)
+    vaultRest.executePolicyCreateRequest(policy.name, policy.jsonString)
 
-    TaskRunner.tryRunUntilSuccess[String](
-      executeRequest,
-      settings.retryDelay
-    )
     logger.debug(s"Policy: $policy has been created")
   }
 }
 
 object VaultService {
-  case class Settings(tokenPeriod: Int, retryDelay: Int)
+  case class Settings(tokenPeriod: Int)
 }

@@ -23,7 +23,7 @@ import java.util.UUID
 import com.bwsw.cloudstack.vault.server.BaseTestSuite
 import com.bwsw.cloudstack.vault.server.mocks.MockConfig._
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.vault.util.exception.VaultFatalException
 import org.scalatest.FlatSpec
 
@@ -36,15 +36,15 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createTokenCreateRequest(tokenParameters: String): () => String  = {
-        () => getTokenJsonResponse(token.toString)
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeTokenCreateRequest(tokenParameters: String): String  = {
+        getTokenJsonResponse(token.toString)
       }
 
-      override def createPolicyCreateRequest(policyName: String, policyJson: String): () => String = {
+      override def executePolicyCreateRequest(policyName: String, policyJson: String): String = {
         assert(policyName == policy.name, "policyName is wrong")
         assert(policyJson == policy.jsonString, "policyJson is wrong")
-        () => ""
+        ""
       }
     }
 
@@ -59,15 +59,15 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
     val tokenJson = getTokenJson(entityId.toString)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createTokenLookupRequest(tokenJsonString: String): () => String  = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeTokenLookupRequest(tokenJsonString: String): String  = {
         assert(tokenJson == tokenJsonString, "tokenJsonString is wrong")
-        () => getLookupTokenJsonResponse(policy.name)
+        getLookupTokenJsonResponse(policy.name)
       }
 
-      override def createTokenRevokeRequest(tokenJsonString: String): () => String = {
+      override def executeTokenRevokeRequest(tokenJsonString: String): String = {
         assert(tokenJson == tokenJsonString, "tokenJsonString is wrong")
-        () => ""
+        ""
       }
     }
 
@@ -80,10 +80,10 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createPolicyDeleteRequest(policyName: String): () => String = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executePolicyDeleteRequest(policyName: String): String = {
         assert(policyName == policy.name, "policyName is wrong")
-        () => ""
+        ""
       }
     }
 
@@ -92,7 +92,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(vaultService.deletePolicy(policy.name).isInstanceOf[Unit])
   }
 
-  "deleteSecretRecursive" should "delete secret in Vault by path and sub-paths" in {
+  "deleteSecretsRecursively" should "delete secret in Vault by path and sub-paths" in {
     val firstRootPath = "/test!1"
     val secondRootPath = "test!!2/"
     val fullSecondRootPath = s"$firstRootPath/${secondRootPath.dropRight(1)}"
@@ -117,23 +117,23 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     )
     var actualDeletionPaths = List.empty[String]
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createDeleteSecretRequest(pathToSecret: String): () => String = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeDeleteSecretRequest(pathToSecret: String): String = {
         actualDeletionPaths = actualDeletionPaths ::: pathToSecret :: Nil
-        () => ""
+        ""
       }
 
-      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
+      override def executeGetSubSecretPathsRequest(pathToRootSecret: String): String = {
         pathToRootSecret match {
           case `firstRootPath` =>
             actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-            () => getSubSecretPathsJson(secondRootPath, secondPath)
+            getSubSecretPathsJson(secondRootPath, secondPath)
           case `fullSecondRootPath` =>
             actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-            () => getSubSecretPathsJson(fourthPath, thirdRootPath)
+            getSubSecretPathsJson(fourthPath, thirdRootPath)
           case _ =>
             actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-            () => getSubSecretPathsJson(thirdPath, fourthPath)
+            getSubSecretPathsJson(thirdPath, fourthPath)
         }
       }
     }
@@ -144,7 +144,7 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     assert(actualGetPaths == expectedGetPaths)
   }
 
-  "deleteSecretRecursive" should "delete secret in Vault by path if sub-path does not exist" in {
+  "deleteSecretsRecursively" should "delete secret in Vault by path if sub-path does not exist" in {
     val firstPath = "test1"
     val responseWithEmptySubThree = "{\"errors\":[]}"
 
@@ -154,15 +154,15 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val expectedDeletionPaths = List(s"$firstPath")
     var actualDeletionPaths = List.empty[String]
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createDeleteSecretRequest(pathToSecret: String): () => String = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeDeleteSecretRequest(pathToSecret: String): String = {
         actualDeletionPaths = actualDeletionPaths ::: pathToSecret :: Nil
-        () => ""
+        ""
       }
 
-      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
+      override def executeGetSubSecretPathsRequest(pathToRootSecret: String): String = {
         actualGetPaths = actualGetPaths ::: pathToRootSecret :: Nil
-        () => responseWithEmptySubThree
+        responseWithEmptySubThree
       }
     }
 
@@ -177,15 +177,15 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountReadPolicy(entityId, accountSecretPath)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createTokenCreateRequest(tokenParameters: String): () => String  = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeTokenCreateRequest(tokenParameters: String): String  = {
         throw new VaultFatalException("test exception")
       }
 
-      override def createPolicyCreateRequest(policyName: String, policyJson: String): () => String = {
+      override def executePolicyCreateRequest(policyName: String, policyJson: String): String = {
         assert(policyName == policy.name, "policyName is wrong")
         assert(policyJson == policy.jsonString, "policyJson is wrong")
-        () => ""
+        ""
       }
     }
 
@@ -200,8 +200,8 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val entityId = UUID.randomUUID()
     val tokenJson = getTokenJson(entityId.toString)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createTokenLookupRequest(tokenJsonString: String): () => String  = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeTokenLookupRequest(tokenJsonString: String): String  = {
         assert(tokenJson == tokenJsonString, "tokenJsonString is wrong")
         throw new VaultFatalException("test exception")
       }
@@ -214,18 +214,18 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     }
   }
 
-  "deleteSecretRecursive" should "not swallow VaultFatalException" in {
+  "deleteSecretsRecursively" should "not swallow VaultFatalException" in {
     val path = "/test/path"
     val responseWithEmptySubTree = "{\"errors\":[]}"
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createDeleteSecretRequest(pathToSecret: String): () => String = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executeDeleteSecretRequest(pathToSecret: String): String = {
         assert(pathToSecret == path, "vaultRest is wrong")
         throw new VaultFatalException("test exception")
       }
 
-      override def createGetSubSecretPathsRequest(pathToRootSecret: String): () => String = {
-        () => responseWithEmptySubTree
+      override def executeGetSubSecretPathsRequest(pathToRootSecret: String): String = {
+        responseWithEmptySubTree
       }
     }
 
@@ -240,8 +240,8 @@ class VaultServiceTestSuite extends FlatSpec with TestData with BaseTestSuite {
     val entityId = UUID.randomUUID()
     val policy = Policy.createAccountWritePolicy(entityId, accountSecretPath)
 
-    val vaultRest = new VaultRestRequestCreator(vaultRestRequestCreatorSettings) {
-      override def createPolicyDeleteRequest(policyName: String): () => String = {
+    val vaultRest = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
+      override def executePolicyDeleteRequest(policyName: String): String = {
         assert(policyName == policy.name, "policyName is wrong")
         throw new VaultFatalException("test exception")
       }
