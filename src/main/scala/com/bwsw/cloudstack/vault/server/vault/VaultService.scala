@@ -183,7 +183,7 @@ class VaultService(vaultRest: VaultRestRequestCreator,
     * @param policy policy for creating
     * @throws VaultFatalException if response status is not expected.
     */
-  private def writePolicy(policy: Policy): Unit = {
+  def writePolicy(policy: Policy): Unit = {
     logger.trace(s"writePolicy(policy: $policy)")
 
     def executeRequest = vaultRest.createPolicyCreateRequest(policy.name, policy.jsonString)

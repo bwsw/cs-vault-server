@@ -18,10 +18,49 @@
 */
 package com.bwsw.cloudstack.vault.server.vault
 
+import java.util.UUID
+
+import com.bettercloud.vault.json.Json
+import com.bettercloud.vault.rest.Rest
+import com.bwsw.cloudstack.entities.common.JsonMapper
+import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
+import com.bwsw.cloudstack.vault.server.common.Converter
+import com.bwsw.cloudstack.vault.server.util.vault.TokenData
+import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
+import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
 
-class VaultServiceIntegrationTestSuite extends FlatSpec {
+class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsComponents {
+  val mapper = new JsonMapper(ignoreUnknownProperties = true)
+
   it should "create token and then revoke it" in {
-    val vaultService = new VaultService()
+    val accountId = UUID.randomUUID()
+    val expectedPolicyPath = "secret/it/test"
+    val expectedTokenPeriod = Converter.daysToSeconds(IntegrationTestsSettings.vaultTokenPeriod)
+
+    val policy = Policy.createAccountReadPolicy(accountId, expectedPolicyPath)
+    vaultService.writePolicy(policy)
+
+    val token = vaultService.createToken(List(policy))
+
+    val jsonTokenId = Json.`object`().add("token", token.toString).toString
+    val responseLookupToken = vaultRestRequestExecutor.createTokenLookupRequest(jsonTokenId)()
+
+
+    val lookupToken = mapper.deserialize[TokenData](responseLookupToken).data
+
+    assert(lookupToken.period == expectedTokenPeriod)
+    assert(lookupToken.policies.toSet == Set(policy.name))
+
+    val policiesFromRevokedToken = vaultService.revokeToken(token)
+
+    assert(policiesFromRevokedToken.toSet == Set(policy.name))
+
+    val responseRevokedToken = new Rest()
+      .url(s"${vaultService.endpoint}${RequestPath.vaultTokenLookup}")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
+      .body(jsonTokenId.getBytes("UTF-8")).post()
+
+    assert(responseRevokedToken.getStatus == 403)
   }
 }
