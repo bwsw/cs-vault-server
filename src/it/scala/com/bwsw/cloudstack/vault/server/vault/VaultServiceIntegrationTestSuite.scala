@@ -61,6 +61,6 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
-    assert(responseRevokedToken.getStatus == Constants.forbiddenVaultStatus)
+    assert(responseRevokedToken.getStatus == Constants.tokenNotFoundStatus)
   }
 }

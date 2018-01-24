@@ -19,5 +19,5 @@
 package com.bwsw.cloudstack.vault.server.vault
 
 object Constants {
-  val forbiddenVaultStatus = 403
+  val tokenNotFoundStatus = 403
 }
