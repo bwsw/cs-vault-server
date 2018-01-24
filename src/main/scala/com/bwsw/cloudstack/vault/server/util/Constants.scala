@@ -27,7 +27,7 @@ object ConfigLiterals {
 
   val tagNamePrefix          = s"$applicationDomain.tagNamePrefix"
 
-  val vaultEndpoint          = s"$vaultDomain.endpoint"
+  val vaultEndpoints         = s"$vaultDomain.endpoints"
   val vaultRootToken         = s"$vaultDomain.rootToken"
   val vaultRetryDelay        = s"$vaultDomain.retryDelay"
   val vaultTokenPeriod       = s"$vaultDomain.tokenPeriod"
@@ -60,12 +60,12 @@ object HttpStatus {
 }
 
 object RequestPath {
-  val vaultRoot            = "/v1/"
-  val vaultHealthCheckPath = s"${vaultRoot}sys/health"
-  val vaultTokenCreate     = s"${vaultRoot}auth/token/create"
-  val vaultTokenLookup     = s"${vaultRoot}auth/token/lookup"
-  val vaultPolicy          = s"${vaultRoot}sys/policy"
-  val vaultTokenRevoke     = s"${vaultRoot}auth/token/revoke"
+  val vaultRoot            = "/v1"
+  val vaultHealthCheckPath = s"$vaultRoot/sys/health"
+  val vaultTokenCreate     = s"$vaultRoot/auth/token/create"
+  val vaultTokenLookup     = s"$vaultRoot/auth/token/lookup"
+  val vaultPolicy          = s"$vaultRoot/sys/policy"
+  val vaultTokenRevoke     = s"$vaultRoot/auth/token/revoke"
 }
 
 object DataPath {

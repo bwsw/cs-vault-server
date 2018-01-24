@@ -59,14 +59,18 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
     Tag(VaultTagKey.toString(VaultTagKey.VaultRO), readToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultRW), writeToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), s"${controllerSettings.accountSecretPath}$accountId"),
-    Tag(VaultTagKey.toString(VaultTagKey.VaultHost), s"${MockConfig.vaultRestRequestCreatorSettings.endpoint}${RequestPath.vaultRoot}")
+    Tag(VaultTagKey.toString(VaultTagKey.VaultHosts), s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+      s"$x${RequestPath.vaultRoot}"
+    }.mkString(",")}")
   )
 
   val expectedTagsForVm = List(
     Tag(VaultTagKey.toString(VaultTagKey.VaultRO), readToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultRW), writeToken.toString),
     Tag(VaultTagKey.toString(VaultTagKey.VaultPrefix), s"${controllerSettings.vmSecretPath}$vmId"),
-    Tag(VaultTagKey.toString(VaultTagKey.VaultHost), s"${MockConfig.vaultRestRequestCreatorSettings.endpoint}${RequestPath.vaultRoot}")
+    Tag(VaultTagKey.toString(VaultTagKey.VaultHosts),  s"${MockConfig.vaultRestRequestExecutorSettings.endpoints.map { x =>
+      s"$x${RequestPath.vaultRoot}"
+    }.mkString(",")}")
   )
 
   "handleAccountDelete" should "get account tokens from ZooKeeper, revoke them and then delete secret and policies" in {
@@ -296,7 +300,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
     val services = getServicesForTestZooKeeperWritingToNodeThrowException(
       readAccountTokenNodePath,
-      writeAccountTokenNodePath,
       expectedPolicy,
       expectedToken
     )
@@ -454,7 +457,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
 
     val services = getServicesForTestZooKeeperWritingToNodeThrowException(
       readVmTokenNodePath,
-      writeVmTokenNodePath,
       expectedPolicy,
       expectedToken
     )
@@ -517,7 +519,6 @@ class CloudStackVaultControllerTestSuite extends FlatSpec with BaseTestSuite wit
   }
 
   private def getServicesForTestZooKeeperWritingToNodeThrowException(readTokenPath: String,
-                                                                     writeTokenPath: String,
                                                                      exeptedPolicy: Policy,
                                                                      expectedToken: UUID) = {
     val vaultService = new MockVaultService {

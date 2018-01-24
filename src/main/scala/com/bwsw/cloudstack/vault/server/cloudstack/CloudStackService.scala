@@ -58,9 +58,9 @@ class CloudStackService(accountDao: AccountDao,
 
     val vmFindRequest = new VmFindRequest().withId(vmId)
 
-    def vmFindRequestExecution(): List[VirtualMachine] = vmDao.find(vmFindRequest)
+    def vmFindRequestExecution: List[VirtualMachine] = vmDao.find(vmFindRequest)
 
-    val vm = tryExecuteRequest(vmFindRequestExecution).headOption.getOrElse(
+    val vm = tryExecuteRequest(vmFindRequestExecution _).headOption.getOrElse(
       throw new CloudStackEntityDoesNotExistException(s"VM with id: $vmId does not exist")
     )
 
@@ -68,9 +68,9 @@ class CloudStackService(accountDao: AccountDao,
       .withName(vm.accountName)
       .withDomain(vm.domainId)
 
-    def accountFindRequestExecution(): List[Account] = accountDao.find(accountFindRequest)
+    def accountFindRequestExecution: List[Account] = accountDao.find(accountFindRequest)
 
-    val accountId = tryExecuteRequest(accountFindRequestExecution).headOption.getOrElse(
+    val accountId = tryExecuteRequest(accountFindRequestExecution _).headOption.getOrElse(
       throw new CloudStackEntityDoesNotExistException(s"VM: $vmId does not include the account with " +
         s"name: ${vm.accountName} within domain: ${vm.domainId}")
     ).id
@@ -91,9 +91,9 @@ class CloudStackService(accountDao: AccountDao,
 
     val accountFindRequest = new AccountFindRequest().withId(accountId)
 
-    def accountFindRequestExecution(): List[Account] = accountDao.find(accountFindRequest)
+    def accountFindRequestExecution: List[Account] = accountDao.find(accountFindRequest)
 
-    tryExecuteRequest(accountFindRequestExecution).nonEmpty
+    tryExecuteRequest(accountFindRequestExecution _).nonEmpty
   }
 
   /**
@@ -108,9 +108,9 @@ class CloudStackService(accountDao: AccountDao,
 
     val vmFindRequest = new VmFindRequest().withId(vmId)
 
-    def vmFindRequestExecution(): List[VirtualMachine] = vmDao.find(vmFindRequest)
+    def vmFindRequestExecution: List[VirtualMachine] = vmDao.find(vmFindRequest)
 
-    tryExecuteRequest(vmFindRequestExecution).nonEmpty
+    tryExecuteRequest(vmFindRequestExecution _).nonEmpty
   }
 
   /**

@@ -18,6 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server.vault.entities
 
+import java.nio.file.Paths
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
@@ -44,7 +45,7 @@ object Policy {
   def createVmReadPolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_ro*",
-      path = s"$path$vm*",
+      path = Paths.get(path, s"$vm*").toString,
       acl = Policy.ACL.Read
     )
   }
@@ -52,7 +53,7 @@ object Policy {
   def createVmWritePolicy(account: UUID, vm: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_${vm}_rw*",
-      path = s"$path$vm*",
+      path = Paths.get(path, s"$vm*").toString,
       acl = Policy.ACL.Write
     )
   }
@@ -60,7 +61,7 @@ object Policy {
   def createAccountReadPolicy(account: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_ro*",
-      path = s"$path$account*",
+      path = Paths.get(path, s"$account*").toString,
       acl = Policy.ACL.Read
     )
   }
@@ -68,7 +69,7 @@ object Policy {
   def createAccountWritePolicy(account: UUID, path: String): Policy = {
     new Policy(
       name = s"acl_${account}_rw*",
-      path = s"$path$account*",
+      path = Paths.get(path, s"$account*").toString,
       acl = Policy.ACL.Write
     )
   }

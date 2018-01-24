@@ -25,7 +25,7 @@ import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.kafka.reader.Consumer
 import org.slf4j.LoggerFactory
@@ -36,7 +36,7 @@ object Components {
   case class Settings(executorSettings: Executor.Settings,
                       keyAuthenticationClientCreatorSettings: KeyAuthenticationClientCreator.Settings,
                       vaultServiceSettings: VaultService.Settings,
-                      vaultRestRequestCreatorSettings: VaultRestRequestCreator.Settings,
+                      vaultRestRequestCreatorSettings: VaultRestRequestExecutor.Settings,
                       zooKeeperServiceSettings: ZooKeeperService.Settings,
                       cloudStackVaultControllerSettings: CloudStackVaultController.Settings,
                       consumerSettings: Consumer.Settings)
@@ -62,7 +62,7 @@ class Components(settings: Components.Settings) {
   //services
   lazy val cloudStackService = new CloudStackService(accountDao, tagDao, vmDao)
   lazy val vaultService = new VaultService(
-    new VaultRestRequestCreator(settings.vaultRestRequestCreatorSettings),
+    new VaultRestRequestExecutor(settings.vaultRestRequestCreatorSettings),
     settings.vaultServiceSettings
   )
   lazy val zooKeeperService = new ZooKeeperService(
@@ -84,8 +84,9 @@ class Components(settings: Components.Settings) {
   lazy val eventMapper = new JsonMapper(ignoreUnknownProperties = true)
 
   def close(): Unit = {
-    List[() => Unit](zooKeeperService.close, consumer.close).foreach(func => {
+    List(zooKeeperService.close _, consumer.close _).foreach(func => {
       Try(func()) match {
+        case Success(x) =>
         case Failure(e: Throwable) =>
           logger.error(s"the function: '$func' was executed with exception: $e")
       }

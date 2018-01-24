@@ -24,7 +24,7 @@ import com.bwsw.cloudstack.vault.server.Components
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.{ApplicationConfig, ConfigLiterals}
 import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.kafka.reader.Consumer
 
@@ -37,7 +37,7 @@ object ConfigLoader {
     //Vault
     val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
     val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
-    val vaultEndpoint = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoint)
+    val vaultEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoints).split("[,\\s]+")
     val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
     //CloudStack
     val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
@@ -57,8 +57,8 @@ object ConfigLoader {
     Components.Settings(
       Executor.Settings(cloudStackEndpoints, cloudStackRetryDelay),
       KeyAuthenticationClientCreator.Settings(cloudStackSecretKey, cloudStackApiKey),
-      VaultService.Settings(vaultTokenPeriod, vaultRetryDelay),
-      VaultRestRequestCreator.Settings(vaultEndpoint, vaultRootToken),
+      VaultService.Settings(vaultTokenPeriod),
+      VaultRestRequestExecutor.Settings(vaultEndpoints, vaultRootToken, vaultRetryDelay),
       ZooKeeperService.Settings(zooKeeperEndpoints, zooKeeperRetryDelay),
       CloudStackVaultController.Settings(vmSecretPath, accountSecretPath, zooKeeperRootNode),
       Consumer.Settings(kafkaEndpoints, kafkaGroupId, kafkaPollTimeout)

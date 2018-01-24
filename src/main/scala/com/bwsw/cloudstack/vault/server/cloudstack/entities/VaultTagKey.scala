@@ -35,16 +35,16 @@ object VaultTagKey {
   }
   private val lowerCaseVaultRoString     = s"${prefix}vault.ro"
   private val lowerCaseVaultRwString     = s"${prefix}vault.rw"
-  private val lowerCaseVaultHostString   = s"${prefix}vault.host"
+  private val lowerCaseVaultHostsString  = s"${prefix}vault.hosts"
   private val lowerCaseVaultPrefixString = s"${prefix}vault.prefix"
   private val upperCaseVaultRoString     = lowerCaseVaultRoString.toUpperCase
   private val upperCaseVaultRwString     = lowerCaseVaultRwString.toUpperCase
-  private val upperCaseVaultHostString   = lowerCaseVaultHostString.toUpperCase
+  private val upperCaseVaultHostString   = lowerCaseVaultHostsString.toUpperCase
   private val upperCaseVaultPrefixString = lowerCaseVaultPrefixString.toUpperCase
 
   case object VaultRO      extends VaultTagKey
   case object VaultRW      extends VaultTagKey
-  case object VaultHost    extends VaultTagKey
+  case object VaultHosts   extends VaultTagKey
   case object VaultPrefix  extends VaultTagKey
   case object Other        extends VaultTagKey
 
@@ -52,7 +52,7 @@ object VaultTagKey {
     key.toUpperCase match {
       case `upperCaseVaultRoString`       => VaultTagKey.VaultRO
       case `upperCaseVaultRwString`       => VaultTagKey.VaultRW
-      case `upperCaseVaultHostString`     => VaultTagKey.VaultHost
+      case `upperCaseVaultHostString`     => VaultTagKey.VaultHosts
       case `upperCaseVaultPrefixString`   => VaultTagKey.VaultPrefix
       case _                              => VaultTagKey.Other
     }
@@ -62,7 +62,7 @@ object VaultTagKey {
     case  VaultTagKey.VaultRO       => lowerCaseVaultRoString
     case  VaultTagKey.VaultRW       => lowerCaseVaultRwString
     case  VaultTagKey.VaultPrefix   => lowerCaseVaultPrefixString
-    case  VaultTagKey.VaultHost     => lowerCaseVaultHostString
+    case  VaultTagKey.VaultHosts    => lowerCaseVaultHostsString
     case  VaultTagKey.Other         => ""
   }
 }

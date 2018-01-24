@@ -22,7 +22,7 @@ import com.bwsw.cloudstack.KeyAuthenticationClientCreator
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestCreator
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.kafka.reader.Consumer
 
@@ -32,8 +32,8 @@ object MockConfig {
 
   val zooKeeperServiceSettings = ZooKeeperService.Settings(endpoints = "127.0.0.1:2181", retryDelay = 10000)
 
-  val vaultServiceSettings = VaultService.Settings(tokenPeriod = 10000, retryDelay =  10000)
-  val vaultRestRequestCreatorSettings = VaultRestRequestCreator.Settings("http://127.0.0.1:8200", "rootToken")
+  val vaultServiceSettings = VaultService.Settings(tokenPeriod = 10000)
+  val vaultRestRequestExecutorSettings = VaultRestRequestExecutor.Settings(Array("http://127.0.0.1:8200"), "rootToken", retryDelay =  100)
 
   val cloudStackVaultControllerSettings = CloudStackVaultController.Settings("secret/cs/vms/", "secret/cs/account/", "/cs_vault_server")
 
