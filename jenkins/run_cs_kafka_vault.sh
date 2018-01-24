@@ -2,7 +2,7 @@
 #VAULT
 docker run --cap-add=IPC_LOCK -e VAULT_DEV_ROOT_TOKEN_ID="${IT_VAULT_ROOT_TOKEN}" \
                               -e VAULT_DEV_LISTEN_ADDRESS="0.0.0.0:$IT_VAULT_PORT" \
-                              -p $IT_VAULT_PORT:$IT_VAULT_PORT --rm -d vault-dev-server
+                              -p $IT_VAULT_PORT:$IT_VAULT_PORT --rm -d --name vault-dev-server vault
 
 #KAFKA
 KAFKA_ACKS=all
@@ -16,9 +16,9 @@ docker run --rm -e KAFKA_HOST="${IT_KAFKA_HOST}" \
                 -e KAFKA_ACKS="${KAFKA_ACKS}" \
                 -e KAFKA_TOPIC="${IT_KAFKA_TOPIC}" \
                 -e KAFKA_WRITE_RETRIES="${KAFKA_WRITE_RETRIES}" \
-                --name cloudstack-kafka-sim -d -p $CS_PORT:$CS_PORT bwsw/cs-simulator-kafka:4.10.3-NP
+                --name cloudstack-kafka-sim -d -p $IT_CS_PORT:$IT_CS_PORT bwsw/cs-simulator-kafka:4.10.3-NP
 
-ITERATIONS=40
+ITERATIONS=30
 SLEEP=30
 
 echo "wait for CloudStack simulator deploys"
