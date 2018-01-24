@@ -25,7 +25,7 @@ import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util.vault.TokenData
+import com.bwsw.cloudstack.vault.server.util.vault.{PolicyData, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
@@ -62,5 +62,43 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
     assert(responseRevokedToken.getStatus == Constants.tokenNotFoundStatus)
+  }
+
+  "VaultService" should "write and delete policy with 'write' permissions" in {
+    val accountId = UUID.randomUUID()
+    val policyPath = s"secret/it/$accountId/write/"
+    val expectedPolicy = Policy.createAccountWritePolicy(accountId, policyPath)
+    testPolicy(expectedPolicy)
+  }
+
+  "VaultService" should "write and delete policy with 'read' permissions" in {
+    val accountId = UUID.randomUUID()
+    val policyPath = s"secret/it/$accountId/read/"
+    val expectedPolicy = Policy.createAccountReadPolicy(accountId, policyPath)
+    testPolicy(expectedPolicy)
+  }
+
+  def testPolicy(policy: Policy): Unit = {
+    val expectedRules = "path \"" + policy.path + "\" {\"policy\"=\"" + Policy.ACL.toString(policy.acl) + "\"}"
+
+    vaultService.writePolicy(policy)
+
+    val responseGetCreatedPolicy = new Rest()
+      .url(s"${vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
+
+    val actualPolicyJson = new String(responseGetCreatedPolicy.getBody, "UTF-8")
+    val actualPolicyData = mapper.deserialize[PolicyData](actualPolicyJson)
+
+    assert(actualPolicyData.name == policy.name)
+    assert(actualPolicyData.rules == expectedRules)
+
+    vaultService.deletePolicy(policy.name)
+
+    val responseGetDeletedPolicy = new Rest()
+      .url(s"${vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get
+
+    assert(responseGetDeletedPolicy.getStatus == Constants.policyNotFoundStatus)
   }
 }

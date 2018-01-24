@@ -16,9 +16,6 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.vault
+package com.bwsw.cloudstack.vault.server.util.vault
 
-object Constants {
-  val tokenNotFoundStatus = 403
-  val policyNotFoundStatus = 404
-}
+case class PolicyData(name: String, rules: String)
