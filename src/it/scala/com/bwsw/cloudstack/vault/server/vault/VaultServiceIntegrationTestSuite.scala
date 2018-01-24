@@ -18,14 +18,15 @@
 */
 package com.bwsw.cloudstack.vault.server.vault
 
+import java.nio.file.Paths
 import java.util.UUID
 
 import com.bettercloud.vault.json.Json
-import com.bettercloud.vault.rest.Rest
+import com.bettercloud.vault.rest.{Rest, RestResponse}
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util.vault.TokenData
+import com.bwsw.cloudstack.vault.server.util.vault.{SecretData, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
@@ -46,7 +47,6 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     val jsonTokenId = Json.`object`().add("token", token.toString).toString
     val responseLookupToken = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
 
-
     val lookupToken = mapper.deserialize[TokenData](responseLookupToken).data
 
     assert(lookupToken.period == expectedTokenPeriod)
@@ -61,6 +61,47 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
-    assert(responseRevokedToken.getStatus == Constants.tokenNotFoundStatus)
+    assert(responseRevokedToken.getStatus == Constants.Statuses.tokenNotFoundStatus)
+  }
+
+  "VaultService" should "create secret path hierarchy and then delete it" in {
+    val firstSecretPath = "first"
+    val secondSecretPath = Paths.get(firstSecretPath,"second").toString
+    val secretValue = "value"
+    val secretKey = "key"
+    val secretJson =  "{\"" + secretKey + "\":\"" + secretValue + "\"}"
+
+    createSecret(firstSecretPath, secretJson)
+    createSecret(secondSecretPath, secretJson)
+
+    val responseGetRootChildPaths = getRootSecretHierarchyList
+
+    val actualSecretList = mapper.deserialize[SecretData](new String(responseGetRootChildPaths.getBody, "UTF-8")).data.keys
+    val expectedSecretList = List(firstSecretPath, s"$firstSecretPath/")
+    assert(expectedSecretList == actualSecretList)
+
+    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$firstSecretPath")
+
+    val responseGetEmptyRootChildPaths = getRootSecretHierarchyList
+
+    assert(responseGetEmptyRootChildPaths.getStatus == Constants.Statuses.childPathsWithSecretsNotFound)
+  }
+
+  "VaultService" should "not fail after nonexistent secret deletion" in {
+    val nonexistentPath = UUID.randomUUID().toString
+    assert(vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$nonexistentPath").isInstanceOf[Unit])
+  }
+
+  def createSecret(path: String, secretJson: String): Unit = {
+    new Rest()
+      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
+      .body(secretJson.getBytes("UTF-8")).post()
+  }
+
+  def getRootSecretHierarchyList: RestResponse = {
+    new Rest()
+      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}?list=true")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
   }
 }
