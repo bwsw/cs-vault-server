@@ -1,3 +1,3 @@
 #!/bin/bash -e
 
-echo "not implemented"
+docker stop cloudstack-kafka-sim spotify-kafka vault-dev-server
