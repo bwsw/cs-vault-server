@@ -16,21 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server
+package com.bwsw.cloudstack.vault.server.vault
 
-import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
-
-
-trait IntegrationTestsComponents {
-  private val requestExecutorSettings = VaultRestRequestExecutor.Settings(
-    IntegrationTestsSettings.vaultEndpoints,
-    IntegrationTestsSettings.vaultRootToken,
-    IntegrationTestsSettings.vaultRetryDelay
-  )
-  private val serviceSettings = VaultService.Settings(IntegrationTestsSettings.vaultTokenPeriod)
-
-  lazy val vaultRestRequestExecutor = new VaultRestRequestExecutor(requestExecutorSettings)
-  lazy val vaultService = new VaultService(vaultRestRequestExecutor, serviceSettings)
+object Constants {
+  val forbiddenVaultStatus = 403
 }

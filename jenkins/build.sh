@@ -12,7 +12,7 @@ echo "---------------------------------------------"
 
 sh ./jenkins/run_cs_kafka_vault.sh
 
-#sbt it:test
+sbt it:test
 
 echo "---------------------------------------------"
 echo "-------------- Scalastyle check ------------"
@@ -22,7 +22,7 @@ sbt scalastyle
 
 sbt test:scalastyle
 
-#sbt it:scalastyle
+sbt it:scalastyle
 
 echo "git branch: $GIT_BRANCH"
 if [ -n "$GIT_BRANCH" ]; then

@@ -33,7 +33,7 @@ import org.scalatest.FlatSpec
 class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsComponents {
   val mapper = new JsonMapper(ignoreUnknownProperties = true)
 
-  it should "create token and then revoke it" in {
+  "VaultService" should "create and revoke token with specified policy and period" in {
     val accountId = UUID.randomUUID()
     val expectedPolicyPath = "secret/it/test"
     val expectedTokenPeriod = Converter.daysToSeconds(IntegrationTestsSettings.vaultTokenPeriod)
@@ -44,7 +44,7 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     val token = vaultService.createToken(List(policy))
 
     val jsonTokenId = Json.`object`().add("token", token.toString).toString
-    val responseLookupToken = vaultRestRequestExecutor.createTokenLookupRequest(jsonTokenId)()
+    val responseLookupToken = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
 
 
     val lookupToken = mapper.deserialize[TokenData](responseLookupToken).data
@@ -57,10 +57,10 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     assert(policiesFromRevokedToken.toSet == Set(policy.name))
 
     val responseRevokedToken = new Rest()
-      .url(s"${vaultService.endpoint}${RequestPath.vaultTokenLookup}")
+      .url(s"${vaultService.endpoints.head}${RequestPath.vaultTokenLookup}")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
-    assert(responseRevokedToken.getStatus == 403)
+    assert(responseRevokedToken.getStatus == Constants.forbiddenVaultStatus)
   }
 }

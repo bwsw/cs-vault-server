@@ -85,9 +85,7 @@ class VaultService(vaultRest: VaultRestRequestExecutor,
 
     logger.debug(s"Token: $tokenId has been revoked")
 
-    lookupToken.tokenData.policies.filter { x =>
-      x != "default" && x != "root"
-    }
+    lookupToken.tokenData.policies
   }
 
   /**
