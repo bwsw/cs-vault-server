@@ -10,7 +10,7 @@ echo "---------------------------------------------"
 echo "-------------- Integration tests ------------"
 echo "---------------------------------------------"
 
-echo "not implemented"
+sh ./jenkins/run_cs_kafka_vault.sh
 
 #sbt it:test
 

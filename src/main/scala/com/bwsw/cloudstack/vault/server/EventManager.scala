@@ -20,6 +20,7 @@ package com.bwsw.cloudstack.vault.server
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.bwsw.cloudstack.entities.common.traits.Mapper
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.kafka.reader.entities.{TopicInfo, TopicInfoList}
@@ -31,25 +32,26 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Class is responsible for wrapping logic of working with [[https://github.com/bwsw/kafka-reader]] library
   */
-class EventManager[K,T](consumer: Consumer[K, String],             //TODO add Mapper[V] to input parameters
-                        controller: CloudStackVaultController,
-                        settings: EventManager.Settings) {
+class EventManager[K,V,T](consumer: Consumer[K,V],
+                          mapper: Mapper[V],
+                          controller: CloudStackVaultController,
+                          settings: EventManager.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val dummyFlag = new AtomicBoolean(true)
 
   def execute(): Unit = {
     val initTopicInfoList = TopicInfoList(settings.topics.map(x => TopicInfo(topic = x)))
 
-    val checkpointInfoProcessor = new CheckpointInfoProcessor[K, String, T](
+    val checkpointInfoProcessor = new CheckpointInfoProcessor[K,V,T](
       initTopicInfoList,
       consumer
     )
 
     checkpointInfoProcessor.load()
 
-    val messageQueue = new MessageQueue[K, String](consumer)
+    val messageQueue = new MessageQueue[K,V](consumer)
 
-    val eventHandler = new CloudStackEventHandler(messageQueue, settings.eventCount, controller)
+    val eventHandler = new CloudStackEventHandler(messageQueue, settings.eventCount, mapper, controller)
 
     while (dummyFlag.get()) {
       eventHandler.handle(dummyFlag)

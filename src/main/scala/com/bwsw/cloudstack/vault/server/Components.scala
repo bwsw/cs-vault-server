@@ -77,25 +77,18 @@ class Components(settings: Components.Settings) {
     settings.cloudStackVaultControllerSettings
   )
 
+  //event handling
   lazy val consumer = new Consumer[String, String] (
     settings.consumerSettings
   )
+  lazy val eventMapper = new JsonMapper(ignoreUnknownProperties = true)
 
   def close(): Unit = {
-    close(List(zooKeeperService.close, consumer.close))
-  }
-
-  private def close(closeFunctionList: List[() => Unit]): Unit = {
-    if (closeFunctionList.nonEmpty) {
-      val closeFunction = closeFunctionList.head
-      Try {
-        closeFunction()
-      } match {
-        case Success(x) =>
+    List[() => Unit](zooKeeperService.close, consumer.close).foreach(func => {
+      Try(func()) match {
         case Failure(e: Throwable) =>
-          logger.error(s"the function: $closeFunction was executed with exception: $e")
-          close(closeFunctionList.tail)
+          logger.error(s"the function: '$func' was executed with exception: $e")
       }
-    }
+    })
   }
 }
