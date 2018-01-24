@@ -56,11 +56,11 @@ trait TestData {
     vmId.toString
   ).toString
 
-  def getVmEntityNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId.toString).toString
-  def getVmTokenReadNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId.toString, "vaultro").toString
-  def getVmTokenWriteNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId.toString, "vaultrw").toString
+  def getVmEntityNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId).toString
+  def getVmTokenReadNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId, "vaultro").toString
+  def getVmTokenWriteNodePath(entityId: String): String = Paths.get(rootNodePath, "vms", entityId, "vaultrw").toString
 
-  def getAccountEntityNodePath(entityId: String): String = Paths.get(rootNodePath, "accounts", entityId.toString).toString
-  def getAccountTokenReadNodePath(entityId: String): String = Paths.get(rootNodePath, "accounts", entityId.toString, "vaultro").toString
-  def getAccountTokenWriteNodePath(entityId: String): String = Paths.get(rootNodePath,"accounts", entityId.toString, "vaultrw").toString
+  def getAccountEntityNodePath(entityId: String): String = Paths.get(rootNodePath, "accounts", entityId).toString
+  def getAccountTokenReadNodePath(entityId: String): String = Paths.get(rootNodePath, "accounts", entityId, "vaultro").toString
+  def getAccountTokenWriteNodePath(entityId: String): String = Paths.get(rootNodePath,"accounts", entityId, "vaultrw").toString
 }
