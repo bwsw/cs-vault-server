@@ -19,6 +19,9 @@
 package com.bwsw.cloudstack.vault.server.vault
 
 object Constants {
-  val tokenNotFoundStatus = 403
-  val policyNotFoundStatus = 404
+
+  object Statuses {
+    val tokenNotFound = 403
+    val policyNotFound = 404
+  }
 }

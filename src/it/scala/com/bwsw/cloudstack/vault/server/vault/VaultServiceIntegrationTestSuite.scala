@@ -61,7 +61,7 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
-    assert(responseRevokedToken.getStatus == Constants.tokenNotFoundStatus)
+    assert(responseRevokedToken.getStatus == Constants.Statuses.tokenNotFound)
   }
 
   "VaultService" should "write and delete policy with 'write' permissions" in {
@@ -99,6 +99,6 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .url(s"${vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get
 
-    assert(responseGetDeletedPolicy.getStatus == Constants.policyNotFoundStatus)
+    assert(responseGetDeletedPolicy.getStatus == Constants.Statuses.policyNotFound)
   }
 }
