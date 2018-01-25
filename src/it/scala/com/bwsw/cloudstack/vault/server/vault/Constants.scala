@@ -20,8 +20,8 @@ package com.bwsw.cloudstack.vault.server.vault
 
 object Constants {
   object Statuses {
-    val tokenNotFoundStatus = 403
-    val okStatusWithEmptyBody = 204
+    val tokenNotFound = 403
+    val okWithEmptyBody = 204
     val childPathsWithSecretsNotFound = 404
   }
 

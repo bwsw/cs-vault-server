@@ -61,26 +61,26 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
-    assert(responseRevokedToken.getStatus == Constants.Statuses.tokenNotFoundStatus)
+    assert(responseRevokedToken.getStatus == Constants.Statuses.tokenNotFound)
   }
 
   "VaultService" should "create secret path hierarchy and then delete it" in {
-    val firstSecretPath = "first"
-    val secondSecretPath = Paths.get(firstSecretPath,"second").toString
+    val secretRootPath = "first"
+    val secondSecretPath = Paths.get(secretRootPath,"second").toString
     val secretValue = "value"
     val secretKey = "key"
     val secretJson =  "{\"" + secretKey + "\":\"" + secretValue + "\"}"
 
-    createSecret(firstSecretPath, secretJson)
+    createSecret(secretRootPath, secretJson)
     createSecret(secondSecretPath, secretJson)
 
     val responseGetRootChildPaths = getRootSecretHierarchyList
 
     val actualSecretList = mapper.deserialize[SecretData](new String(responseGetRootChildPaths.getBody, "UTF-8")).data.keys
-    val expectedSecretList = List(firstSecretPath, s"$firstSecretPath/")
+    val expectedSecretList = List(secretRootPath, s"$secretRootPath/")
     assert(expectedSecretList == actualSecretList)
 
-    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$firstSecretPath")
+    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$secretRootPath")
 
     val responseGetEmptyRootChildPaths = getRootSecretHierarchyList
 
