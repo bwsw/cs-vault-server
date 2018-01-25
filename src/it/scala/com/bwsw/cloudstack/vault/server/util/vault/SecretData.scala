@@ -16,17 +16,8 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.vault
+package com.bwsw.cloudstack.vault.server.util.vault
 
-object Constants {
-  object Statuses {
-    val tokenNotFound = 403
-    val policyNotFound = 404
-    val okWithEmptyBody = 204
-    val childPathsWithSecretsNotFound = 404
-  }
+case class SecretData(data: Secret)
 
-  object RequestPaths {
-    val secret = "/v1/secret"
-  }
-}
+case class Secret(keys: List[String])
