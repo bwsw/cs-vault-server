@@ -25,13 +25,12 @@ import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util.vault.TokenData
+import com.bwsw.cloudstack.vault.server.util.vault.{Constants, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
 
 class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsComponents {
-  val mapper = new JsonMapper(ignoreUnknownProperties = true)
 
   "VaultService" should "create and revoke token with specified policy and period" in {
     val accountId = UUID.randomUUID()

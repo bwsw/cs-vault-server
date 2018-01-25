@@ -16,8 +16,14 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.vault
+package com.bwsw.cloudstack.vault.server.util.cloudstack.requests
 
-object Constants {
-  val tokenNotFoundStatus = 403
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.Request
+import com.bwsw.cloudstack.vault.server.util.cloudstack.Constants.{RequestCommands, RequestParamaterKeys, RequestParameterValues}
+
+class ServiceOfferingFindRequest extends Request {
+  override val request: ApacheCloudStackRequest = new ApacheCloudStackRequest(RequestCommands.LIST_SERVICE_OFFERINGS)
+    .addParameter(RequestParamaterKeys.RESPONSE, RequestParameterValues.JSON)
+    .addParameter(RequestParamaterKeys.LIST_ALL, true)
 }
