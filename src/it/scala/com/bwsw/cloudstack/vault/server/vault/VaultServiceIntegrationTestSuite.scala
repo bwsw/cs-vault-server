@@ -26,8 +26,7 @@ import com.bettercloud.vault.rest.{Rest, RestResponse}
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util.vault.{SecretData, TokenData}
-import com.bwsw.cloudstack.vault.server.util.vault.{PolicyData, TokenData}
+import com.bwsw.cloudstack.vault.server.util.vault.{PolicyData, SecretData, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
@@ -93,20 +92,6 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     assert(vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$nonexistentPath").isInstanceOf[Unit])
   }
 
-  def createSecret(path: String, secretJson: String): Unit = {
-    new Rest()
-      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
-      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
-      .body(secretJson.getBytes("UTF-8")).post()
-  }
-
-  def getRootSecretHierarchyList: RestResponse = {
-    new Rest()
-      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}?list=true")
-      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
-    assert(responseRevokedToken.getStatus == Constants.Statuses.tokenNotFound)
-  }
-
   "VaultService" should "write and delete policy with 'write' permissions" in {
     val accountId = UUID.randomUUID()
     val policyPath = s"secret/it/$accountId/write/"
@@ -119,6 +104,19 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     val policyPath = s"secret/it/$accountId/read/"
     val expectedPolicy = Policy.createAccountReadPolicy(accountId, policyPath)
     testPolicy(expectedPolicy)
+  }
+
+  def createSecret(path: String, secretJson: String): Unit = {
+    new Rest()
+      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
+      .body(secretJson.getBytes("UTF-8")).post()
+  }
+
+  def getRootSecretHierarchyList: RestResponse = {
+    new Rest()
+      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}?list=true")
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
   }
 
   def testPolicy(policy: Policy): Unit = {
