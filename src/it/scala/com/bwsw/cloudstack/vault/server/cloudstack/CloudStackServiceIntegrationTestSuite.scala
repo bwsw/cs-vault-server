@@ -58,6 +58,7 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     accountDao.create(accountCreateRequest)
 
+    //waiting account creation in CloudStack Server
     Thread.sleep(1000)
 
     assert(cloudStackService.doesAccountExist(accountId))
@@ -68,6 +69,7 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
+    //waiting virtual machine creation in CloudStack Server
     Thread.sleep(3000)
 
     assert(cloudStackService.doesVirtualMachineExist(vmId))
