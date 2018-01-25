@@ -66,13 +66,13 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
 
   "VaultService" should "create secret path hierarchy and then delete it" in {
     val secretRootPath = "first"
-    val secondSecretPath = Paths.get(secretRootPath,"second").toString
+    val secretSubRootPath = Paths.get(secretRootPath,"second").toString
     val secretValue = "value"
     val secretKey = "key"
     val secretJson =  "{\"" + secretKey + "\":\"" + secretValue + "\"}"
 
     createSecret(secretRootPath, secretJson)
-    createSecret(secondSecretPath, secretJson)
+    createSecret(secretSubRootPath, secretJson)
 
     val responseGetRootChildPaths = getRootSecretHierarchyList
 
