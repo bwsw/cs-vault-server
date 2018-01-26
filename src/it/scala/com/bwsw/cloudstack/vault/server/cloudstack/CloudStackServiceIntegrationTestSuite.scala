@@ -22,7 +22,10 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAdmin
+import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
+import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
+import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.VmCreateTestRequest
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
@@ -58,9 +61,6 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     accountDao.create(accountCreateRequest)
 
-    //waiting account creation in CloudStack Server
-    Thread.sleep(1000)
-
     assert(cloudStackService.doesAccountExist(accountId))
 
     val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
@@ -69,10 +69,58 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
-    //waiting virtual machine creation in CloudStack Server
-    Thread.sleep(3000)
-
     assert(cloudStackService.doesVirtualMachineExist(vmId))
     assert(cloudStackService.getVmOwnerAccount(vmId) == accountId)
+  }
+
+  "CloudStackService" should "create account tags" in {
+    val accountId = UUID.randomUUID()
+    val accountCreateRequest = new AccountCreateRequest(AccountCreateRequest.Settings(
+      RootAdmin,
+      "test@example.com",
+      "firstname",
+      "lastName",
+      "password",
+      s"username $accountId"
+    )).withId(accountId)
+    accountDao.create(accountCreateRequest)
+
+    val tagFindRequest = new TagFindRequest().withResource(accountId).withResourceType(AccountTagType)
+
+    val emptyListTags = tagDao.find(tagFindRequest)
+
+    assert(emptyListTags.isEmpty)
+
+    val expectedTags = Set(Tag("key1","value1"), Tag("key2", "value2"))
+
+    cloudStackService.setAccountTags(accountId, expectedTags)
+
+    val actualTags = tagDao.find(tagFindRequest)
+
+    assert(expectedTags == actualTags)
+  }
+
+  "CloudStackService" should "create VM tags" in {
+    val vmCreateRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+      retrievedServiceOfferingId,
+      retrievedTemplateId,
+      retrievedZoneId
+    ))
+
+    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.request)).vmId.id
+
+    val tagFindRequest = new TagFindRequest().withResource(vmId).withResourceType(VmTagType)
+
+    val emptyListTags = tagDao.find(tagFindRequest)
+
+    assert(emptyListTags.isEmpty)
+
+    val expectedTags = Set(Tag("key1","value1"), Tag("key2", "value2"))
+
+    cloudStackService.setVmTags(vmId, expectedTags)
+
+    val actualTags = tagDao.find(tagFindRequest)
+
+    assert(expectedTags == actualTags)
   }
 }
