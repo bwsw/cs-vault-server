@@ -82,11 +82,11 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     executor.executeRequest(accountDeleteRequest.request)
 
     //waiting account creation/deletion in CloudStack Server
-    var i = 0
-    while(i < 5 && countOfDeletionHandling < 1) {
+    var retryCount = 0
+    while(retryCount < 5 && countOfDeletionHandling < 1) {
       Thread.sleep(1000)
       eventHandler.handle(dummyFlag)
-      i = i + 1
+      retryCount = retryCount + 1
     }
 
     assert(dummyFlag.get())
@@ -123,11 +123,11 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     executor.executeRequest(vmDeleteRequest.request)
 
     //waiting vm creation/deletion in CloudStack Server
-    var i = 0
-    while(i < 10 && countOfDeletionHandling < 1) {
+    var retryCount = 0
+    while(retryCount < 10 && countOfDeletionHandling < 1) {
       Thread.sleep(1000)
       eventHandler.handle(dummyFlag)
-      i = i + 1
+      retryCount = retryCount + 1
     }
 
     assert(dummyFlag.get())
