@@ -23,11 +23,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAdmin
-import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
+import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.AccountDeleteRequest
+import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
+import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmCreateTestRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.kafka.reader.MessageQueue
 import org.mockito.Mockito._
@@ -36,7 +38,7 @@ import org.scalatest.mockito.MockitoSugar
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSugar with IntegrationTestsComponents with BeforeAndAfterAll {
+class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSugar with BeforeAndAfterAll with TestEntities {
 
   val dummyFlag = new AtomicBoolean(true)
   val consumer = new TestConsumer[String, String](
@@ -62,7 +64,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
       countOfDeletionHandling = countOfDeletionHandling + 1
     }).when(controller).handleAccountDelete(accountId)
 
-    val eventHandler = new CloudStackEventHandler(messageQueue, messageCount = 200, mapper, controller)
+    val eventHandler = new CloudStackEventHandler(messageQueue, messageCount = 100, mapper, controller)
 
     val accountCreateRequest = new AccountCreateRequest(AccountCreateRequest.Settings(
       RootAdmin,
@@ -80,9 +82,53 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     executor.executeRequest(accountDeleteRequest.request)
 
     //waiting account creation/deletion in CloudStack Server
-    Thread.sleep(5000)
+    var i = 0
+    while(i < 5 && countOfDeletionHandling < 1) {
+      Thread.sleep(1000)
+      eventHandler.handle(dummyFlag)
+      i = i + 1
+    }
 
-    eventHandler.handle(dummyFlag)
+    assert(dummyFlag.get())
+    assert(countOfCreationHandling == 1)
+    assert(countOfDeletionHandling == 1)
+  }
+
+  "CloudStackEventHandler" should "handle VM creation and deletion" in {
+    var countOfCreationHandling = 0
+    var countOfDeletionHandling = 0
+
+    val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+      retrievedServiceOfferingId,
+      retrievedTemplateId,
+      retrievedZoneId
+    ))
+
+    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
+
+    val controller = mock[CloudStackVaultController]
+
+    doAnswer(_ => {
+      countOfCreationHandling = countOfCreationHandling + 1
+    }).when(controller).handleVmCreate(vmId)
+
+    doAnswer(_ => {
+      countOfDeletionHandling = countOfDeletionHandling + 1
+    }).when(controller).handleVmDelete(vmId)
+
+    val eventHandler = new CloudStackEventHandler(messageQueue, messageCount = 100, mapper, controller)
+
+    val vmDeleteRequest = new VmDeleteRequest(vmId)
+
+    executor.executeRequest(vmDeleteRequest.request)
+
+    //waiting vm creation/deletion in CloudStack Server
+    var i = 0
+    while(i < 10 && countOfDeletionHandling < 1) {
+      Thread.sleep(1000)
+      eventHandler.handle(dummyFlag)
+      i = i + 1
+    }
 
     assert(dummyFlag.get())
     assert(countOfCreationHandling == 1)
