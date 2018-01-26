@@ -40,4 +40,5 @@ object IntegrationTestsSettings {
   val kafkaEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
   val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
   val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
+  val kafkaTopic = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics)
 }

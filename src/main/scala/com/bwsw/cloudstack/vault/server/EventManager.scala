@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Class is responsible for wrapping logic of working with [[https://github.com/bwsw/kafka-reader]] library
   */
-class EventManager[K,V,T](consumer: Consumer[K,V],
+class EventManager[K,V](consumer: Consumer[K,V],
                           mapper: Mapper[V],
                           controller: CloudStackVaultController,
                           settings: EventManager.Settings) {
@@ -42,7 +42,7 @@ class EventManager[K,V,T](consumer: Consumer[K,V],
   def execute(): Unit = {
     val initTopicInfoList = TopicInfoList(settings.topics.map(x => TopicInfo(topic = x)))
 
-    val checkpointInfoProcessor = new CheckpointInfoProcessor[K,V,T](
+    val checkpointInfoProcessor = new CheckpointInfoProcessor[K,V,Unit](
       initTopicInfoList,
       consumer
     )
@@ -51,10 +51,11 @@ class EventManager[K,V,T](consumer: Consumer[K,V],
 
     val messageQueue = new MessageQueue[K,V](consumer)
 
-    val eventHandler = new CloudStackEventHandler(messageQueue, settings.eventCount, mapper, controller)
+    val eventHandler = new CloudStackEventHandler[K,V](messageQueue, settings.eventCount, mapper, controller)
 
     while (dummyFlag.get()) {
-      eventHandler.handle(dummyFlag)
+      val outputEnvelopes = eventHandler.handle(dummyFlag)
+      checkpointInfoProcessor.save(outputEnvelopes)
     }
   }
 }
