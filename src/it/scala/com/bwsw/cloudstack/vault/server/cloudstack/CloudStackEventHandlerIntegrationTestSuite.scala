@@ -31,7 +31,6 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.AccountDeleteRe
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.kafka.reader.MessageQueue
 import org.mockito.Mockito._
-import org.mockito.invocation.InvocationOnMock
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.mockito.MockitoSugar
 
@@ -44,7 +43,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     IntegrationTestsSettings.kafkaEndpoints,
     IntegrationTestsSettings.kafkaGroupId
   )
-  consumer.assignToEnd(IntegrationTestsSettings.kafkaTopic)
+  consumer.assignToEnd(IntegrationTestsSettings.kafkaTopics.head)
 
   val messageQueue = new MessageQueue[String, String](consumer)
 
@@ -55,11 +54,11 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
 
     val controller = mock[CloudStackVaultController]
 
-    doAnswer((invocation: InvocationOnMock) => {
+    doAnswer(_ => {
       countOfCreationHandling = countOfCreationHandling + 1
     }).when(controller).handleAccountCreate(accountId)
 
-    doAnswer((invocation: InvocationOnMock) => {
+    doAnswer(_ => {
       countOfDeletionHandling = countOfDeletionHandling + 1
     }).when(controller).handleAccountDelete(accountId)
 
