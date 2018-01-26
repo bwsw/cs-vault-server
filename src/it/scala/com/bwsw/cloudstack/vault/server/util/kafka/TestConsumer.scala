@@ -16,27 +16,19 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util.cloudstack
+package com.bwsw.cloudstack.vault.server.util.kafka
 
-object Constants {
-  object RequestParamaterKeys {
-    val RESPONSE = "response"
-    val AVAILABLE = "available"
-    val TEMPLATE_FILTER = "templatefilter"
-    val LIST_ALL = "listAll"
-    val ID = "id"
-  }
+import com.bwsw.kafka.reader.Consumer
+import org.apache.kafka.common.TopicPartition
 
-  object RequestCommands {
-    val LIST_SERVICE_OFFERINGS = "listServiceOfferings"
-    val LIST_TEMPLATES = "listTemplates"
-    val LIST_ZONES = "listZones"
-    val LIST_DOMAINS = "listDomains"
-    val DELETE_ACCOUNT = "deleteAccount"
-  }
+import scala.collection.JavaConverters._
 
-  object RequestParameterValues {
-    val JSON = "json"
-    val FEATURED = "featured"
+class TestConsumer[K,V](brokers: String, groupId: String) extends Consumer[K,V](Consumer.Settings(brokers, groupId)) {
+  def assignToEnd(topic: String): Unit = {
+    val partitions = consumer.partitionsFor(topic).asScala.map(x => new TopicPartition(topic, x.partition())).asJavaCollection
+    consumer.assign(partitions)
+    consumer.endOffsets(partitions).asScala.foreach {
+      case (partition, offset) => consumer.seek(partition, offset)
+    }
   }
 }

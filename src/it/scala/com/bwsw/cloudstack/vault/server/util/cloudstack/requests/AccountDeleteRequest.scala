@@ -16,27 +16,16 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util.cloudstack
+package com.bwsw.cloudstack.vault.server.util.cloudstack.requests
 
-object Constants {
-  object RequestParamaterKeys {
-    val RESPONSE = "response"
-    val AVAILABLE = "available"
-    val TEMPLATE_FILTER = "templatefilter"
-    val LIST_ALL = "listAll"
-    val ID = "id"
-  }
+import java.util.UUID
 
-  object RequestCommands {
-    val LIST_SERVICE_OFFERINGS = "listServiceOfferings"
-    val LIST_TEMPLATES = "listTemplates"
-    val LIST_ZONES = "listZones"
-    val LIST_DOMAINS = "listDomains"
-    val DELETE_ACCOUNT = "deleteAccount"
-  }
+import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
+import com.bwsw.cloudstack.entities.requests.Request
+import com.bwsw.cloudstack.vault.server.util.cloudstack.Constants.{RequestCommands, RequestParamaterKeys, RequestParameterValues}
 
-  object RequestParameterValues {
-    val JSON = "json"
-    val FEATURED = "featured"
-  }
+class AccountDeleteRequest(id: UUID) extends Request {
+  override val request: ApacheCloudStackRequest = new ApacheCloudStackRequest(RequestCommands.DELETE_ACCOUNT)
+    .addParameter(RequestParamaterKeys.RESPONSE, RequestParameterValues.JSON)
+    .addParameter(RequestParamaterKeys.ID, id.toString)
 }

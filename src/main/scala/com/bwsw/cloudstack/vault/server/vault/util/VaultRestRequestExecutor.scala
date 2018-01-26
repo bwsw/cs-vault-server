@@ -46,6 +46,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executeTokenCreateRequest(tokenParameters: String): String = {
+    logger.trace(s"executeTokenCreateRequest(tokenParameters: $tokenParameters)")
     tryExecuteRequest(
       createRest(s"${RequestPath.vaultTokenCreate}", tokenParameters)(_).post,
       HttpStatus.OK_STATUS :: Nil,
@@ -61,6 +62,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executeTokenRevokeRequest(jsonTokenId: String): String = {
+    logger.trace(s"executeTokenRevokeRequest(jsonTokenId: $jsonTokenId)")
     tryExecuteRequest(
       createRest(s"${RequestPath.vaultTokenRevoke}", jsonTokenId)(_).post,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
@@ -77,6 +79,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executePolicyCreateRequest(policyName: String, policyJson: String): String = {
+    logger.trace(s"executePolicyCreateRequest(policyName: $policyName, policyJson: $policyJson)")
     tryExecuteRequest(
       createRest(Paths.get(RequestPath.vaultPolicy, policyName).toString, policyJson)(_).put,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
@@ -92,6 +95,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executePolicyDeleteRequest(policyName: String): String = {
+    logger.trace(s"executePolicyDeleteRequest(policyName: $policyName)")
     tryExecuteRequest(
       createRest(Paths.get(RequestPath.vaultPolicy, policyName).toString, "")(_).delete,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
@@ -107,6 +111,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executeTokenLookupRequest(jsonTokenId: String): String = {
+    logger.trace(s"executeTokenLookupRequest(jsonTokenId: $jsonTokenId)")
     tryExecuteRequest(
       createRest(s"${RequestPath.vaultTokenLookup}", jsonTokenId)(_).post,
       HttpStatus.OK_STATUS :: Nil,
@@ -122,6 +127,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executeDeleteSecretRequest(pathToSecret: String): String = {
+    logger.trace(s"executeDeleteSecretRequest(pathToSecret: $pathToSecret)")
     tryExecuteRequest(
       createRest(s"$pathToSecret", "")(_).delete,
       HttpStatus.OK_STATUS_WITH_EMPTY_BODY :: Nil,
@@ -137,6 +143,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   def executeGetSubSecretPathsRequest(pathToRootSecret: String): String = {
+    logger.trace(s"executeGetSubSecretPathsRequest(pathToRootSecret: $pathToRootSecret)")
     tryExecuteRequest(
       createRest(s"$pathToRootSecret?list=true", "")(_).get,
       List(HttpStatus.OK_STATUS, HttpStatus.NOT_FOUND),
@@ -153,6 +160,7 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     * @throws VaultFatalException if response status is not expected.
     */
   protected def createRest(path: String, data: String)(endpoint: String): Rest = {
+    logger.trace(s"createRest(paths: $path, data: $data)")
     new Rest()
       .url(s"$endpoint$path")
       .header("X-Vault-Token", settings.rootToken)
