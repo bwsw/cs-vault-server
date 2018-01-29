@@ -18,8 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.util.vault
 
-import com.bwsw.cloudstack.vault.server.util.RequestPath.vaultRoot
-
 object Constants {
   object Statuses {
     val tokenNotFound = 403

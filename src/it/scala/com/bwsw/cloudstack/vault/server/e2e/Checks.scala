@@ -26,133 +26,21 @@ import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAdmin
 import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
-import com.bwsw.cloudstack.entities.requests.tag.types.{TagType, VmTagType}
-import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
+import com.bwsw.cloudstack.entities.requests.tag.types.TagType
 import com.bwsw.cloudstack.entities.responses.Tag
+import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
-import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
-import com.bwsw.cloudstack.vault.server.EventManager
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
-import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{VmCreateTestRequest, VmDeleteRequest}
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.e2e.entities.TokenTuple
-import com.bwsw.cloudstack.vault.server.util.vault._
-import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
-import com.bwsw.kafka.reader.Consumer
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import com.bwsw.cloudstack.vault.server.util.vault.{Constants, TokenData}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAll {
+trait Checks extends IntegrationTestsComponents {
   val expectedHostTag = Tag(
     VaultTagKey.toString(VaultTagKey.VaultHosts),
     IntegrationTestsSettings.vaultEndpoints.map(endpoint => s"$endpoint${RequestPath.vaultRoot}").mkString(",")
   )
 
-  val consumer = new Consumer[String,String](Consumer.Settings(
-    IntegrationTestsSettings.kafkaEndpoints,
-    IntegrationTestsSettings.kafkaGroupId
-  ))
-
-  val zooKeeperService = new ZooKeeperService(ZooKeeperService.Settings(
-    IntegrationTestsSettings.zooKeeperEndpoints,
-    IntegrationTestsSettings.zooKeeperRetryDelay
-  ))
-
-  val controllerSettings = CloudStackVaultController.Settings(
-    IntegrationTestsSettings.vmSecretPath,
-    IntegrationTestsSettings.accountSecretPath,
-    IntegrationTestsSettings.zooKeeperRootNode
-  )
-
-  val controller = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService, controllerSettings)
-
-  val eventManagerSettings = EventManager.Settings(
-    IntegrationTestsSettings.kafkaTopics.toList,
-    IntegrationTestsSettings.kafkaEventCount
-  )
-
-  val eventManager = new EventManager(
-    consumer,
-    mapper,
-    controller,
-    eventManagerSettings
-  )
-
-  Future(eventManager.execute())
-
-  "cs-vault-server" should "handle vm creation/deletion" in {
-    val accountId = UUID.randomUUID()
-    val accountName = accountId.toString
-    accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
-
-    val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
-      retrievedServiceOfferingId, retrievedTemplateId, retrievedZoneId
-    )).withDomainAccount(accountName, retrievedAdminDomainId).asInstanceOf[VmCreateTestRequest]
-
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
-
-    Thread.sleep(15000)
-
-    //check tags existing
-    val expectedPrefixTag = Tag(
-      VaultTagKey.toString(VaultTagKey.VaultPrefix),
-      Paths.get(IntegrationTestsSettings.vmSecretPath, vmId.toString).toString
-    )
-
-    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, vmId, VmTagType)
-
-    //check policies and tokens
-    val expectedReadTokenPolicyName = s"acl_${accountId}_${vmId}_ro*"
-    val expectedWriteTokenPolicyName = s"acl_${accountId}_${vmId}_rw*"
-
-    checkTokenPolicies(tokenTuple.readToken, List(expectedReadTokenPolicyName))
-    checkTokenPolicies(tokenTuple.writeToken, List(expectedWriteTokenPolicyName))
-
-    //check zooKeeper token's nodes existence
-    val readTokenPath = Paths.get(
-      IntegrationTestsSettings.zooKeeperRootNode, "vms", vmId.toString, VaultTagKey.VaultRO.toString.toLowerCase()
-    ).toString
-    val writeTokenPath = Paths.get(
-      IntegrationTestsSettings.zooKeeperRootNode, "vms", vmId.toString, VaultTagKey.VaultRW.toString.toLowerCase()
-    ).toString
-
-    assert(zooKeeperService.getNodeData(readTokenPath).contains(tokenTuple.readToken))
-    assert(zooKeeperService.getNodeData(writeTokenPath).contains(tokenTuple.writeToken))
-
-    //tokens permissions test
-    vaultPermissionTest(IntegrationTestsSettings.vmSecretPath, vmId, tokenTuple)
-
-    //delete VM
-    val vmDeleteRequest = new VmDeleteRequest(vmId)
-    executor.executeRequest(vmDeleteRequest.request)
-
-    //wait for VM deletion handling
-    Thread.sleep(4000)
-
-    //check ZooKeeper VM node non-existence
-    assert(!zooKeeperService.doesNodeExist(Paths.get(IntegrationTestsSettings.zooKeeperRootNode, "vms", vmId.toString).toString))
-
-    //check Vault token non-existence
-    checkAbsenceVaultToken(tokenTuple.writeToken)
-    checkAbsenceVaultToken(tokenTuple.readToken)
-
-    //check Vault policy non-existence
-    checkAbsenceVaultPolicy(expectedReadTokenPolicyName)
-    checkAbsenceVaultPolicy(expectedWriteTokenPolicyName)
-
-    //check Vault secret non-existence
-    val responseGetSecret = new Rest()
-      .url(s"${IntegrationTestsSettings.vaultEndpoints.head}/${Paths.get(IntegrationTestsSettings.vmSecretPath, vmId.toString)}")
-      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
-      .get()
-
-    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound)
-  }
-
-  private def checkAbsenceVaultPolicy(policyName: String): Unit = {
+  def checkAbsenceVaultPolicy(policyName: String): Unit = {
     val responseLookupToken = new Rest()
       .url(s"${IntegrationTestsSettings.vaultEndpoints.head}${Constants.RequestPaths.vaultPolicy}/$policyName")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
@@ -161,7 +49,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     assert(responseLookupToken.getStatus == Constants.Statuses.policyNotFound)
   }
 
-  private def checkAbsenceVaultToken(tokenId: String): Unit = {
+  def checkAbsenceVaultToken(tokenId: String): Unit = {
     val responseLookupToken = new Rest()
       .url(s"${IntegrationTestsSettings.vaultEndpoints.head}${Constants.RequestPaths.tokenLookup}/$tokenId")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
@@ -170,7 +58,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     assert(responseLookupToken.getStatus == Constants.Statuses.tokenNotFound)
   }
 
-  private def vaultPermissionTest(entityPath: String, entityId: UUID, tokenTuple: TokenTuple): Unit = {
+  def vaultPermissionTest(entityPath: String, entityId: UUID, tokenTuple: TokenTuple): Unit = {
     val secretKey = "testKey"
     val expectedValue = UUID.randomUUID().toString
     //try write secret into unavailable path
@@ -222,7 +110,20 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
   }
 
 
-  private def getAccountCreateRequest: AccountCreateRequest = {
+
+  def checkVaultSecretNonExistence(secretPath: String, entityId: UUID): Unit = {
+    val entityEndpoint = s"${IntegrationTestsSettings.vaultEndpoints.head}" +
+      s"${Paths.get(Constants.RequestPaths.vaultRoot, secretPath, entityId.toString).toString}"
+
+    val responseGetSecret = new Rest()
+      .url(entityEndpoint)
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
+      .get()
+
+    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound)
+  }
+
+  def getAccountCreateRequest: AccountCreateRequest = {
     val userName = UUID.randomUUID()
     new AccountCreateRequest(AccountCreateRequest.Settings(
       RootAdmin,
@@ -234,7 +135,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     ))
   }
 
-  private def retrieveTokenTagsIfThereAre(expectedPrefixTag: Tag, entityId: UUID, tagType: TagType): TokenTuple = {
+  def retrieveTokenTagsIfThereAre(expectedPrefixTag: Tag, entityId: UUID, tagType: TagType): TokenTuple = {
     val tags = tagDao.find(new TagFindRequest().withResource(entityId).withResourceType(tagType))
 
     val roTokenTagOpt = tags.find { tag =>
@@ -252,7 +153,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     TokenTuple(roTokenTagOpt.get.value, rwTokenTagOpt.get.value)
   }
 
-  private def checkTokenPolicies(tokenId: String, expectedPolicies: List[String]): Unit = {
+  def checkTokenPolicies(tokenId: String, expectedPolicies: List[String]): Unit = {
     val jsonTokenId = Json.`object`().add("token", tokenId).toString
 
     val lookupResponseString = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
@@ -260,11 +161,5 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     val actualPolicyNameList = mapper.deserialize[TokenData](lookupResponseString).data.policies
 
     assert(actualPolicyNameList == expectedPolicies, s"token: $tokenId has unexpected policy")
-  }
-
-  override def afterAll(): Unit = {
-    eventManager.close()
-    zooKeeperService.close
-    consumer.close()
   }
 }

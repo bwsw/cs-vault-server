@@ -38,22 +38,23 @@ class EventManager[K,V](consumer: Consumer[K,V],
                         controller: CloudStackVaultController,
                         settings: EventManager.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val dummyFlag = new AtomicBoolean(true)
+  private val dummyFlag = new AtomicBoolean(false)
   private val countDownLatch = new CountDownLatch(1)
+  private val initTopicInfoList = TopicInfoList(settings.topics.map(x => TopicInfo(topic = x)))
 
-  def execute(): Unit = {
-    val initTopicInfoList = TopicInfoList(settings.topics.map(x => TopicInfo(topic = x)))
+  private val checkpointInfoProcessor = new CheckpointInfoProcessor[K,V,Unit](
+    initTopicInfoList,
+    consumer
+  )
 
-    val checkpointInfoProcessor = new CheckpointInfoProcessor[K,V,Unit](
-      initTopicInfoList,
-      consumer
-    )
+  checkpointInfoProcessor.load()
 
-    checkpointInfoProcessor.load()
+  private val messageQueue = new MessageQueue[K,V](consumer)
 
-    val messageQueue = new MessageQueue[K,V](consumer)
+  private val eventHandler = new CloudStackEventHandler[K,V](messageQueue, settings.eventCount, mapper, controller)
 
-    val eventHandler = new CloudStackEventHandler[K,V](messageQueue, settings.eventCount, mapper, controller)
+  def execute(): Unit = synchronized {
+    dummyFlag.set(true)
 
     while (dummyFlag.get()) {
       val outputEnvelopes = eventHandler.handle(dummyFlag)
@@ -62,9 +63,11 @@ class EventManager[K,V](consumer: Consumer[K,V],
     countDownLatch.countDown()
   }
 
-  def close(): Unit = {
-    dummyFlag.set(false)
-    countDownLatch.await()
+  def shutdown(): Unit = synchronized {
+    if(dummyFlag.get()) {
+      dummyFlag.set(false)
+      countDownLatch.await()
+    }
   }
 }
 
