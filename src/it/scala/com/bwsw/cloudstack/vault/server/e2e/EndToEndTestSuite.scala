@@ -83,7 +83,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
 
   Future(eventManager.execute())
 
-  it should "handle vm creation/deletion" in {
+  "cs-vault-server" should "handle vm creation/deletion" in {
     val accountId = UUID.randomUUID()
     val accountName = accountId.toString
     accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
@@ -108,8 +108,8 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     val expectedReadTokenPolicyName = s"acl_${accountId}_${vmId}_ro*"
     val expectedWriteTokenPolicyName = s"acl_${accountId}_${vmId}_rw*"
 
-    checkTokenPoliciesNames(tokenTuple.readToken, List(expectedReadTokenPolicyName))
-    checkTokenPoliciesNames(tokenTuple.writeToken, List(expectedWriteTokenPolicyName))
+    checkTokenPolicies(tokenTuple.readToken, List(expectedReadTokenPolicyName))
+    checkTokenPolicies(tokenTuple.writeToken, List(expectedWriteTokenPolicyName))
 
     //check zooKeeper token's nodes existence
     val readTokenPath = Paths.get(
@@ -129,7 +129,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     val vmDeleteRequest = new VmDeleteRequest(vmId)
     executor.executeRequest(vmDeleteRequest.request)
 
-    //wait VM deletion handling
+    //wait for VM deletion handling
     Thread.sleep(4000)
 
     //check ZooKeeper VM node non-existence
@@ -252,14 +252,14 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
     TokenTuple(roTokenTagOpt.get.value, rwTokenTagOpt.get.value)
   }
 
-  private def checkTokenPoliciesNames(tokenId: String, expectedPolicyNameList: List[String]): Unit = {
+  private def checkTokenPolicies(tokenId: String, expectedPolicies: List[String]): Unit = {
     val jsonTokenId = Json.`object`().add("token", tokenId).toString
 
     val lookupResponseString = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
 
     val actualPolicyNameList = mapper.deserialize[TokenData](lookupResponseString).data.policies
 
-    assert(actualPolicyNameList == expectedPolicyNameList, s"token: $tokenId has unexpected policy")
+    assert(actualPolicyNameList == expectedPolicies, s"token: $tokenId has unexpected policy")
   }
 
   override def afterAll(): Unit = {
