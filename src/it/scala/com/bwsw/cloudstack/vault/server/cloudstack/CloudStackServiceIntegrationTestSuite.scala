@@ -97,7 +97,7 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     val actualTags = tagDao.find(tagFindRequest)
 
-    assert(expectedTags == actualTags)
+    assert(expectedTags.subsetOf(actualTags))
   }
 
   "CloudStackService" should "create VM tags" in {
@@ -121,6 +121,6 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
 
     val actualTags = tagDao.find(tagFindRequest)
 
-    assert(expectedTags == actualTags)
+    assert(expectedTags.subsetOf(actualTags))
   }
 }

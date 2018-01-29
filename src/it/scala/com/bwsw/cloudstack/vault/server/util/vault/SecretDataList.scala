@@ -18,6 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.util.vault
 
-case class SecretData(data: Secret)
+case class SecretDataList(data: SecretKeys)
 
-case class Secret(keys: List[String])
+case class SecretKeys(keys: List[String])
