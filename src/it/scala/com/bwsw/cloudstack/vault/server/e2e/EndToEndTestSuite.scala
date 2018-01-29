@@ -94,7 +94,7 @@ class EndToEndTestSuite extends FlatSpec with TestEntities with BeforeAndAfterAl
 
     val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
-    Thread.sleep(10000)
+    Thread.sleep(15000)
 
     //check tags existing
     val expectedPrefixTag = Tag(
