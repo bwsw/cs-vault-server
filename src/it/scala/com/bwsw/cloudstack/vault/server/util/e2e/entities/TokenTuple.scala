@@ -16,8 +16,6 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util.vault
+package com.bwsw.cloudstack.vault.server.util.e2e.entities
 
-case class SecretData(data: Secret)
-
-case class Secret(keys: List[String])
+case class TokenTuple(readToken: String, writeToken: String)

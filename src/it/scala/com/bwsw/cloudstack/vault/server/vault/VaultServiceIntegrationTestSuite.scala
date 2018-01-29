@@ -25,7 +25,7 @@ import com.bettercloud.vault.json.Json
 import com.bettercloud.vault.rest.{Rest, RestResponse}
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.common.Converter
-import com.bwsw.cloudstack.vault.server.util.vault.{Constants, PolicyData, SecretData, TokenData}
+import com.bwsw.cloudstack.vault.server.util.vault.{Constants, PolicyData, SecretDataList, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
@@ -63,24 +63,26 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
   }
 
   "VaultService" should "create secret path hierarchy and then delete it" in {
+    val itTestPrefix = UUID.randomUUID().toString
     val secretRootPath = "first"
-    val secretSubRootPath = Paths.get(secretRootPath,"second").toString
+    val fullSecretRootPath = Paths.get(itTestPrefix, secretRootPath).toString
+    val fullSecretSubRootPath = Paths.get(fullSecretRootPath,"second").toString
     val secretValue = "value"
     val secretKey = "key"
     val secretJson =  "{\"" + secretKey + "\":\"" + secretValue + "\"}"
 
-    createSecret(secretRootPath, secretJson)
-    createSecret(secretSubRootPath, secretJson)
+    createSecret(fullSecretRootPath, secretJson)
+    createSecret(fullSecretSubRootPath, secretJson)
 
-    val responseGetRootChildPaths = getRootSecretHierarchyList
+    val responseGetRootChildPaths = getRootSecretHierarchyList(itTestPrefix)
 
-    val actualSecretList = mapper.deserialize[SecretData](new String(responseGetRootChildPaths.getBody, "UTF-8")).data.keys
+    val actualSecretList = mapper.deserialize[SecretDataList](new String(responseGetRootChildPaths.getBody, "UTF-8")).data.keys
     val expectedSecretList = List(secretRootPath, s"$secretRootPath/")
     assert(expectedSecretList == actualSecretList)
 
-    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$secretRootPath")
+    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$fullSecretRootPath")
 
-    val responseGetEmptyRootChildPaths = getRootSecretHierarchyList
+    val responseGetEmptyRootChildPaths = getRootSecretHierarchyList(itTestPrefix)
 
     assert(responseGetEmptyRootChildPaths.getStatus == Constants.Statuses.childPathsWithSecretsNotFound)
   }
@@ -105,15 +107,15 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
   }
 
   def createSecret(path: String, secretJson: String): Unit = {
-    new Rest()
+    val cr = new Rest()
       .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(secretJson.getBytes("UTF-8")).post()
   }
 
-  def getRootSecretHierarchyList: RestResponse = {
+  def getRootSecretHierarchyList(itTestPrefix: String): RestResponse = {
     new Rest()
-      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}?list=true")
+      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$itTestPrefix?list=true")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
   }
 

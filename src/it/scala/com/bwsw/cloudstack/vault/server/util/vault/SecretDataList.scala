@@ -18,22 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.util.vault
 
-import com.bwsw.cloudstack.vault.server.util.RequestPath.vaultRoot
+case class SecretDataList(data: SecretKeys)
 
-object Constants {
-  object Statuses {
-    val tokenNotFound = 403
-    val policyNotFound = 404
-    val okWithEmptyBody = 204
-    val childPathsWithSecretsNotFound = 404
-    val secretNotFound = 404
-    val permissionDenied = 403
-  }
-
-  object RequestPaths {
-    val vaultRoot = "/v1"
-    val secret = s"$vaultRoot/secret"
-    val tokenLookup = s"$vaultRoot/auth/token/lookup"
-    val vaultPolicy = s"$vaultRoot/sys/policy"
-  }
-}
+case class SecretKeys(keys: List[String])

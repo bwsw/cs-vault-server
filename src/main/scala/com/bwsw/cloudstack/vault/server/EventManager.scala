@@ -18,6 +18,7 @@
 */
 package com.bwsw.cloudstack.vault.server
 
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.bwsw.cloudstack.entities.common.traits.Mapper
@@ -33,11 +34,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Class is responsible for wrapping logic of working with [[https://github.com/bwsw/kafka-reader]] library
   */
 class EventManager[K,V](consumer: Consumer[K,V],
-                          mapper: Mapper[V],
-                          controller: CloudStackVaultController,
-                          settings: EventManager.Settings) {
+                        mapper: Mapper[V],
+                        controller: CloudStackVaultController,
+                        settings: EventManager.Settings) {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val dummyFlag = new AtomicBoolean(true)
+  private val countDownLatch = new CountDownLatch(1)
 
   def execute(): Unit = {
     val initTopicInfoList = TopicInfoList(settings.topics.map(x => TopicInfo(topic = x)))
@@ -57,6 +59,12 @@ class EventManager[K,V](consumer: Consumer[K,V],
       val outputEnvelopes = eventHandler.handle(dummyFlag)
       checkpointInfoProcessor.save(outputEnvelopes)
     }
+    countDownLatch.countDown()
+  }
+
+  def close(): Unit = {
+    dummyFlag.set(false)
+    countDownLatch.await()
   }
 }
 
