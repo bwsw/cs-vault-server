@@ -66,7 +66,7 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
   assert(writeVmSecretRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
 
   //wait for account and vm deletion in CloudStack server
-  waitAccountAndVmDeletion(accountId, vmId)
+  waitAccountAndVmDeletion(retryDelay = 1000, maxRetryCount = 10, accountId, vmId)
 
   val components = new TestComponents
 
@@ -123,16 +123,15 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
     components.close()
   }
 
-  private def waitAccountAndVmDeletion(accountId: UUID, vmId: UUID): Unit = {
+  private def waitAccountAndVmDeletion(retryDelay: Int, maxRetryCount: Int, accountId: UUID, vmId: UUID): Unit = {
     var retryCount = 0
-    val maxRetryCount = 10
     while(retryCount < maxRetryCount) {
       if(cloudStackService.doesAccountExist(accountId) || cloudStackService.doesVirtualMachineExist(vmId)) {
         retryCount = retryCount + 1
         if (retryCount == maxRetryCount) {
           throw new TimeoutException("entities was not deleted")
         } else {
-          Thread.sleep(1000)
+          Thread.sleep(retryDelay)
         }
       } else {
         retryCount = maxRetryCount
