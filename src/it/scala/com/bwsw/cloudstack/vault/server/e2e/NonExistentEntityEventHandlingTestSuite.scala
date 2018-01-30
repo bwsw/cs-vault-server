@@ -20,6 +20,7 @@ package com.bwsw.cloudstack.vault.server.e2e
 
 import java.nio.file.Paths
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 
 import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
@@ -34,6 +35,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with TestEntities {
+  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
+
   private val accountId = UUID.randomUUID()
   private val accountName = accountId.toString
   accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
@@ -63,11 +66,14 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
   assert(writeVmSecretRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
 
   //wait for account and vm deletion in CloudStack server
-  Thread.sleep(10000)
+  waitAccountAndVmDeletion(accountId, vmId)
 
   val components = new TestComponents
 
   Future(components.eventManager.execute())
+
+  //wait for account and vm deletion handling
+  Thread.sleep(20000)
 
   "cs-vault-server" should "handle vm creation if entity does not exist, and handle vm deletion if token for the vm " +
     "are not created in vault" in {
@@ -115,5 +121,22 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
 
   override def afterAll(): Unit = {
     components.close()
+  }
+
+  private def waitAccountAndVmDeletion(accountId: UUID, vmId: UUID): Unit = {
+    var retryCount = 0
+    val maxRetryCount = 10
+    while(retryCount < maxRetryCount) {
+      if(cloudStackService.doesAccountExist(accountId) || cloudStackService.doesVirtualMachineExist(vmId)) {
+        retryCount = retryCount + 1
+        if (retryCount == maxRetryCount) {
+          throw new TimeoutException("entities was not deleted")
+        } else {
+          Thread.sleep(1000)
+        }
+      } else {
+        retryCount = maxRetryCount
+      }
+    }
   }
 }

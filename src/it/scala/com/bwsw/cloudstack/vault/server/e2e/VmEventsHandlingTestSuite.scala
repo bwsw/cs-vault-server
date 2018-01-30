@@ -35,6 +35,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class VmEventsHandlingTestSuite extends FlatSpec with TestEntities with Checks with BeforeAndAfterAll {
+
+  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
+
   val components = new TestComponents
 
   Future(components.eventManager.execute())

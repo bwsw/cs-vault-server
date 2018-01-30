@@ -31,8 +31,11 @@ import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.util.e2e.entities.TokenTuple
+import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.cloudstack.vault.server.util.vault.{Constants, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
+
+import scala.util.{Failure, Success, Try}
 
 trait Checks extends IntegrationTestsComponents {
   val expectedHostTag = Tag(
@@ -119,7 +122,7 @@ trait Checks extends IntegrationTestsComponents {
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .get()
 
-    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound, s"${responseGetSecret.getStatus}")
+    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound)
   }
 
   def getAccountCreateRequest: AccountCreateRequest = {
@@ -160,5 +163,18 @@ trait Checks extends IntegrationTestsComponents {
     val actualPolicyNameList = mapper.deserialize[TokenData](lookupResponseString).data.policies
 
     assert(actualPolicyNameList == expectedPolicies, s"token: $tokenId has unexpected policy")
+  }
+
+  def commitToEndForGroup(groupId: String): Unit = {
+    val testCousumer = new TestConsumer(IntegrationTestsSettings.kafkaEndpoints, groupId)
+    Try {
+      IntegrationTestsSettings.kafkaTopics.foreach(testCousumer.commitToEnd)
+    } match {
+      case Success(x) =>
+        testCousumer.close()
+      case Failure(e: Throwable) =>
+        testCousumer.close()
+        throw e
+    }
   }
 }
