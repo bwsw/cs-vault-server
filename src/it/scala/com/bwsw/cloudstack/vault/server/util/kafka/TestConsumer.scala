@@ -19,6 +19,7 @@
 package com.bwsw.cloudstack.vault.server.util.kafka
 
 import com.bwsw.kafka.reader.Consumer
+import com.bwsw.kafka.reader.entities.{TopicPartitionInfo, TopicPartitionInfoList}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
@@ -30,5 +31,13 @@ class TestConsumer[K,V](brokers: String, groupId: String) extends Consumer[K,V](
     consumer.endOffsets(partitions).asScala.foreach {
       case (partition, offset) => consumer.seek(partition, offset)
     }
+  }
+
+  def commitToEnd(topic: String): Unit = {
+    val partitions = consumer.partitionsFor(topic).asScala.map(x => new TopicPartition(topic, x.partition())).asJavaCollection
+    val topicPartitionsInfo = consumer.endOffsets(partitions).asScala.map {
+      case (partition, offset) => TopicPartitionInfo(topic, partition.partition(), offset)
+    }
+    commit(TopicPartitionInfoList(topicPartitionsInfo.toList))
   }
 }

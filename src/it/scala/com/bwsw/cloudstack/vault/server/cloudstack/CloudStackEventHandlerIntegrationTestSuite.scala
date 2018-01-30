@@ -33,8 +33,8 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateRespon
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.kafka.reader.MessageQueue
 import org.mockito.Mockito._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -45,7 +45,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     IntegrationTestsSettings.kafkaEndpoints,
     IntegrationTestsSettings.kafkaGroupId
   )
-  consumer.assignToEnd(IntegrationTestsSettings.kafkaTopics.head)
+  IntegrationTestsSettings.kafkaTopics.foreach(consumer.assignToEnd)
 
   val messageQueue = new MessageQueue[String, String](consumer)
 
