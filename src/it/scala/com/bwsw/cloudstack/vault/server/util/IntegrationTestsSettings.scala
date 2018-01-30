@@ -25,8 +25,11 @@ object IntegrationTestsSettings {
   //Vault
   val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
   val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
-  val vaultEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoints).split("[,\\s]+")
   val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
+  val vaultVersion = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultVersion)
+  val vaultDockerContainerName = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultDockerContainerName)
+  val vaultPort = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultPort)
+  val vaultEndpoints = Array(s"http://localhost:$vaultPort")
   //CloudStack
   val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
   val cloudStackEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")

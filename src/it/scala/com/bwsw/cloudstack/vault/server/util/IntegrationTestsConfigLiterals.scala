@@ -21,4 +21,7 @@ package com.bwsw.cloudstack.vault.server.util
 object IntegrationTestsConfigLiterals {
   val cloudStackLogin = "app.cloudStack.login"
   val cloudStackPassword = "app.cloudStack.password"
+  val vaultVersion = "app.vault.version"
+  val vaultDockerContainerName = "app.vault.dockerContainerName"
+  val vaultPort = "app.vault.port"
 }
