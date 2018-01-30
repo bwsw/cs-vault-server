@@ -38,11 +38,11 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
 
   Future(components.eventManager.execute())
 
-  //stop vault docker container
-  val stopDockerCommand = s"docker stop ${IntegrationTestsSettings.vaultDockerContainerName}"
-  stopDockerCommand !
-
-  "cs-vault-server" should "handle vm creation/deletion if vault server was been unavailable and then available" in {
+  "cs-vault-server" should "handle account creation if vault server was been unavailable and then available" in {
+    //stop vault docker container
+    val stopDockerCommand = s"docker stop ${IntegrationTestsSettings.vaultDockerContainerName}"
+    stopDockerCommand !
+    
     val accountId = UUID.randomUUID()
     accountDao.create(getAccountCreateRequest.withId(accountId))
 
