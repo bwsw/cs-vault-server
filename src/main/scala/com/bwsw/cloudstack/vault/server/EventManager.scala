@@ -29,6 +29,7 @@ import com.bwsw.kafka.reader.{CheckpointInfoProcessor, Consumer, MessageQueue}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 /**
   * Class is responsible for wrapping logic of working with [[https://github.com/bwsw/kafka-reader]] library
@@ -53,17 +54,20 @@ class EventManager[K,V](consumer: Consumer[K,V],
 
   private val eventHandler = new CloudStackEventHandler[K,V](messageQueue, settings.eventCount, mapper, controller)
 
-  def execute(): Unit = synchronized {
+  def execute(): Unit = {
     dummyFlag.set(true)
 
-    while (dummyFlag.get()) {
-      val outputEnvelopes = eventHandler.handle(dummyFlag)
-      checkpointInfoProcessor.save(outputEnvelopes)
+    Try {
+      while (dummyFlag.get()) {
+        val outputEnvelopes = eventHandler.handle(dummyFlag)
+        checkpointInfoProcessor.save(outputEnvelopes)
+      }
     }
+
     countDownLatch.countDown()
   }
 
-  def shutdown(): Unit = synchronized {
+  def shutdown(): Unit = {
     if(dummyFlag.get()) {
       dummyFlag.set(false)
       countDownLatch.await()

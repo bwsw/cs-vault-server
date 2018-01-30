@@ -50,7 +50,7 @@ class VmEventsHandlingTestSuite extends FlatSpec with TestEntities with Checks w
 
     val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
-    Thread.sleep(15000)
+    Thread.sleep(20000)
 
     //check tags existing
     val expectedPrefixTag = Tag(
@@ -86,18 +86,18 @@ class VmEventsHandlingTestSuite extends FlatSpec with TestEntities with Checks w
     executor.executeRequest(vmDeleteRequest.request)
 
     //wait for VM deletion handling
-    Thread.sleep(4000)
+    Thread.sleep(10000)
 
     //check ZooKeeper VM node non-existence
     assert(!components.zooKeeperService.doesNodeExist(Paths.get(IntegrationTestsSettings.zooKeeperRootNode, "vms", vmId.toString).toString))
 
     //check Vault token non-existence
-    checkAbsenceVaultToken(tokenTuple.writeToken)
-    checkAbsenceVaultToken(tokenTuple.readToken)
+    checkAbsentVaultToken(tokenTuple.writeToken)
+    checkAbsentVaultToken(tokenTuple.readToken)
 
     //check Vault policy non-existence
-    checkAbsenceVaultPolicy(expectedReadTokenPolicyName)
-    checkAbsenceVaultPolicy(expectedWriteTokenPolicyName)
+    checkAbsentVaultPolicy(expectedReadTokenPolicyName)
+    checkAbsentVaultPolicy(expectedWriteTokenPolicyName)
 
     //check Vault secret non-existence
     checkVaultSecretNonExistence(IntegrationTestsSettings.vmSecretPath, vmId)

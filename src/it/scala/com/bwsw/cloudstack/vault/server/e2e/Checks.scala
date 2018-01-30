@@ -30,9 +30,9 @@ import com.bwsw.cloudstack.entities.requests.tag.types.TagType
 import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
-import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.util.e2e.entities.TokenTuple
 import com.bwsw.cloudstack.vault.server.util.vault.{Constants, TokenData}
+import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 
 trait Checks extends IntegrationTestsComponents {
   val expectedHostTag = Tag(
@@ -40,7 +40,7 @@ trait Checks extends IntegrationTestsComponents {
     IntegrationTestsSettings.vaultEndpoints.map(endpoint => s"$endpoint${RequestPath.vaultRoot}").mkString(",")
   )
 
-  def checkAbsenceVaultPolicy(policyName: String): Unit = {
+  def checkAbsentVaultPolicy(policyName: String): Unit = {
     val responseLookupToken = new Rest()
       .url(s"${IntegrationTestsSettings.vaultEndpoints.head}${Constants.RequestPaths.vaultPolicy}/$policyName")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
@@ -49,7 +49,7 @@ trait Checks extends IntegrationTestsComponents {
     assert(responseLookupToken.getStatus == Constants.Statuses.policyNotFound)
   }
 
-  def checkAbsenceVaultToken(tokenId: String): Unit = {
+  def checkAbsentVaultToken(tokenId: String): Unit = {
     val responseLookupToken = new Rest()
       .url(s"${IntegrationTestsSettings.vaultEndpoints.head}${Constants.RequestPaths.tokenLookup}/$tokenId")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
@@ -98,8 +98,7 @@ trait Checks extends IntegrationTestsComponents {
     assert(correctWriteRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
 
     //read secret with "read" token
-    import com.bettercloud.vault.Vault
-    import com.bettercloud.vault.VaultConfig
+    import com.bettercloud.vault.{Vault, VaultConfig}
     val config = new VaultConfig().address(IntegrationTestsSettings.vaultEndpoints.head).token(tokenTuple.readToken).build()
     val vault = new Vault(config)
     val actualValue = vault.logical()
@@ -120,7 +119,7 @@ trait Checks extends IntegrationTestsComponents {
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .get()
 
-    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound)
+    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound, s"${responseGetSecret.getStatus}")
   }
 
   def getAccountCreateRequest: AccountCreateRequest = {

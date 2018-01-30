@@ -33,7 +33,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with TestEntities {
+class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with TestEntities {
   private val accountId = UUID.randomUUID()
   private val accountName = accountId.toString
   accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
@@ -62,6 +62,9 @@ class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with
 
   assert(writeVmSecretRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
 
+  //wait for account and vm deletion in CloudStack server
+  Thread.sleep(10000)
+
   val components = new TestComponents
 
   Future(components.eventManager.execute())
@@ -72,8 +75,8 @@ class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with
     val expectedReadTokenPolicyName = s"acl_${accountId}_${vmId}_ro*"
     val expectedWriteTokenPolicyName = s"acl_${accountId}_${vmId}_rw*"
 
-    checkAbsenceVaultPolicy(expectedReadTokenPolicyName)
-    checkAbsenceVaultPolicy(expectedWriteTokenPolicyName)
+    checkAbsentVaultPolicy(expectedReadTokenPolicyName)
+    checkAbsentVaultPolicy(expectedWriteTokenPolicyName)
 
     //check ZooKeeper VM node non-existence
     assert(!components.zooKeeperService.doesNodeExist(
@@ -84,7 +87,7 @@ class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with
       ).toString
     ))
 
-    //check Vault secret non-existence
+    //check Vault secret non-existence after VM deletion handling
     checkVaultSecretNonExistence(IntegrationTestsSettings.vmSecretPath, vmId)
   }
 
@@ -94,8 +97,8 @@ class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with
     val expectedReadTokenPolicyName = s"acl_${accountId}_ro*"
     val expectedWriteTokenPolicyName = s"acl_${accountId}_rw*"
 
-    checkAbsenceVaultPolicy(expectedReadTokenPolicyName)
-    checkAbsenceVaultPolicy(expectedWriteTokenPolicyName)
+    checkAbsentVaultPolicy(expectedReadTokenPolicyName)
+    checkAbsentVaultPolicy(expectedWriteTokenPolicyName)
 
     //check ZooKeeper VM node non-existence
     assert(!components.zooKeeperService.doesNodeExist(
@@ -106,7 +109,7 @@ class NonExistenceEntityEventHandlingTestSuite extends FlatSpec with Checks with
       ).toString
     ))
 
-    //check Vault secret non-existence
+    //check Vault secret non-existence after account deletion handling
     checkVaultSecretNonExistence(IntegrationTestsSettings.accountSecretPath, accountId)
   }
 
