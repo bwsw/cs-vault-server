@@ -53,15 +53,13 @@ class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities wit
 
     val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
-    Thread.sleep(25000)
-
     //check tags existing
     val expectedPrefixTag = Tag(
       VaultTagKey.toString(VaultTagKey.VaultPrefix),
       Paths.get(IntegrationTestsSettings.vmSecretPath, vmId.toString).toString
     )
 
-    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, vmId, VmTagType)
+    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, vmId, VmTagType, maxRetryCount = 40, retryDelay = 1000)
 
     //check policies and tokens
     val expectedReadTokenPolicyName = s"acl_${accountId}_${vmId}_ro*"

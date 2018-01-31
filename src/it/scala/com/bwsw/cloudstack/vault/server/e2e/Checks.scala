@@ -136,8 +136,21 @@ trait Checks extends CloudStackTestsComponents {
     ))
   }
 
-  def retrieveTokenTagsIfThereAre(expectedPrefixTag: Tag, entityId: UUID, tagType: TagType): TokenTuple = {
-    val tags = tagDao.find(new TagFindRequest().withResource(entityId).withResourceType(tagType))
+  def retrieveTokenTagsIfThereAre(expectedPrefixTag: Tag,
+                                  entityId: UUID,
+                                  tagType: TagType,
+                                  maxRetryCount: Int,
+                                  retryDelay: Int): TokenTuple = {
+    val findRequest = new TagFindRequest().withResource(entityId).withResourceType(tagType)
+
+    var tags = Set.empty[Tag]
+    var retryCount = 0
+
+    while(retryCount < maxRetryCount && tags.isEmpty) {
+      tags = tagDao.find(findRequest)
+      retryCount = retryCount + 1
+      Thread.sleep(retryDelay)
+    }
 
     val roTokenTagOpt = tags.find { tag =>
       VaultTagKey.fromString(tag.key) == VaultTagKey.VaultRO
@@ -147,7 +160,9 @@ trait Checks extends CloudStackTestsComponents {
       VaultTagKey.fromString(tag.key) == VaultTagKey.VaultRW
     }
 
-    assert(Set(expectedHostTag, expectedPrefixTag).subsetOf(tags))
+    val expectedEnvironmentTags = Set(expectedHostTag, expectedPrefixTag)
+
+    assert(expectedEnvironmentTags.subsetOf(tags), s"tags:$tags of entity: $entityId are not containing expectedEnvironmentTags: $expectedEnvironmentTags")
     assert(roTokenTagOpt.nonEmpty)
     assert(rwTokenTagOpt.nonEmpty)
 

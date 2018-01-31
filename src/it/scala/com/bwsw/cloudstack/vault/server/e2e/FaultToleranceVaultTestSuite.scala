@@ -46,11 +46,11 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
     assert(emptyTags.isEmpty)
 
     //run vault docker container
-    val dockerRunCommand = "docker run --cap-add IPC_LOCK " +
+    val dockerRunCommand = "docker run " +
       s"-e VAULT_DEV_ROOT_TOKEN_ID=${IntegrationTestsSettings.FaultTolerance.vaultRootToken} " +
       s"-e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
       s"-p ${IntegrationTestsSettings.FaultTolerance.vaultPort}:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
-      s"--rm -d --name ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName} " +
+      s"--privileged --rm -d --name ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName} " +
       s"vault:${IntegrationTestsSettings.FaultTolerance.vaultVersion}"
     dockerRunCommand.!
 
@@ -68,8 +68,8 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
       VaultTagKey.fromString(tag.key) == VaultTagKey.VaultRW
     }
 
-    assert(roTokenTagOpt.nonEmpty)
-    assert(rwTokenTagOpt.nonEmpty)
+    assert(roTokenTagOpt.nonEmpty, s"tags: $tags are not containing tag with key: ${VaultTagKey.toString(VaultTagKey.VaultRO)}")
+    assert(rwTokenTagOpt.nonEmpty, s"tags: $tags are not containing tag with key: ${VaultTagKey.toString(VaultTagKey.VaultRW)}")
   }
 
   override def beforeAll(): Unit = {
