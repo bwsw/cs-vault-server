@@ -48,9 +48,14 @@ If you need to create your own docker container with Travis help in DockerHub af
     * `IT_KAFKA_ENDPOINTS` - $KAFKA_HOST:$KAFKA_PORT
     * `IT_ZOOKEEPER_PORT` - port of ZooKeeper, for example - "2181"
     * `IT_ZOOKEEPER_ENDPOINTS` - $IT_KAFKA_HOST:$IT_ZOOKEEPER_PORT
-    * `IT_VAULT_ENDPOINTS` - 
-IT_VAULT_ROOT_TOKEN
-FAULT_TEST_VAULT_ROOT_TOKEN
+    * `IT_VAULT_ENDPOINTS` - endpoints of Vault, for example "http://localhost:8200"
+    * `IT_VAULT_ROOT_TOKEN` - string which is used such as root Vault token
+    * `FAULT_TEST_VAULT_ROOT_TOKEN` - string which is used such as root token in Vault which will be run (in docker container) in fault tolerance tests
+    * `FAULT_TEST_VAULT_PORT` - port of Vault for fault tolerance tests, have to be different from port in IT_VAULT_ENDPOINTS
+
+A machine which is being used to run integration tests have to have docker client.
+
+Note: fault tolerance tests could be failed due to unstable starting of vault container.
    
 ## Versioning
 
