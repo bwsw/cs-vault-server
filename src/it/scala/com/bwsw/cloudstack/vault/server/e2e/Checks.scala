@@ -121,7 +121,8 @@ trait Checks extends CloudStackTestsComponents {
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .get()
 
-    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound)
+    assert(responseGetSecret.getStatus == Constants.Statuses.secretNotFound,
+      s"status: ${responseGetSecret.getStatus} for request by endpoint: $entityEndpoint is not expected")
   }
 
   def getAccountCreateRequest: AccountCreateRequest = {

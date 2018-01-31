@@ -38,7 +38,6 @@ object IntegrationTestsSettings {
   val zooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
   //Kafka
   val kafkaEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
-  val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
   val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
   val kafkaTopics = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+")
   val kafkaEventCount = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)

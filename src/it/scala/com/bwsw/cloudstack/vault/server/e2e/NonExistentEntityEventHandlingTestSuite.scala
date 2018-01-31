@@ -36,10 +36,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with CloudStackTestEntities {
+  val components = new TestComponents(new CommonVaultTestComponents)
+
+  commitToEndForGroup(components.consumerGroupId)
+
   val accountId = UUID.randomUUID()
   val accountName = accountId.toString
-
-  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
 
   accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
 
@@ -73,8 +75,6 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
 
   //wait entities deletion handling
   Thread.sleep(10000)
-
-  lazy val components = new TestComponents(new CommonVaultTestComponents)
 
   "cs-vault-server" should "handle vm creation if entity does not exist, and handle vm deletion if token for the vm " +
     "are not created in vault" in {

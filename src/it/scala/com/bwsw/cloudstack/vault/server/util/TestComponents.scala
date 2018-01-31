@@ -18,6 +18,8 @@
 */
 package com.bwsw.cloudstack.vault.server.util
 
+import java.util.UUID
+
 import com.bwsw.cloudstack.vault.server.EventManager
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
@@ -31,15 +33,19 @@ import scala.util.{Failure, Success, Try}
 class TestComponents(val vaultTestComponents: VaultTestComponents) extends CloudStackTestsComponents {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  val consumer = new Consumer[String,String](Consumer.Settings(
+  val consumerGroupId: String = UUID.randomUUID().toString
+
+  lazy val consumer = new Consumer[String,String](Consumer.Settings(
     IntegrationTestsSettings.kafkaEndpoints,
-    IntegrationTestsSettings.kafkaGroupId
+    consumerGroupId
   ))
 
-  val zooKeeperService = new ZooKeeperService(ZooKeeperService.Settings(
+  val zooKeeperSettings = ZooKeeperService.Settings(
     IntegrationTestsSettings.zooKeeperEndpoints,
     IntegrationTestsSettings.zooKeeperRetryDelay
-  ))
+  )
+
+  lazy val zooKeeperService = new ZooKeeperService(zooKeeperSettings)
 
   val controllerSettings = CloudStackVaultController.Settings(
     IntegrationTestsSettings.vmSecretPath,
@@ -47,14 +53,14 @@ class TestComponents(val vaultTestComponents: VaultTestComponents) extends Cloud
     IntegrationTestsSettings.zooKeeperRootNode
   )
 
-  val controller = new CloudStackVaultController(vaultTestComponents.vaultService, cloudStackService, zooKeeperService, controllerSettings)
+  lazy val controller = new CloudStackVaultController(vaultTestComponents.vaultService, cloudStackService, zooKeeperService, controllerSettings)
 
   val eventManagerSettings = EventManager.Settings(
     IntegrationTestsSettings.kafkaTopics.toList,
     IntegrationTestsSettings.kafkaEventCount
   )
 
-  val eventManager = new EventManager(
+  lazy val eventManager = new EventManager(
     consumer,
     mapper,
     controller,

@@ -43,7 +43,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
   val dummyFlag = new AtomicBoolean(true)
   val consumer = new TestConsumer[String, String](
     IntegrationTestsSettings.kafkaEndpoints,
-    IntegrationTestsSettings.kafkaGroupId
+    UUID.randomUUID().toString
   )
   IntegrationTestsSettings.kafkaTopics.foreach(consumer.assignToEnd)
 

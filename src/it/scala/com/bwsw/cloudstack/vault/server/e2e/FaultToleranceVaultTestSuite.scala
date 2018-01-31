@@ -31,7 +31,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAfterAll {
-  lazy val components = new TestComponents(new FaultToleranceVaultTestComponents)
+  val components = new TestComponents(new FaultToleranceVaultTestComponents)
+  commitToEndForGroup(components.consumerGroupId)
+
+  Future(components.eventManager.execute())
 
   "cs-vault-server" should "handle account creation if vault server was been unavailable and then available" in {
     import sys.process._
@@ -70,11 +73,6 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
 
     assert(roTokenTagOpt.nonEmpty, s"tags: $tags are not containing tag with key: ${VaultTagKey.toString(VaultTagKey.VaultRO)}")
     assert(rwTokenTagOpt.nonEmpty, s"tags: $tags are not containing tag with key: ${VaultTagKey.toString(VaultTagKey.VaultRW)}")
-  }
-
-  override def beforeAll(): Unit = {
-    commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
-    Future(components.eventManager.execute())
   }
 
   override def afterAll(): Unit = {

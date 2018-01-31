@@ -48,14 +48,14 @@ class EventManager[K,V](consumer: Consumer[K,V],
     consumer
   )
 
-  checkpointInfoProcessor.load()
-
   private val messageQueue = new MessageQueue[K,V](consumer)
 
   private val eventHandler = new CloudStackEventHandler[K,V](messageQueue, settings.eventCount, mapper, controller)
 
   def execute(): Unit = {
     dummyFlag.set(true)
+
+    checkpointInfoProcessor.load()
 
     Try {
       while (dummyFlag.get()) {
