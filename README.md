@@ -1,13 +1,6 @@
-Also see:
-* [Event processing logic](docs/logic.md)
-* [UML diagrams](docs/diagrams/)
-
 # cs-vault-server
-CloudStack Vault Plugin Server Handler
-
-## Technical
-
-[Travis Build History](https://travis-ci.org/bwsw/cs-vault-server/builds)
+CloudStack Vault Plugin Server Handler. This Instance for handling ApacheCloudStack event notification:
+create and write into entities tags (account, vm) Vault HashiCorp tokens, which provide access to secrets of the Vault.
 
 ## Quick start
 
@@ -47,6 +40,22 @@ If you need to create your own docker container with Travis help in DockerHub af
 2. set the following environment variables in the Travis-CI: 'DOCKER_USERNAME', 'DOCKER_PASSWORD',
    'DOCKER_USERNAME' it is Docker Hub user name; 'DOCKER_PASSWORD' it is Docker Hub password
    
+## Integration tests
+
+1. Add local environment variables:
+    * `IT_KAFKA_HOST` - host of Kafka, for example - "localhost"
+    * `IT_KAFKA_PORT` - port of Kafka, for example - "9092"
+    * `IT_KAFKA_ENDPOINTS` - $KAFKA_HOST:$KAFKA_PORT
+    * `IT_ZOOKEEPER_PORT` - port of ZooKeeper, for example - "2181"
+    * `IT_ZOOKEEPER_ENDPOINTS` - $IT_KAFKA_HOST:$IT_ZOOKEEPER_PORT
+    * `IT_VAULT_ENDPOINTS` - 
+IT_VAULT_ROOT_TOKEN
+FAULT_TEST_VAULT_ROOT_TOKEN
+   
 ## Versioning
 
-Server has the same version as Apache CloudStack server
+Server has the same version as Apache CloudStack server, and used Vault version 0.8.3
+
+Also see:
+* [Event processing logic](docs/logic.md)
+* [UML diagrams](docs/diagrams/)
