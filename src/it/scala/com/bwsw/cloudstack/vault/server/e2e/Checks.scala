@@ -28,16 +28,17 @@ import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAd
 import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.TagType
 import com.bwsw.cloudstack.entities.responses.Tag
-import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
+import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
 import com.bwsw.cloudstack.vault.server.util.e2e.entities.TokenTuple
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.cloudstack.vault.server.util.vault.{Constants, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 
 import scala.util.{Failure, Success, Try}
 
-trait Checks extends IntegrationTestsComponents {
+trait Checks extends CloudStackTestsComponents {
   val expectedHostTag = Tag(
     VaultTagKey.toString(VaultTagKey.VaultHosts),
     IntegrationTestsSettings.vaultEndpoints.map(endpoint => s"$endpoint${RequestPath.vaultRoot}").mkString(",")
@@ -111,8 +112,6 @@ trait Checks extends IntegrationTestsComponents {
     assert(actualValue == expectedValue)
   }
 
-
-
   def checkVaultSecretNonExistence(secretPath: String, entityId: UUID): Unit = {
     val entityEndpoint = s"${IntegrationTestsSettings.vaultEndpoints.head}" +
       s"${Paths.get(Constants.RequestPaths.vaultRoot, secretPath, entityId.toString).toString}"
@@ -155,7 +154,7 @@ trait Checks extends IntegrationTestsComponents {
     TokenTuple(roTokenTagOpt.get.value, rwTokenTagOpt.get.value)
   }
 
-  def checkTokenPolicies(tokenId: String, expectedPolicies: List[String]): Unit = {
+  def checkTokenPolicies(tokenId: String, expectedPolicies: List[String], vaultRestRequestExecutor: VaultRestRequestExecutor): Unit = {
     val jsonTokenId = Json.`object`().add("token", tokenId).toString
 
     val lookupResponseString = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)

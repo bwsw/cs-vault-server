@@ -23,45 +23,39 @@ import java.util.UUID
 import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.AccountTagType
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
-import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
+import com.bwsw.cloudstack.vault.server.util.vault.components.FaultToleranceVaultTestComponents
+import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAfterAll {
-  import sys.process._
-
-  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
-
-  val components = new TestComponents
-
-  Future(components.eventManager.execute())
+  lazy val components = new TestComponents(new FaultToleranceVaultTestComponents)
 
   "cs-vault-server" should "handle account creation if vault server was been unavailable and then available" in {
-    //stop vault docker container
-    val stopDockerCommand = s"docker stop ${IntegrationTestsSettings.vaultDockerContainerName}"
-    stopDockerCommand !
-    
+    import sys.process._
+
     val accountId = UUID.randomUUID()
     accountDao.create(getAccountCreateRequest.withId(accountId))
 
     //wait account creation in CloudStack server
-    Thread.sleep(15000)
+    Thread.sleep(5000)
 
     val emptyTags = tagDao.find(new TagFindRequest().withResource(accountId).withResourceType(AccountTagType))
     assert(emptyTags.isEmpty)
 
     //run vault docker container
     val dockerRunCommand = "docker run --cap-add IPC_LOCK " +
-      s"-e VAULT_DEV_ROOT_TOKEN_ID=${IntegrationTestsSettings.vaultRootToken} " +
-      s"-e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:${IntegrationTestsSettings.vaultPort} " +
-      s"-p ${IntegrationTestsSettings.vaultPort}:${IntegrationTestsSettings.vaultPort} " +
-      s"--rm -d --name ${IntegrationTestsSettings.vaultDockerContainerName} vault:${IntegrationTestsSettings.vaultVersion}"
-    dockerRunCommand !
+      s"-e VAULT_DEV_ROOT_TOKEN_ID=${IntegrationTestsSettings.FaultTolerance.vaultRootToken} " +
+      s"-e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
+      s"-p ${IntegrationTestsSettings.FaultTolerance.vaultPort}:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
+      s"--rm -d --name ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName} " +
+      s"vault:${IntegrationTestsSettings.FaultTolerance.vaultVersion}"
+    dockerRunCommand.!
 
     //wait account creation handling
-    Thread.sleep(15000)
+    Thread.sleep(20000)
 
     //check vault token tags creation
     val tags = tagDao.find(new TagFindRequest().withResource(accountId).withResourceType(AccountTagType))
@@ -78,7 +72,17 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
     assert(rwTokenTagOpt.nonEmpty)
   }
 
+  override def beforeAll(): Unit = {
+    commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
+    Future(components.eventManager.execute())
+  }
+
   override def afterAll(): Unit = {
+    import sys.process._
+    //stop vault docker container
+    val stopDockerCommand = s"docker stop ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName}"
+    stopDockerCommand.!
+
     components.close()
   }
 }

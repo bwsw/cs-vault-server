@@ -16,18 +16,17 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.util
+package com.bwsw.cloudstack.vault.server.util.vault.components
 
-object IntegrationTestsConfigLiterals {
-  val cloudStackLogin = "app.cloudStack.login"
-  val cloudStackPassword = "app.cloudStack.password"
+import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
+import com.bwsw.cloudstack.vault.server.vault.VaultService
+import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 
-  //fault tolerance test port
-  object FaultToleranceTest {
-    val vaultRootToken = "app.vault.faultToleranceTest.port"
-    val vaultPort = "app.vault.faultToleranceTest.port"
-    val vaultVersion = "app.vault.faultToleranceTest.version"
-    val vaultDockerContainerName = "app.vault.faultToleranceTest.containerName"
-    val vaultFaultToleranceTestPort = "app.vault.faultToleranceTest.port"
-  }
+class FaultToleranceVaultTestComponents extends VaultTestComponents {
+  protected val requestExecutorSettings = VaultRestRequestExecutor.Settings(
+    IntegrationTestsSettings.FaultTolerance.vaultEndpoint,
+    IntegrationTestsSettings.FaultTolerance.vaultRootToken,
+    IntegrationTestsSettings.vaultRetryDelay
+  )
+  protected val vaultServiceSettings = VaultService.Settings(IntegrationTestsSettings.vaultTokenPeriod)
 }

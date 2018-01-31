@@ -16,7 +16,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server
+package com.bwsw.cloudstack.vault.server.util.cloudstack.components
 
 import com.bwsw.cloudstack.PasswordAuthenticationClientCreator
 import com.bwsw.cloudstack.entities.Executor
@@ -24,23 +24,10 @@ import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.{AccountDao, TagDao, VirtualMachineDao}
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.vault.VaultService
-import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 
-
-trait IntegrationTestsComponents {
+trait CloudStackTestsComponents {
   //common
   lazy val mapper = new JsonMapper(ignoreUnknownProperties = true)
-  //vault
-  private val requestExecutorSettings = VaultRestRequestExecutor.Settings(
-    IntegrationTestsSettings.vaultEndpoints,
-    IntegrationTestsSettings.vaultRootToken,
-    IntegrationTestsSettings.vaultRetryDelay
-  )
-  private val vaultServiceSettings = VaultService.Settings(IntegrationTestsSettings.vaultTokenPeriod)
-
-  lazy val vaultRestRequestExecutor = new VaultRestRequestExecutor(requestExecutorSettings)
-  lazy val vaultService = new VaultService(vaultRestRequestExecutor, vaultServiceSettings)
 
   //cloudstack
   private val executorSettings = Executor.Settings(

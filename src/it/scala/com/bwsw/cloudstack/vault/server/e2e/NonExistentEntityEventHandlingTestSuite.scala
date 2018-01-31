@@ -24,56 +24,57 @@ import java.util.concurrent.TimeoutException
 
 import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
-import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
+import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmCreateTestRequest, VmDeleteRequest}
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.vault.Constants
+import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
+import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with TestEntities {
+class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with CloudStackTestEntities {
+  val accountId = UUID.randomUUID()
+  val accountName = accountId.toString
+
   commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
 
-  private val accountId = UUID.randomUUID()
-  private val accountName = accountId.toString
   accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
 
-  private val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+  val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
     retrievedServiceOfferingId, retrievedTemplateId, retrievedZoneId
   )).withDomainAccount(accountName, retrievedAdminDomainId).asInstanceOf[VmCreateTestRequest]
 
-  private val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
+  val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
 
-  private val deleteVmRequest = new VmDeleteRequest(vmId)
+  val deleteVmRequest = new VmDeleteRequest(vmId)
 
   executor.executeRequest(deleteVmRequest.request)
 
-  private val accountDeleteRequest = new AccountDeleteRequest(accountId)
+  val accountDeleteRequest = new AccountDeleteRequest(accountId)
 
   executor.executeRequest(accountDeleteRequest.request)
-
-  private val entityEndpoint = s"${IntegrationTestsSettings.vaultEndpoints.head}" +
-    s"${Paths.get(Constants.RequestPaths.vaultRoot, IntegrationTestsSettings.vmSecretPath, vmId.toString).toString}"
-
-  private val writeVmSecretRequest = new Rest()
-    .url(entityEndpoint)
-    .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
-    .body("{\"key\": \"value\"}".getBytes("UTF-8"))
-
-  assert(writeVmSecretRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
 
   //wait for account and vm deletion in CloudStack server
   waitAccountAndVmDeletion(retryDelay = 1000, maxRetryCount = 10, accountId, vmId)
 
-  val components = new TestComponents
+  val vmSecretEndpoint = s"${IntegrationTestsSettings.vaultEndpoints.head}" +
+    s"${Paths.get(Constants.RequestPaths.vaultRoot, IntegrationTestsSettings.vmSecretPath, vmId.toString).toString}"
+
+  val accountSecretEndpoint = s"${IntegrationTestsSettings.vaultEndpoints.head}" +
+    s"${Paths.get(Constants.RequestPaths.vaultRoot, IntegrationTestsSettings.accountSecretPath, accountId.toString).toString}"
+
+  writeEntitySecret(vmSecretEndpoint)
+  writeEntitySecret(accountSecretEndpoint)
 
   Future(components.eventManager.execute())
 
-  //wait for account and vm deletion handling
-  Thread.sleep(20000)
+  //wait entities deletion handling
+  Thread.sleep(10000)
+
+  lazy val components = new TestComponents(new CommonVaultTestComponents)
 
   "cs-vault-server" should "handle vm creation if entity does not exist, and handle vm deletion if token for the vm " +
     "are not created in vault" in {
@@ -121,6 +122,15 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
 
   override def afterAll(): Unit = {
     components.close()
+  }
+
+  private def writeEntitySecret(entityEndpoint: String) = {
+    val writeVmSecretRequest = new Rest()
+      .url(entityEndpoint)
+      .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
+      .body("{\"key\": \"value\"}".getBytes("UTF-8"))
+
+    assert(writeVmSecretRequest.post().getStatus == Constants.Statuses.okWithEmptyBody)
   }
 
   private def waitAccountAndVmDeletion(retryDelay: Int, maxRetryCount: Int, accountId: UUID, vmId: UUID): Unit = {

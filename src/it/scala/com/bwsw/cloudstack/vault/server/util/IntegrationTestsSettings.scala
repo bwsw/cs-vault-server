@@ -26,10 +26,7 @@ object IntegrationTestsSettings {
   val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
   val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
   val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
-  val vaultVersion = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultVersion)
-  val vaultDockerContainerName = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultDockerContainerName)
-  val vaultPort = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.vaultPort)
-  val vaultEndpoints = Array(s"http://localhost:$vaultPort")
+  val vaultEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoints).split("[,\\s]+")
   //CloudStack
   val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
   val cloudStackEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
@@ -45,4 +42,12 @@ object IntegrationTestsSettings {
   val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
   val kafkaTopics = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+")
   val kafkaEventCount = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)
+
+  object FaultTolerance {
+    val vaultRootToken = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultRootToken)
+    val vaultVersion = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultVersion)
+    val vaultDockerContainerName = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultDockerContainerName)
+    val vaultPort = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultPort)
+    val vaultEndpoint = Array(s"http://localhost:$vaultPort")
+  }
 }

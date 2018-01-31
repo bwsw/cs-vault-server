@@ -48,6 +48,12 @@ lazy val root = (project in file("."))
     addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
     inConfig(IntegrationTest)(Defaults.itSettings),
     coverageEnabled in Test := true,
+    testOptions += Tests.Argument(
+      TestFrameworks.ScalaTest,
+      "-oFD", // to show full stack traces and durations
+      "-W", "120", "60" // to notify when some test is running longer than a specified amount of time
+    ),
+    parallelExecution in ThisBuild := false,
     inConfig(IntegrationTest)(ScalastylePlugin.rawScalastyleSettings()) ++
       Seq(
         scalastyleConfig in IntegrationTest := (scalastyleConfig in scalastyle).value,

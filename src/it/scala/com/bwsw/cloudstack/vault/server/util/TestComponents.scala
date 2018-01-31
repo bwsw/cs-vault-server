@@ -16,17 +16,21 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package com.bwsw.cloudstack.vault.server.e2e
+package com.bwsw.cloudstack.vault.server.util
 
-import com.bwsw.cloudstack.vault.server.{EventManager, IntegrationTestsComponents}
+import com.bwsw.cloudstack.vault.server.EventManager
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
-import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
+import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
+import com.bwsw.cloudstack.vault.server.util.vault.components.VaultTestComponents
 import com.bwsw.cloudstack.vault.server.zookeeper.ZooKeeperService
 import com.bwsw.kafka.reader.Consumer
+import org.slf4j.LoggerFactory
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
-class TestComponents extends IntegrationTestsComponents {
+class TestComponents(val vaultTestComponents: VaultTestComponents) extends CloudStackTestsComponents {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   val consumer = new Consumer[String,String](Consumer.Settings(
     IntegrationTestsSettings.kafkaEndpoints,
     IntegrationTestsSettings.kafkaGroupId
@@ -43,7 +47,7 @@ class TestComponents extends IntegrationTestsComponents {
     IntegrationTestsSettings.zooKeeperRootNode
   )
 
-  val controller = new CloudStackVaultController(vaultService, cloudStackService, zooKeeperService, controllerSettings)
+  val controller = new CloudStackVaultController(vaultTestComponents.vaultService, cloudStackService, zooKeeperService, controllerSettings)
 
   val eventManagerSettings = EventManager.Settings(
     IntegrationTestsSettings.kafkaTopics.toList,
@@ -59,7 +63,11 @@ class TestComponents extends IntegrationTestsComponents {
 
   def close(): Unit = {
     List(eventManager.shutdown _, zooKeeperService.close _, consumer.close _).foreach(func => {
-      Try(func())
+      Try(func()) match {
+        case Success(x) =>
+        case Failure(e: Throwable) =>
+          logger.error(s"can not execute func, exception: $e was thrown")
+      }
     })
   }
 }
