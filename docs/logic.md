@@ -13,9 +13,9 @@ In case of an exception, the processing of event will be restarted, except the c
 
 The processing of VM creation event consists of the following steps: <br />
   1. get the appropriate account ID via CloudStackService: <br />
-    1.1. If the account did not retrieve, skip other steps.
+    1.1. If the account doesn't exist, skip other steps.
   2. try to retrieve tokens from zookeeper. Token can have 'RO' or 'RW' policy <br />
-  3. if the tokens don't exist: <br />
+  3. if the tokens exist go to the next step, otherwise: <br />
     3.1. the tokens are created in vault <br />
     3.2. zookeeper nodes are created for keeping VM tokens <br />
     3.3. write the vault tokens to zookeeper (in case of an exception, the tokens will be revoked) <br />
@@ -23,16 +23,16 @@ The processing of VM creation event consists of the following steps: <br />
 
 The processing of account creation event consists of the following steps: <br />
   1. check the account existence <br />
-    1.1. If the account did not exist, skip other steps.
+    1.1. If the account doesn't exist, skip other steps.
   2. try to retrieve tokens from zookeeper. Token can have 'RO' or 'RW' policy <br />
-  3. if the tokens don't exist: <br />
+  3. if the tokens exist go to the next step, otherwise: <br />
     3.1. the tokens are created in vault <br />
     3.2. zookeeper nodes are created for keeping Account tokens <br />
     3.3. write the vault tokens to zookeeper (in case of an exception, the tokens will be revoked) <br />
   4. write the tokens in CloudStack as Account tags <br />
 
 The processing of VM/account deletion event consists of the following steps: <br />
-  1. if VM/account node exists in zookeeper: <br />
+  1. if VM/account node doesn't exist go to the next step, otherwise: <br />
     1.1. try to retrieve tokens from zookeeper <br />
     1.2. if the tokens exist: <br />
       1.2.1. get a policy of each token from vault and delete it <br />
