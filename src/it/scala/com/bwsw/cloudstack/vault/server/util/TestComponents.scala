@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 class TestComponents(val vaultTestComponents: VaultTestComponents) extends CloudStackTestsComponents {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  lazy val consumer = new Consumer[String,String](Consumer.Settings(
+  val consumer = new Consumer[String,String](Consumer.Settings(
     IntegrationTestsSettings.kafkaEndpoints,
     IntegrationTestsSettings.kafkaGroupId
   ))
@@ -41,7 +41,7 @@ class TestComponents(val vaultTestComponents: VaultTestComponents) extends Cloud
     IntegrationTestsSettings.zooKeeperRetryDelay
   )
 
-  lazy val zooKeeperService = new ZooKeeperService(zooKeeperSettings)
+  val zooKeeperService = new ZooKeeperService(zooKeeperSettings)
 
   val controllerSettings = CloudStackVaultController.Settings(
     IntegrationTestsSettings.vmSecretPath,
@@ -49,14 +49,14 @@ class TestComponents(val vaultTestComponents: VaultTestComponents) extends Cloud
     IntegrationTestsSettings.zooKeeperRootNode
   )
 
-  lazy val controller = new CloudStackVaultController(vaultTestComponents.vaultService, cloudStackService, zooKeeperService, controllerSettings)
+  val controller = new CloudStackVaultController(vaultTestComponents.vaultService, cloudStackService, zooKeeperService, controllerSettings)
 
   val eventManagerSettings = EventManager.Settings(
     IntegrationTestsSettings.kafkaTopics.toList,
     IntegrationTestsSettings.kafkaEventCount
   )
 
-  lazy val eventManager = new EventManager(
+  val eventManager = new EventManager(
     consumer,
     mapper,
     controller,
