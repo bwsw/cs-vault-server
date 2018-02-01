@@ -181,7 +181,8 @@ class VaultRestRequestExecutor(settings: VaultRestRequestExecutor.Settings) {
     } match {
       case Success(response) =>
         if (!expectedResponseStatuses.contains(response.getStatus)) {
-          throw new VaultFatalException(s"Response status: ${response.getStatus} from Vault server is not expected")
+          throw new VaultFatalException(s"Response status: ${response.getStatus} on request: '$requestDescription'" +
+            s" from Vault server is not expected, expected statuses: $expectedResponseStatuses")
         }
         new String(response.getBody)
 

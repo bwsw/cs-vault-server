@@ -26,12 +26,12 @@ import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
 import com.bwsw.cloudstack.entities.responses.Tag
-import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
+import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.VmCreateTestRequest
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import org.scalatest.FlatSpec
 
-class CloudStackServiceIntegrationTestSuite extends FlatSpec with TestEntities {
+class CloudStackServiceIntegrationTestSuite extends FlatSpec with CloudStackTestEntities {
 
   "CloudStackService" should "return false on check account existence" in {
     val accountId = UUID.randomUUID()

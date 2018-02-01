@@ -25,8 +25,8 @@ object IntegrationTestsSettings {
   //Vault
   val vaultTokenPeriod = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultTokenPeriod)
   val vaultRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.vaultRetryDelay)
-  val vaultEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoints).split("[,\\s]+")
   val vaultRootToken = ApplicationConfig.getRequiredString(ConfigLiterals.vaultRootToken)
+  val vaultEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.vaultEndpoints).split("[,\\s]+")
   //CloudStack
   val cloudStackRetryDelay = ApplicationConfig.getRequiredInt(ConfigLiterals.cloudStackRetryDelay)
   val cloudStackEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.cloudStackEndpoints).split("[,\\s]+")
@@ -38,8 +38,16 @@ object IntegrationTestsSettings {
   val zooKeeperRootNode = ApplicationConfig.getRequiredString(ConfigLiterals.zooKeeperRootNode)
   //Kafka
   val kafkaEndpoints = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaEndpoints)
-  val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
   val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
   val kafkaTopics = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+")
   val kafkaEventCount = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)
+  val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
+
+  object FaultTolerance {
+    val vaultRootToken = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultRootToken)
+    val vaultVersion = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultVersion)
+    val vaultDockerContainerName = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultDockerContainerName)
+    val vaultPort = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultPort)
+    val vaultEndpoints = Array(s"http://localhost:$vaultPort")
+  }
 }

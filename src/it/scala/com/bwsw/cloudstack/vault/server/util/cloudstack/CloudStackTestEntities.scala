@@ -20,11 +20,11 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
+import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
 import com.bwsw.cloudstack.vault.server.util.cloudstack.dao.{DomainDao, ServiceOfferingDao, TemplateDao, ZoneDao}
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{DomainFindRequest, ServiceOfferingFindRequest, TemplateFindRequest, ZoneFindRequest}
 
-trait TestEntities extends IntegrationTestsComponents {
+trait CloudStackTestEntities extends CloudStackTestsComponents {
   lazy val retrievedServiceOfferingId: UUID = {
     val serviceOfferingDao = new ServiceOfferingDao(executor, mapper)
     val serviceOfferingFindRequest = new ServiceOfferingFindRequest

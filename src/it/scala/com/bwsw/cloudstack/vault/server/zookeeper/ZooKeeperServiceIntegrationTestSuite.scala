@@ -20,12 +20,11 @@ package com.bwsw.cloudstack.vault.server.zookeeper
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
 import com.bwsw.cloudstack.vault.server.zookeeper.util.exception.ZooKeeperFatalException
 import org.scalatest.{BeforeAndAfterAll, Outcome, fixture}
 
-class ZooKeeperServiceIntegrationTestSuite extends fixture.FlatSpec with IntegrationTestsComponents with BeforeAndAfterAll {
+class ZooKeeperServiceIntegrationTestSuite extends fixture.FlatSpec with BeforeAndAfterAll {
   val zooKeeperSettings = ZooKeeperService.Settings(
     IntegrationTestsSettings.zooKeeperEndpoints,
     IntegrationTestsSettings.zooKeeperRetryDelay
