@@ -1,8 +1,8 @@
 #!/bin/bash -e
 #VAULT
-docker run --cap-add=IPC_LOCK -e VAULT_DEV_ROOT_TOKEN_ID="${IT_VAULT_ROOT_TOKEN}" \
-                              -e VAULT_DEV_LISTEN_ADDRESS="0.0.0.0:$IT_VAULT_PORT" \
-                              -p $IT_VAULT_PORT:$IT_VAULT_PORT --rm -d --name vault-dev-server vault:0.8.3
+docker run -e VAULT_DEV_ROOT_TOKEN_ID="${IT_VAULT_ROOT_TOKEN}" \
+           -e VAULT_DEV_LISTEN_ADDRESS="0.0.0.0:$IT_VAULT_PORT" \
+           -p $IT_VAULT_PORT:$IT_VAULT_PORT --cap-add=IPC_LOCK --rm -d --name vault-dev-server vault:0.8.3
 
 #KAFKA
 KAFKA_ACKS=all

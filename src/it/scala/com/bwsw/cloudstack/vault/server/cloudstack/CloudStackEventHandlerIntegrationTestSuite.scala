@@ -27,7 +27,7 @@ import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
+import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmCreateTestRequest, VmDeleteRequest}
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
@@ -38,12 +38,12 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSugar with BeforeAndAfterAll with TestEntities {
+class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSugar with BeforeAndAfterAll with CloudStackTestEntities {
 
   val dummyFlag = new AtomicBoolean(true)
   val consumer = new TestConsumer[String, String](
     IntegrationTestsSettings.kafkaEndpoints,
-    IntegrationTestsSettings.kafkaGroupId
+    UUID.randomUUID().toString
   )
   IntegrationTestsSettings.kafkaTopics.foreach(consumer.assignToEnd)
 

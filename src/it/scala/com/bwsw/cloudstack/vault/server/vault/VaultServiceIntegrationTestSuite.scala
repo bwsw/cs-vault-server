@@ -23,14 +23,17 @@ import java.util.UUID
 
 import com.bettercloud.vault.json.Json
 import com.bettercloud.vault.rest.{Rest, RestResponse}
-import com.bwsw.cloudstack.vault.server.IntegrationTestsComponents
+import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.vault.server.common.Converter
+import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
 import com.bwsw.cloudstack.vault.server.util.vault.{Constants, PolicyData, SecretDataList, TokenData}
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, RequestPath}
 import com.bwsw.cloudstack.vault.server.vault.entities.Policy
 import org.scalatest.FlatSpec
 
-class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsComponents {
+class VaultServiceIntegrationTestSuite extends FlatSpec {
+  lazy val components = new CommonVaultTestComponents
+  lazy val mapper = new JsonMapper(ignoreUnknownProperties = true)
 
   "VaultService" should "create and revoke token with specified policy and period" in {
     val accountId = UUID.randomUUID()
@@ -38,24 +41,24 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     val expectedTokenPeriod = Converter.daysToSeconds(IntegrationTestsSettings.vaultTokenPeriod)
 
     val policy = Policy.createAccountReadPolicy(accountId, expectedPolicyPath)
-    vaultService.writePolicy(policy)
+    components.vaultService.writePolicy(policy)
 
-    val token = vaultService.createToken(List(policy))
+    val token = components.vaultService.createToken(List(policy))
 
     val jsonTokenId = Json.`object`().add("token", token.toString).toString
-    val responseLookupToken = vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
+    val responseLookupToken = components.vaultRestRequestExecutor.executeTokenLookupRequest(jsonTokenId)
 
     val lookupToken = mapper.deserialize[TokenData](responseLookupToken).data
 
     assert(lookupToken.period == expectedTokenPeriod)
     assert(lookupToken.policies.toSet == Set(policy.name))
 
-    val policiesFromRevokedToken = vaultService.revokeToken(token)
+    val policiesFromRevokedToken = components.vaultService.revokeToken(token)
 
     assert(policiesFromRevokedToken.toSet == Set(policy.name))
 
     val responseRevokedToken = new Rest()
-      .url(s"${vaultService.endpoints.head}${RequestPath.vaultTokenLookup}")
+      .url(s"${components.vaultService.endpoints.head}${RequestPath.vaultTokenLookup}")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(jsonTokenId.getBytes("UTF-8")).post()
 
@@ -80,7 +83,7 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     val expectedSecretList = List(secretRootPath, s"$secretRootPath/")
     assert(expectedSecretList == actualSecretList)
 
-    vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$fullSecretRootPath")
+    components.vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$fullSecretRootPath")
 
     val responseGetEmptyRootChildPaths = getRootSecretHierarchyList(itTestPrefix)
 
@@ -89,7 +92,7 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
 
   "VaultService" should "not fail after nonexistent secret deletion" in {
     val nonexistentPath = UUID.randomUUID().toString
-    assert(vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$nonexistentPath").isInstanceOf[Unit])
+    assert(components.vaultService.deleteSecretsRecursively(s"${Constants.RequestPaths.secret}/$nonexistentPath").isInstanceOf[Unit])
   }
 
   "VaultService" should "write and delete policy with 'write' permissions" in {
@@ -108,24 +111,24 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
 
   def createSecret(path: String, secretJson: String): Unit = {
     val cr = new Rest()
-      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
+      .url(s"${components.vaultService.endpoints.head}${Constants.RequestPaths.secret}/$path")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken)
       .body(secretJson.getBytes("UTF-8")).post()
   }
 
   def getRootSecretHierarchyList(itTestPrefix: String): RestResponse = {
     new Rest()
-      .url(s"${vaultService.endpoints.head}${Constants.RequestPaths.secret}/$itTestPrefix?list=true")
+      .url(s"${components.vaultService.endpoints.head}${Constants.RequestPaths.secret}/$itTestPrefix?list=true")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
   }
 
   def testPolicy(policy: Policy): Unit = {
     val expectedRules = "path \"" + policy.path + "\" {\"policy\"=\"" + Policy.ACL.toString(policy.acl) + "\"}"
 
-    vaultService.writePolicy(policy)
+    components.vaultService.writePolicy(policy)
 
     val responseGetCreatedPolicy = new Rest()
-      .url(s"${vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
+      .url(s"${components.vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get()
 
     val actualPolicyJson = new String(responseGetCreatedPolicy.getBody, "UTF-8")
@@ -134,10 +137,10 @@ class VaultServiceIntegrationTestSuite extends FlatSpec with IntegrationTestsCom
     assert(actualPolicyData.name == policy.name)
     assert(actualPolicyData.rules == expectedRules)
 
-    vaultService.deletePolicy(policy.name)
+    components.vaultService.deletePolicy(policy.name)
 
     val responseGetDeletedPolicy = new Rest()
-      .url(s"${vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
+      .url(s"${components.vaultService.endpoints.head}${RequestPath.vaultPolicy}/${policy.name}")
       .header("X-Vault-Token", IntegrationTestsSettings.vaultRootToken).get
 
     assert(responseGetDeletedPolicy.getStatus == Constants.Statuses.policyNotFound)
