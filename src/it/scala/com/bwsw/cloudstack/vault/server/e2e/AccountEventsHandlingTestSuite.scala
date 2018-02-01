@@ -24,18 +24,19 @@ import java.util.UUID
 import com.bwsw.cloudstack.entities.requests.tag.types.AccountTagType
 import com.bwsw.cloudstack.entities.responses.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
-import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
-import com.bwsw.cloudstack.vault.server.util.cloudstack.TestEntities
+import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
 import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.AccountDeleteRequest
+import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
+import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AccountEventsHandlingTestSuite extends FlatSpec with TestEntities with Checks with BeforeAndAfterAll {
+class AccountEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities with Checks with BeforeAndAfterAll {
   commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
 
-  val components = new TestComponents
+  val components = new TestComponents(new CommonVaultTestComponents)
 
   Future(components.eventManager.execute())
 
@@ -51,14 +52,14 @@ class AccountEventsHandlingTestSuite extends FlatSpec with TestEntities with Che
       Paths.get(IntegrationTestsSettings.accountSecretPath, accountId.toString).toString
     )
 
-    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, accountId, AccountTagType)
+    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, accountId, AccountTagType, maxRetryCount = 60, retryDelay = 1000)
 
     //check policies and tokens
     val expectedReadTokenPolicyName = s"acl_${accountId}_ro*"
     val expectedWriteTokenPolicyName = s"acl_${accountId}_rw*"
 
-    checkTokenPolicies(tokenTuple.readToken, List(expectedReadTokenPolicyName))
-    checkTokenPolicies(tokenTuple.writeToken, List(expectedWriteTokenPolicyName))
+    checkTokenPolicies(tokenTuple.readToken, List(expectedReadTokenPolicyName), components.vaultTestComponents.vaultRestRequestExecutor)
+    checkTokenPolicies(tokenTuple.writeToken, List(expectedWriteTokenPolicyName), components.vaultTestComponents.vaultRestRequestExecutor)
 
     //check zooKeeper token's nodes existence
     val readTokenPath = Paths.get(

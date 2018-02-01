@@ -29,4 +29,7 @@ class CommonVaultTestComponents extends VaultTestComponents {
     IntegrationTestsSettings.vaultRetryDelay
   )
   protected val vaultServiceSettings = VaultService.Settings(IntegrationTestsSettings.vaultTokenPeriod)
+
+  val vaultRestRequestExecutor = new VaultRestRequestExecutor(requestExecutorSettings)
+  val vaultService = new VaultService(vaultRestRequestExecutor, vaultServiceSettings)
 }

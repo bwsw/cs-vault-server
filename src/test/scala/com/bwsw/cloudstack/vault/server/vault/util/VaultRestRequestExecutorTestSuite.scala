@@ -251,7 +251,9 @@ class VaultRestRequestExecutorTestSuite extends FlatSpec with TestData with Priv
     val vaultRestRequestCreator = new VaultRestRequestExecutor(vaultRestRequestExecutorSettings) {
       override protected def createRest(path: String, data: String)(endpoint: String): Rest = {
         new Rest() {
-          override def post(): RestResponse = throw new Exception("test exception")
+          override def post(): RestResponse = {
+            throw new Exception("test exception")
+          }
         }.url(s"$endpoint$path")
           .header("X-Vault-Token", vaultRestRequestExecutorSettings.rootToken)
           .body(data.getBytes("UTF-8"))

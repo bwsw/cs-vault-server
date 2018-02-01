@@ -25,6 +25,6 @@ trait VaultTestComponents {
   protected val requestExecutorSettings: VaultRestRequestExecutor.Settings
   protected val vaultServiceSettings: VaultService.Settings
 
-  lazy val vaultRestRequestExecutor = new VaultRestRequestExecutor(requestExecutorSettings)
-  lazy val vaultService = new VaultService(vaultRestRequestExecutor, vaultServiceSettings)
+  val vaultRestRequestExecutor: VaultRestRequestExecutor
+  val vaultService: VaultService
 }
