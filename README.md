@@ -31,14 +31,10 @@ To start a server in Docker container you should:
     "docker run --env-file variables.env bwsw/cs-vault-server:latest"
 
 To create a local docker image you should run the following command:
-    "docker build -t REPOSITORY:TAG ."
-     where REPOSITORY - container name, TAG - version of container
-
-If you need to create your own docker container with Travis help in DockerHub after project push into GitHub (master branch) you should:
-
-1. authorize your Travis-CI account to get an access to your GitHub account
-2. set the following environment variables in the Travis-CI: 'DOCKER_USERNAME', 'DOCKER_PASSWORD',
-   'DOCKER_USERNAME' it is Docker Hub user name; 'DOCKER_PASSWORD' it is Docker Hub password
+```bash
+    docker build -t REPOSITORY:TAG .
+```
+where REPOSITORY - container name, TAG - version of container
    
 ## Integration tests
 

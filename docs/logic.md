@@ -12,7 +12,8 @@ In case of an exception, the processing of event will be restarted, except the c
 **Event processing at the service interaction level.** <br />
 
 The processing of VM creation event consists of the following steps: <br />
-  1. get the appropriate account ID via CloudStackService <br />
+  1. get the appropriate account ID via CloudStackService: <br />
+    1.1. If the account did not retrieve, skip other steps.
   2. try to retrieve tokens from zookeeper. Token can have 'RO' or 'RW' policy <br />
   3. if the tokens don't exist: <br />
     3.1. the tokens are created in vault <br />
@@ -22,6 +23,7 @@ The processing of VM creation event consists of the following steps: <br />
 
 The processing of account creation event consists of the following steps: <br />
   1. check the account existence <br />
+    1.1. If the account did not exist, skip other steps.
   2. try to retrieve tokens from zookeeper. Token can have 'RO' or 'RW' policy <br />
   3. if the tokens don't exist: <br />
     3.1. the tokens are created in vault <br />
