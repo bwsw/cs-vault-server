@@ -27,6 +27,7 @@ import com.bwsw.cloudstack.vault.server.util.vault.components.FaultToleranceVaul
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAfterAll {
