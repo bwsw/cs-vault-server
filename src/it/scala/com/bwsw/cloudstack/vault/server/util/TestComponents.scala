@@ -18,8 +18,6 @@
 */
 package com.bwsw.cloudstack.vault.server.util
 
-import java.util.UUID
-
 import com.bwsw.cloudstack.vault.server.EventManager
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
@@ -33,11 +31,9 @@ import scala.util.{Failure, Success, Try}
 class TestComponents(val vaultTestComponents: VaultTestComponents) extends CloudStackTestsComponents {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  val consumerGroupId: String = UUID.randomUUID().toString
-
   lazy val consumer = new Consumer[String,String](Consumer.Settings(
     IntegrationTestsSettings.kafkaEndpoints,
-    consumerGroupId
+    IntegrationTestsSettings.kafkaGroupId
   ))
 
   val zooKeeperSettings = ZooKeeperService.Settings(

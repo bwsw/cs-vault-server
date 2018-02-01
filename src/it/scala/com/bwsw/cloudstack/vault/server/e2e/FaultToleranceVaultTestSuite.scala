@@ -27,12 +27,12 @@ import com.bwsw.cloudstack.vault.server.util.vault.components.FaultToleranceVaul
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAfterAll {
+  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
+
   val components = new TestComponents(new FaultToleranceVaultTestComponents)
-  commitToEndForGroup(components.consumerGroupId)
 
   Future(components.eventManager.execute())
 
@@ -53,7 +53,7 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
       s"-e VAULT_DEV_ROOT_TOKEN_ID=${IntegrationTestsSettings.FaultTolerance.vaultRootToken} " +
       s"-e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
       s"-p ${IntegrationTestsSettings.FaultTolerance.vaultPort}:${IntegrationTestsSettings.FaultTolerance.vaultPort} " +
-      s"--privileged --rm -d --name ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName} " +
+      s"--cap-add=IPC_LOCK --rm -d --name ${IntegrationTestsSettings.FaultTolerance.vaultDockerContainerName} " +
       s"vault:${IntegrationTestsSettings.FaultTolerance.vaultVersion}"
     dockerRunCommand.!
 

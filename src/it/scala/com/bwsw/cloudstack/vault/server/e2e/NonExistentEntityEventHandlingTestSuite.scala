@@ -36,9 +36,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with BeforeAndAfterAll with CloudStackTestEntities {
-  val components = new TestComponents(new CommonVaultTestComponents)
+  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
 
-  commitToEndForGroup(components.consumerGroupId)
+  val components = new TestComponents(new CommonVaultTestComponents)
 
   val accountId = UUID.randomUUID()
   val accountName = accountId.toString

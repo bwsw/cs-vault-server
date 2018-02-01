@@ -41,12 +41,13 @@ object IntegrationTestsSettings {
   val kafkaPollTimeout = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaPollTimeot)
   val kafkaTopics = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaTopics).split("[,\\s]+")
   val kafkaEventCount = ApplicationConfig.getRequiredInt(ConfigLiterals.kafkaEventCount)
+  val kafkaGroupId = ApplicationConfig.getRequiredString(ConfigLiterals.kafkaGroupId)
 
   object FaultTolerance {
     val vaultRootToken = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultRootToken)
     val vaultVersion = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultVersion)
     val vaultDockerContainerName = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultDockerContainerName)
     val vaultPort = ApplicationConfig.getRequiredString(IntegrationTestsConfigLiterals.FaultToleranceTest.vaultPort)
-    val vaultEndpoint = Array(s"http://localhost:$vaultPort")
+    val vaultEndpoints = Array(s"http://localhost:$vaultPort")
   }
 }

@@ -36,9 +36,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities with Checks with BeforeAndAfterAll {
-  val components = new TestComponents(new CommonVaultTestComponents)
+  commitToEndForGroup(IntegrationTestsSettings.kafkaGroupId)
 
-  commitToEndForGroup(components.consumerGroupId)
+  val components = new TestComponents(new CommonVaultTestComponents)
 
   Future(components.eventManager.execute())
 
@@ -59,7 +59,7 @@ class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities wit
       Paths.get(IntegrationTestsSettings.vmSecretPath, vmId.toString).toString
     )
 
-    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, vmId, VmTagType, maxRetryCount = 600, retryDelay = 1000)
+    val tokenTuple = retrieveTokenTagsIfThereAre(expectedPrefixTag, vmId, VmTagType, maxRetryCount = 60, retryDelay = 1000)
 
     //check policies and tokens
     val expectedReadTokenPolicyName = s"acl_${accountId}_${vmId}_ro*"

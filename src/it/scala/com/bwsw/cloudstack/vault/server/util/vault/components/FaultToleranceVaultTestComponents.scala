@@ -24,7 +24,7 @@ import com.bwsw.cloudstack.vault.server.vault.util.VaultRestRequestExecutor
 
 class FaultToleranceVaultTestComponents extends VaultTestComponents {
   protected val requestExecutorSettings = VaultRestRequestExecutor.Settings(
-    IntegrationTestsSettings.FaultTolerance.vaultEndpoint,
+    IntegrationTestsSettings.FaultTolerance.vaultEndpoints,
     IntegrationTestsSettings.FaultTolerance.vaultRootToken,
     IntegrationTestsSettings.vaultRetryDelay
   )
