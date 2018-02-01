@@ -48,6 +48,7 @@ lazy val root = (project in file("."))
     addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
     inConfig(IntegrationTest)(Defaults.itSettings),
     coverageEnabled in Test := true,
+    parallelExecution in ThisBuild := false,
     inConfig(IntegrationTest)(ScalastylePlugin.rawScalastyleSettings()) ++
       Seq(
         scalastyleConfig in IntegrationTest := (scalastyleConfig in scalastyle).value,
