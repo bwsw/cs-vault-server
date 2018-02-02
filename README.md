@@ -1,13 +1,6 @@
-Also see:
-* [Event processing logic](docs/logic.md)
-* [UML diagrams](docs/diagrams/)
-
 # cs-vault-server
-CloudStack Vault Plugin Server Handler
-
-## Technical
-
-[Travis Build History](https://travis-ci.org/bwsw/cs-vault-server/builds)
+CloudStack Vault Plugin Server Handler. This Instance for handling ApacheCloudStack event notification:
+create and write into entities tags (account, vm) Vault HashiCorp tokens, which provide access to secrets of the Vault.
 
 ## Quick start
 
@@ -38,15 +31,59 @@ To start a server in Docker container you should:
     "docker run --env-file variables.env bwsw/cs-vault-server:latest"
 
 To create a local docker image you should run the following command:
-    "docker build -t REPOSITORY:TAG ."
-     where REPOSITORY - container name, TAG - version of container
+```bash
+    docker build -t REPOSITORY:TAG .
+```
+where REPOSITORY - container name, TAG - version of container
+   
+## Integration tests
 
-If you need to create your own docker container with Travis help in DockerHub after project push into GitHub (master branch) you should:
+A machine which is being used to run integration tests have to have docker client.
 
-1. authorize your Travis-CI account to get an access to your GitHub account
-2. set the following environment variables in the Travis-CI: 'DOCKER_USERNAME', 'DOCKER_PASSWORD',
-   'DOCKER_USERNAME' it is Docker Hub user name; 'DOCKER_PASSWORD' it is Docker Hub password
+1. Add local environment variables:
+    * `IT_KAFKA_HOST` - host of Kafka, for example - "localhost"
+    * `IT_KAFKA_PORT` - port of Kafka, for example - "9092"
+    * `IT_KAFKA_ENDPOINTS` - $KAFKA_HOST:$KAFKA_PORT
+    * `IT_ZOOKEEPER_PORT` - port of ZooKeeper, for example - "2181"
+    * `IT_ZOOKEEPER_ENDPOINTS` - $IT_KAFKA_HOST:$IT_ZOOKEEPER_PORT
+    * `IT_VAULT_ENDPOINTS` - endpoints of Vault, for example "http://localhost:8200"
+    * `IT_VAULT_ROOT_TOKEN` - string which is used such as root Vault token
+    * `FAULT_TEST_VAULT_ROOT_TOKEN` - string which is used such as root token in Vault which will be run (in docker container) in fault tolerance tests
+    * `FAULT_TEST_VAULT_PORT` - port of Vault for fault tolerance tests, have to be different from port in IT_VAULT_ENDPOINTS
+    * `IT_CS_ENDPOINTS` - endpoints of CloudStack, for example "http://localhost:8888/client/api"
+    * `IT_CS_ADMIN_LOGIN` - admin login for authorization on CloudStack server
+    * `IT_CS_ADMIN_PASSWORD` - admin password for authorization on CloudStack server
+    * `IT_CS_PORT` - port from IT_CS_ENDPOINTS endpoint
+    
+2. Run Kafka server in docker container:
+```bash
+    docker run -d --rm --name spotify-kafka --tty=true -p $IT_ZOOKEEPER_PORT:$IT_ZOOKEEPER_PORT \
+                                                       -p $IT_KAFKA_PORT:$IT_KAFKA_PORT \
+                                                       --env ADVERTISED_HOST=$IT_KAFKA_HOST \
+                                                       --env ADVERTISED_PORT=$IT_KAFKA_PORT spotify/kafka
+```
+3. Run Vault server in docker container:
+```bash
+    docker run --cap-add=IPC_LOCK -e VAULT_DEV_ROOT_TOKEN_ID="${IT_VAULT_ROOT_TOKEN}" \
+                                  -e VAULT_DEV_LISTEN_ADDRESS="0.0.0.0:$IT_VAULT_PORT" \
+                                  -p $IT_VAULT_PORT:$IT_VAULT_PORT --rm -d --name vault-dev-server vault:0.8.3
+```
+4. Run CloudStack server in docker container:
+```bash
+    docker run --rm -e KAFKA_HOST="${IT_KAFKA_HOST}" \
+                    -e KAFKA_PORT="${IT_KAFKA_PORT}" \
+                    -e KAFKA_TOPIC="${IT_KAFKA_TOPIC}" \
+                    --name cloudstack-kafka-sim -d -p $IT_CS_PORT:$IT_CS_PORT bwsw/cs-simulator-kafka:4.10.3-NP
+```
+
+5. After the end of the cloudstack simulator deploying (you can check it like ![this](jenkins/run_cs_kafka_vault.sh)) execute: `sbt it:test`
+
+Note: fault tolerance tests could be failed due to unstable starting of vault container.
    
 ## Versioning
 
-Server has the same version as Apache CloudStack server
+Server has the same version as Apache CloudStack server, and used Vault version 0.8.3
+
+Also see:
+* [Event processing logic](docs/logic.md)
+* [UML diagrams](docs/diagrams/)
