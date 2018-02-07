@@ -25,11 +25,13 @@ import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.TagCreateRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, TagType, VmTagType}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
-import com.bwsw.cloudstack.entities.responses._
+import com.bwsw.cloudstack.entities.responses.account.{Account, AccountFindResponse}
+import com.bwsw.cloudstack.entities.responses.tag.Tag
+import com.bwsw.cloudstack.entities.responses.user.User
+import com.bwsw.cloudstack.entities.responses.vm.{VirtualMachine, VirtualMachineFindResponse}
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
-import com.bwsw.cloudstack.vault.server.mocks.requests.{MockAccountFindRequest, MockTagCreateRequest, MockVmFindRequest}
 import org.scalatest.FlatSpec
 
 class CloudStackServiceTestSuite extends FlatSpec with TestData {
@@ -47,22 +49,28 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     val expectedVmId = vmId
     val expectedAccountId = accountId
     val expectedDomainId = domainId
-    val expectedVmFindRequest = new MockVmFindRequest(Request.getVmRequest(vmId))
-    val expectedAccountFindRequest = new MockAccountFindRequest(
-      Request.getAccountRequestByName(accountName, expectedDomainId.toString)
-    )
+
+    val vmFindRequest = new VmFindRequest
+    vmFindRequest.withId(expectedVmId)
+
+    val accountFindRequest = new AccountFindRequest
+    accountFindRequest.withName(accountName)
+    accountFindRequest.withDomain(expectedDomainId)
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        assert(expectedVmFindRequest.requestIsEqualTo(request))
-        List(VirtualMachine(expectedVmId, accountName, expectedDomainId))
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
+        assert(request.getRequest.getCommand == vmFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == vmFindRequest.getRequest.getParameters)
+
+        List(getVirtualMachine(expectedVmId, accountName, expectedDomainId))
       }
     }
 
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
-        assert(expectedAccountFindRequest.requestIsEqualTo(request))
-        List(Account(expectedAccountId, List.empty[User]))
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
+        assert(request.getRequest.getCommand == accountFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == accountFindRequest.getRequest.getParameters)
+        List(getAccount(expectedAccountId, accountName, expectedDomainId, List.empty[User]))
       }
     }
 
@@ -94,12 +102,14 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   "doesVirtualMachineExist" should "return true if VirtualMachine exists" in {
     val expectedVmId = vmId
-    val expectedVmFindRequest = new MockVmFindRequest(Request.getVmRequest(vmId))
+    val vmFindRequest = new VmFindRequest
+    vmFindRequest.withId(expectedVmId)
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        assert(expectedVmFindRequest.requestIsEqualTo(request))
-        List(VirtualMachine(expectedVmId, "accountName", domainId))
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
+        assert(request.getRequest.getCommand == vmFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == vmFindRequest.getRequest.getParameters)
+        List(getVirtualMachine(expectedVmId, "accountName", domainId))
       }
     }
 
@@ -114,11 +124,13 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   "doesVirtualMachineExist" should "return false if VirtualMachine does not exist" in {
     val expectedVmId = vmId
-    val expectedVmFindRequest = new MockVmFindRequest(Request.getVmRequest(vmId))
+    val vmFindRequest = new VmFindRequest
+    vmFindRequest.withId(expectedVmId)
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        assert(expectedVmFindRequest.requestIsEqualTo(request))
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
+        assert(request.getRequest.getCommand == vmFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == vmFindRequest.getRequest.getParameters)
         List.empty[VirtualMachine]
       }
     }
@@ -135,12 +147,14 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   "doesAccountExist" should "return true if Account exists" in {
     val expectedAccountId = accountId
 
-    val expectedAccountFindRequest = new MockAccountFindRequest(Request.getAccountRequest(expectedAccountId))
+    val accountFindRequest = new AccountFindRequest
+    accountFindRequest.withId(expectedAccountId)
 
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
-        assert(expectedAccountFindRequest.requestIsEqualTo(request))
-        List(Account(expectedAccountId, List.empty[User]))
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
+        assert(request.getRequest.getCommand == accountFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == accountFindRequest.getRequest.getParameters)
+        List(getAccount(expectedAccountId, "accountName", UUID.randomUUID(), List.empty[User]))
       }
     }
 
@@ -156,11 +170,13 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   "doesAccountExist" should "return false if Account does not exist" in {
     val expectedAccountId = accountId
 
-    val expectedAccountFindRequest = new MockAccountFindRequest(Request.getAccountRequest(expectedAccountId))
+    val accountFindRequest = new AccountFindRequest
+    accountFindRequest.withId(expectedAccountId)
 
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
-        assert(expectedAccountFindRequest.requestIsEqualTo(request))
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
+        assert(request.getRequest.getCommand == accountFindRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == accountFindRequest.getRequest.getParameters)
         List.empty[Account]
       }
     }
@@ -179,13 +195,13 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     val accountName = "admin"
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        List(VirtualMachine(vmId, accountName, domainId))
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
+        List(getVirtualMachine(vmId, accountName, domainId))
       }
     }
 
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
         throw new Exception
       }
     }
@@ -203,7 +219,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   "getVmOwnerAccount" should "throw CloudStackFatalException if vmDao throws an exception" in {
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
         throw new Exception
       }
     }
@@ -221,7 +237,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   "getAccountExist" should "throw CloudStackFatalException if accountDao throws an exception" in {
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
         throw new Exception
       }
     }
@@ -239,7 +255,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
 
   "doesVirtualMachineExist" should "throw CloudStackFatalException if vmDao throws an exception" in {
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
         throw new Exception
       }
     }
@@ -259,7 +275,7 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     val accountName = "admin"
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
         List.empty[VirtualMachine]
       }
     }
@@ -279,13 +295,13 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
     val accountName = "admin"
 
     val vmDao = new MockVirtualMachineDao {
-      override def find(request: VmFindRequest)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
-        List(VirtualMachine(vmId, accountName, domainId))
+      override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
+        List(getVirtualMachine(vmId, accountName, domainId))
       }
     }
 
     val accountDao = new MockAccountDao {
-      override def find(request: AccountFindRequest)(implicit m: Manifest[AccountResponse]): List[Account] = {
+      override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
         List.empty[Account]
       }
     }
@@ -302,19 +318,17 @@ class CloudStackServiceTestSuite extends FlatSpec with TestData {
   }
 
   private def getCloudStackServiceForSetVaultTagsTest(isRun: AtomicBoolean, expectedResourceId: UUID, tagType: TagType) = {
-    val expectedVmTagsCreateRequest = new MockTagCreateRequest(
-      Request.getSetTagsRequest(
-        expectedResourceId,
-        tagType,
-        (Tag(VaultTagKey.toString(vaultKey1), key1), Tag(VaultTagKey.toString(vaultKey2), key2))
-      ),
-      TagCreateRequest.Settings(tagType, Set(expectedResourceId), List(Tag(key1,value1), Tag(key2, value2)))
-    )
+    val tagCreateRequest = new TagCreateRequest(TagCreateRequest.Settings(
+      tagType,
+      Set(expectedResourceId),
+      List(Tag(VaultTagKey.toString(vaultKey1), key1), Tag(VaultTagKey.toString(vaultKey2), key2))
+    ))
 
     val tagDao = new MockTagDao {
-      override def create(request: TagCreateRequest): Unit = {
+      override def create[R <: C](request: R): Unit = {
         isRun.set(true)
-        assert(expectedVmTagsCreateRequest.requestEqualsTo(request))
+        assert(request.getRequest.getCommand == tagCreateRequest.getRequest.getCommand &&
+          request.getRequest.getParameters == tagCreateRequest.getRequest.getParameters)
       }
     }
 

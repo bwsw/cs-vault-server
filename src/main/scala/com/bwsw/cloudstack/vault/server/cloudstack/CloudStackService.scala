@@ -25,7 +25,9 @@ import com.bwsw.cloudstack.entities.requests.account.AccountFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.TagCreateRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
 import com.bwsw.cloudstack.entities.requests.vm.VmFindRequest
-import com.bwsw.cloudstack.entities.responses.{Account, Tag, VirtualMachine}
+import com.bwsw.cloudstack.entities.responses.account.Account
+import com.bwsw.cloudstack.entities.responses.tag.Tag
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachine
 import com.bwsw.cloudstack.vault.server.cloudstack.util.exception.{CloudStackEntityDoesNotExistException, CloudStackFatalException}
 import org.slf4j.LoggerFactory
 
@@ -56,7 +58,8 @@ class CloudStackService(accountDao: AccountDao,
   def getVmOwnerAccount(vmId: UUID): UUID = {
     logger.trace(s"getVmOwnerAccount(vmId: $vmId)")
 
-    val vmFindRequest = new VmFindRequest().withId(vmId)
+    val vmFindRequest = new VmFindRequest()
+    vmFindRequest.withId(vmId)
 
     def vmFindRequestExecution: List[VirtualMachine] = vmDao.find(vmFindRequest)
 
@@ -65,8 +68,8 @@ class CloudStackService(accountDao: AccountDao,
     )
 
     val accountFindRequest = new AccountFindRequest()
-      .withName(vm.accountName)
-      .withDomain(vm.domainId)
+    accountFindRequest.withName(vm.accountName)
+    accountFindRequest.withDomain(vm.domainId)
 
     def accountFindRequestExecution: List[Account] = accountDao.find(accountFindRequest)
 
@@ -89,7 +92,8 @@ class CloudStackService(accountDao: AccountDao,
   def doesAccountExist(accountId: UUID): Boolean = {
     logger.trace(s"doesAccountExist(accountId: $accountId)")
 
-    val accountFindRequest = new AccountFindRequest().withId(accountId)
+    val accountFindRequest = new AccountFindRequest()
+    accountFindRequest.withId(accountId)
 
     def accountFindRequestExecution: List[Account] = accountDao.find(accountFindRequest)
 
@@ -106,7 +110,8 @@ class CloudStackService(accountDao: AccountDao,
   def doesVirtualMachineExist(vmId: UUID): Boolean = {
     logger.trace(s"doesVirtualMachineExist(vmId: $vmId)")
 
-    val vmFindRequest = new VmFindRequest().withId(vmId)
+    val vmFindRequest = new VmFindRequest()
+    vmFindRequest.withId(vmId)
 
     def vmFindRequestExecution: List[VirtualMachine] = vmDao.find(vmFindRequest)
 

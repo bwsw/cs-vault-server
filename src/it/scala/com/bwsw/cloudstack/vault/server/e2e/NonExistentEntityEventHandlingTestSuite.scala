@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException
 import com.bettercloud.vault.rest.Rest
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmCreateTestRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmDeleteRequest}
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.vault.Constants
 import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
@@ -43,13 +43,19 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
   val accountId = UUID.randomUUID()
   val accountName = accountId.toString
 
-  accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
+  val accountCreateRequest = getAccountCreateRequest
+  accountCreateRequest.withId(accountId)
+  accountCreateRequest.withName(accountName)
+  accountCreateRequest.withDomain(retrievedAdminDomainId)
 
-  val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+  accountDao.create(accountCreateRequest)
+
+  val vmCreateRequest = new VmCreateRequest(VmCreateRequest.Settings(
     retrievedServiceOfferingId, retrievedTemplateId, retrievedZoneId
-  )).withDomainAccount(accountName, retrievedAdminDomainId).asInstanceOf[VmCreateTestRequest]
+  ))
+  vmCreateRequest.withDomainAccount(accountName, retrievedAdminDomainId)
 
-  val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
+  val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
 
   val deleteVmRequest = new VmDeleteRequest(vmId)
 

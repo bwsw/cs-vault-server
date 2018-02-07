@@ -20,10 +20,10 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack.responses
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.entities.responses.{Entity, EntityList, EntityResponse}
+import com.bwsw.cloudstack.entities.responses.common.{Entity, EntityFindResponse, EntityList}
 import com.fasterxml.jackson.annotation.JsonProperty
 
-case class DomainResponse(@JsonProperty("listdomainsresponse") override val entityList: DomainList) extends EntityResponse(entityList)
+case class DomainResponse(@JsonProperty("listdomainsresponse") override val entityList: DomainList) extends EntityFindResponse(entityList)
 
 case class DomainList(@JsonProperty("domain") override val entities: Option[List[Domain]]) extends EntityList(entities)
 

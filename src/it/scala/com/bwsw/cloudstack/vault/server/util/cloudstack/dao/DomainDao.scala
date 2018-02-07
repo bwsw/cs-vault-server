@@ -27,5 +27,5 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Domain, Domai
 class DomainDao(executor: Executor, mapper: JsonMapper) extends GenericDao[DomainResponse, Domain](executor, mapper) {
   protected type F = DomainFindRequest
 
-  override def find(request: F)(implicit m: Manifest[DomainResponse]): Iterable[Domain] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[DomainResponse]): Iterable[Domain] = super.find(request)
 }

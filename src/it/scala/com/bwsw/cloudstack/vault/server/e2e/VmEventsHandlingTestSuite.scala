@@ -23,10 +23,10 @@ import java.util.UUID
 
 import com.bwsw.cloudstack.entities.requests.tag.types.VmTagType
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
-import com.bwsw.cloudstack.entities.responses.Tag
+import com.bwsw.cloudstack.entities.responses.tag.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{VmCreateTestRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.VmDeleteRequest
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
@@ -45,13 +45,18 @@ class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities wit
   "cs-vault-server" should "handle vm creation/deletion" in {
     val accountId = UUID.randomUUID()
     val accountName = accountId.toString
-    accountDao.create(getAccountCreateRequest.withId(accountId).withName(accountName).withDomain(retrievedAdminDomainId))
+    val accountCreateRequest = getAccountCreateRequest
+      accountCreateRequest.withId(accountId)
+      accountCreateRequest.withName(accountName)
+      accountCreateRequest.withDomain(retrievedAdminDomainId)
+    accountDao.create(accountCreateRequest)
 
-    val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+    val vmCreateRequest = new VmCreateRequest(VmCreateRequest.Settings(
       retrievedServiceOfferingId, retrievedTemplateId, retrievedZoneId
-    )).withDomainAccount(accountName, retrievedAdminDomainId).asInstanceOf[VmCreateTestRequest]
+    ))
+    vmCreateRequest.withDomainAccount(accountName, retrievedAdminDomainId)
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
+    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
 
     //check tags existing
     val expectedPrefixTag = Tag(

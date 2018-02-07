@@ -23,7 +23,10 @@ import java.util.UUID
 import br.com.autonomiccs.apacheCloudStack.client.ApacheCloudStackRequest
 import com.bwsw.cloudstack.entities.common.WeightedQueue
 import com.bwsw.cloudstack.entities.requests.tag.types.TagType
-import com.bwsw.cloudstack.entities.responses.Tag
+import com.bwsw.cloudstack.entities.responses.account.Account
+import com.bwsw.cloudstack.entities.responses.tag.Tag
+import com.bwsw.cloudstack.entities.responses.user.User
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachine
 
 import scala.util.Random
 
@@ -32,39 +35,30 @@ trait TestData {
   val vmId: UUID = UUID.randomUUID()
   val domainId: UUID = UUID.randomUUID()
 
-  object Request {
-    def getAccountRequest(accountId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listAccounts")
-      .addParameter("response", "json")
-      .addParameter("listAll", "true")
-      .addParameter("id", accountId)
-
-    def getAccountRequestByName(name: String, domain: String): ApacheCloudStackRequest = new ApacheCloudStackRequest("listAccounts")
-      .addParameter("response", "json")
-      .addParameter("listAll", "true")
-      .addParameter("name", name)
-      .addParameter("domainid", domain)
-
-    def getVmRequest(vmId: UUID): ApacheCloudStackRequest = new ApacheCloudStackRequest("listVirtualMachines")
-      .addParameter("response", "json")
-      .addParameter("listAll", "true")
-      .addParameter("id", vmId)
-
-    def getSetTagsRequest(resourceId: UUID, resourceType: TagType, tagTuple: (Tag, Tag)): ApacheCloudStackRequest = {
-      val request = new ApacheCloudStackRequest("createTags")
-      request.addParameter("response", "json")
-      request.addParameter("resourcetype", resourceType.name)
-      request.addParameter("resourceids", resourceId)
-      request.addParameter("tags[0].key", tagTuple._1.key)
-      request.addParameter("tags[0].value", tagTuple._1.value)
-      request.addParameter("tags[1].key", tagTuple._2.key)
-      request.addParameter("tags[1].value", tagTuple._2.value)
-    }
-  }
-
   def getEndpointQueue(endpoints: List[String]): WeightedQueue[String] = new WeightedQueue[String](endpoints) {
     override val r = new Random {
       override def nextInt(n: Int): Int = 0
     }
   }
 
+  def getVirtualMachine(id: UUID, accountName: String, domainId: UUID): VirtualMachine =
+    VirtualMachine(
+      id = id,
+      zoneId = UUID.randomUUID(),
+      templateId = UUID.randomUUID(),
+      serviceOfferingId = UUID.randomUUID(),
+      accountName = accountName,
+      domainId = domainId
+    )
+
+  def getAccount(id: UUID, name: String, domainId: UUID, users: List[User]): Account =
+    Account(
+      id = id,
+      name = name,
+      accountType = 1,
+      domainId = domainId,
+      networkDomain = "network",
+      users = users,
+      roleType = "Admin"
+    )
 }

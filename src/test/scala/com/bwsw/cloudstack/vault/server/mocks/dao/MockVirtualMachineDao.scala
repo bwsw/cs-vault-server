@@ -21,16 +21,16 @@ package com.bwsw.cloudstack.vault.server.mocks.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.VirtualMachineDao
-import com.bwsw.cloudstack.entities.responses.{VirtualMachine, VirtualMachinesResponse}
+import com.bwsw.cloudstack.entities.responses.vm.{VirtualMachine, VirtualMachineFindResponse}
 import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
 class MockVirtualMachineDao extends VirtualMachineDao(new Executor(MockConfig.executorSettings, new MockClientCreator),
                                                       new JsonMapper) {
-  override def create(request: C): Unit = {
+  override def create[R <: C](request: R): Unit = {
     throw new NotImplementedError("create method is not implemented")
   }
 
-  override def find(request: F)(implicit m: Manifest[VirtualMachinesResponse]): List[VirtualMachine] = {
+  override def find[R <: F](request: R)(implicit m: Manifest[VirtualMachineFindResponse]): List[VirtualMachine] = {
     throw new NotImplementedError("find method is not implemented")
   }
 }
