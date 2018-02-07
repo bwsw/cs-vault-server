@@ -26,8 +26,8 @@ import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.{AccountTagType, VmTagType}
 import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
 import com.bwsw.cloudstack.entities.responses.tag.Tag
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachineCreateResponse
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import org.scalatest.FlatSpec
 
 class CloudStackServiceIntegrationTestSuite extends FlatSpec with CloudStackTestEntities {
@@ -70,7 +70,7 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with CloudStackTest
     ))
     vmCreateRequest.withDomainAccount(accountName, domainId)
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
+    val vmId = mapper.deserialize[VirtualMachineCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vm.id
 
     assert(cloudStackService.doesVirtualMachineExist(vmId))
     assert(cloudStackService.getVmOwnerAccount(vmId) == accountId)
@@ -113,7 +113,7 @@ class CloudStackServiceIntegrationTestSuite extends FlatSpec with CloudStackTest
       retrievedZoneId
     ))
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
+    val vmId = mapper.deserialize[VirtualMachineCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vm.id
 
     val tagFindRequest = new TagFindRequest
     tagFindRequest.withResource(vmId)

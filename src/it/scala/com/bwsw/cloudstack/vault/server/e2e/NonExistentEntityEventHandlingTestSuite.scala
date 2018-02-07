@@ -23,10 +23,10 @@ import java.util.UUID
 import java.util.concurrent.TimeoutException
 
 import com.bettercloud.vault.rest.Rest
-import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
+import com.bwsw.cloudstack.entities.requests.account.AccountDeleteRequest
+import com.bwsw.cloudstack.entities.requests.vm.{VmCreateRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachineCreateResponse
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmDeleteRequest}
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.vault.Constants
 import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
@@ -55,15 +55,15 @@ class NonExistentEntityEventHandlingTestSuite extends FlatSpec with Checks with 
   ))
   vmCreateRequest.withDomainAccount(accountName, retrievedAdminDomainId)
 
-  val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
+  val vmId = mapper.deserialize[VirtualMachineCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vm.id
 
   val deleteVmRequest = new VmDeleteRequest(vmId)
 
-  executor.executeRequest(deleteVmRequest.request)
+  executor.executeRequest(deleteVmRequest.getRequest)
 
   val accountDeleteRequest = new AccountDeleteRequest(accountId)
 
-  executor.executeRequest(accountDeleteRequest.request)
+  executor.executeRequest(accountDeleteRequest.getRequest)
 
   //wait for account and vm deletion in CloudStack server
   waitAccountAndVmDeletion(retryDelay = 1000, maxRetryCount = 10, accountId, vmId)

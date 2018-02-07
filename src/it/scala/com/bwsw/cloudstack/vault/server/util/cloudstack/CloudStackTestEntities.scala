@@ -20,9 +20,13 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack
 
 import java.util.UUID
 
+import com.bwsw.cloudstack.entities.requests.domain.DomainFindRequest
+import com.bwsw.cloudstack.entities.requests.serviceoffering.ServiceOfferingFindRequest
+import com.bwsw.cloudstack.entities.requests.template.TemplateFindRequest
+import com.bwsw.cloudstack.entities.requests.template.filters.Featured
+import com.bwsw.cloudstack.entities.requests.zone.ZoneFindRequest
 import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
 import com.bwsw.cloudstack.vault.server.util.cloudstack.dao.{DomainDao, ServiceOfferingDao, TemplateDao, ZoneDao}
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{DomainFindRequest, ServiceOfferingFindRequest, TemplateFindRequest, ZoneFindRequest}
 
 trait CloudStackTestEntities extends CloudStackTestsComponents {
   lazy val retrievedServiceOfferingId: UUID = {
@@ -45,7 +49,7 @@ trait CloudStackTestEntities extends CloudStackTestsComponents {
 
   lazy val retrievedTemplateId: UUID = {
     val templateDao = new TemplateDao(executor, mapper)
-    val templateFindRequest = new TemplateFindRequest
+    val templateFindRequest = new TemplateFindRequest(Featured)
     templateDao.find(templateFindRequest).head.id
   }
 }

@@ -21,11 +21,11 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.GenericDao
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.DomainFindRequest
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Domain, DomainResponse}
+import com.bwsw.cloudstack.entities.requests.domain.DomainFindRequest
+import com.bwsw.cloudstack.entities.responses.domain.{Domain, DomainFindResponse}
 
-class DomainDao(executor: Executor, mapper: JsonMapper) extends GenericDao[DomainResponse, Domain](executor, mapper) {
+class DomainDao(executor: Executor, mapper: JsonMapper) extends GenericDao[DomainFindResponse, Domain](executor, mapper) {
   protected type F = DomainFindRequest
 
-  override def find[R <: F](request: R)(implicit m: Manifest[DomainResponse]): Iterable[Domain] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[DomainFindResponse]): Iterable[Domain] = super.find(request)
 }

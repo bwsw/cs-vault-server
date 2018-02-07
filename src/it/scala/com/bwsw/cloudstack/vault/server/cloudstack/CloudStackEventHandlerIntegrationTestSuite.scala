@@ -21,15 +21,14 @@ package com.bwsw.cloudstack.vault.server.cloudstack
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest
+import com.bwsw.cloudstack.entities.requests.account.{AccountCreateRequest, AccountDeleteRequest}
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAdmin
-import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
+import com.bwsw.cloudstack.entities.requests.vm.{VmCreateRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachineCreateResponse
 import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmDeleteRequest}
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.kafka.reader.MessageQueue
 import org.mockito.Mockito._
@@ -80,7 +79,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
 
     val accountDeleteRequest = new AccountDeleteRequest(accountId)
 
-    executor.executeRequest(accountDeleteRequest.request)
+    executor.executeRequest(accountDeleteRequest.getRequest)
 
     //waiting account creation/deletion in CloudStack Server
     var retryCount = 0
@@ -105,7 +104,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
       retrievedZoneId
     ))
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
+    val vmId = mapper.deserialize[VirtualMachineCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vm.id
 
     val controller = mock[CloudStackVaultController]
 
@@ -121,7 +120,7 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
 
     val vmDeleteRequest = new VmDeleteRequest(vmId)
 
-    executor.executeRequest(vmDeleteRequest.request)
+    executor.executeRequest(vmDeleteRequest.getRequest)
 
     //waiting vm creation/deletion in CloudStack Server
     var retryCount = 0

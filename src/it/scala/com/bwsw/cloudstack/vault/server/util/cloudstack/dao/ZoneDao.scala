@@ -21,11 +21,11 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.GenericDao
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.ZoneFindRequest
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Zone, ZoneResponse}
+import com.bwsw.cloudstack.entities.requests.zone.ZoneFindRequest
+import com.bwsw.cloudstack.entities.responses.zone.{Zone, ZoneFindResponse}
 
-class ZoneDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ZoneResponse, Zone](executor, mapper) {
+class ZoneDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ZoneFindResponse, Zone](executor, mapper) {
   protected type F = ZoneFindRequest
 
-  override def find[R <: F](request: R)(implicit m: Manifest[ZoneResponse]): Iterable[Zone] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[ZoneFindResponse]): Iterable[Zone] = super.find(request)
 }

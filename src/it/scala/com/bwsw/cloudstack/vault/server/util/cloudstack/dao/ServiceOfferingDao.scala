@@ -21,11 +21,11 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.GenericDao
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.ServiceOfferingFindRequest
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{ServiceOffering, ServiceOfferingResponse}
+import com.bwsw.cloudstack.entities.requests.serviceoffering.ServiceOfferingFindRequest
+import com.bwsw.cloudstack.entities.responses.serviceoffering.{ServiceOffering, ServiceOfferingFindResponse}
 
-class ServiceOfferingDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ServiceOfferingResponse, ServiceOffering](executor, mapper) {
+class ServiceOfferingDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ServiceOfferingFindResponse, ServiceOffering](executor, mapper) {
   protected type F = ServiceOfferingFindRequest
 
-  override def find[R <: F](request: R)(implicit m: Manifest[ServiceOfferingResponse]): Iterable[ServiceOffering] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[ServiceOfferingFindResponse]): Iterable[ServiceOffering] = super.find(request)
 }

@@ -22,12 +22,11 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import com.bwsw.cloudstack.entities.requests.tag.types.VmTagType
-import com.bwsw.cloudstack.entities.requests.vm.VmCreateRequest
+import com.bwsw.cloudstack.entities.requests.vm.{VmCreateRequest, VmDeleteRequest}
 import com.bwsw.cloudstack.entities.responses.tag.Tag
+import com.bwsw.cloudstack.entities.responses.vm.VirtualMachineCreateResponse
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.VmDeleteRequest
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
@@ -56,7 +55,7 @@ class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities wit
     ))
     vmCreateRequest.withDomainAccount(accountName, retrievedAdminDomainId)
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
+    val vmId = mapper.deserialize[VirtualMachineCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vm.id
 
     //check tags existing
     val expectedPrefixTag = Tag(
@@ -89,7 +88,7 @@ class VmEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntities wit
 
     //delete VM
     val vmDeleteRequest = new VmDeleteRequest(vmId)
-    executor.executeRequest(vmDeleteRequest.request)
+    executor.executeRequest(vmDeleteRequest.getRequest)
 
     //wait for VM deletion handling
     Thread.sleep(10000)

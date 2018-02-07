@@ -21,11 +21,11 @@ package com.bwsw.cloudstack.vault.server.util.cloudstack.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.GenericDao
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.TemplateFindRequest
-import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Template, TemplateResponse}
+import com.bwsw.cloudstack.entities.requests.template.TemplateFindRequest
+import com.bwsw.cloudstack.entities.responses.template.{Template, TemplateFindResponse}
 
-class TemplateDao(executor: Executor, mapper: JsonMapper) extends GenericDao[TemplateResponse, Template](executor, mapper) {
+class TemplateDao(executor: Executor, mapper: JsonMapper) extends GenericDao[TemplateFindResponse, Template](executor, mapper) {
   protected type F = TemplateFindRequest
 
-  override def find[R <: F](request: R)(implicit m: Manifest[TemplateResponse]): Iterable[Template] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[TemplateFindResponse]): Iterable[Template] = super.find(request)
 }
