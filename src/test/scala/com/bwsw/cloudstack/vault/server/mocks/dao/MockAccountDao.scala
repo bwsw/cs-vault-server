@@ -21,15 +21,15 @@ package com.bwsw.cloudstack.vault.server.mocks.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.AccountDao
-import com.bwsw.cloudstack.entities.responses.{Account, AccountResponse}
+import com.bwsw.cloudstack.entities.responses.account.{Account, AccountFindResponse}
 import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
 class MockAccountDao extends AccountDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
-  override def create(request: C): Unit = {
+  override def create[R <: C](request: R): Unit = {
     throw new NotImplementedError("create method is not implemented")
   }
 
-  override def find(request: F)(implicit m: Manifest[AccountResponse]): List[Account] = {
+  override def find[R <: F](request: R)(implicit m: Manifest[AccountFindResponse]): List[Account] = {
     throw new NotImplementedError("find method is not implemented")
   }
 }

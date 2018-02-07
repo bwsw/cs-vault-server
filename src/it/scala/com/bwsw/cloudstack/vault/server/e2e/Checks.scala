@@ -27,7 +27,7 @@ import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest
 import com.bwsw.cloudstack.entities.requests.account.AccountCreateRequest.RootAdmin
 import com.bwsw.cloudstack.entities.requests.tag.TagFindRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.TagType
-import com.bwsw.cloudstack.entities.responses.Tag
+import com.bwsw.cloudstack.entities.responses.tag.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.util.cloudstack.components.CloudStackTestsComponents
 import com.bwsw.cloudstack.vault.server.util.e2e.entities.TokenTuple
@@ -142,7 +142,9 @@ trait Checks extends CloudStackTestsComponents {
                                   tagType: TagType,
                                   maxRetryCount: Int,
                                   retryDelay: Int): TokenTuple = {
-    val findRequest = new TagFindRequest().withResource(entityId).withResourceType(tagType)
+    val findRequest = new TagFindRequest
+    findRequest.withResource(entityId)
+    findRequest.withResourceType(tagType)
 
     var tags = Set.empty[Tag]
     var retryCount = 0

@@ -41,12 +41,20 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
     import sys.process._
 
     val accountId = UUID.randomUUID()
-    accountDao.create(getAccountCreateRequest.withId(accountId))
+    val accountCreateRequest = getAccountCreateRequest
+    accountCreateRequest.withId(accountId)
+    accountDao.create(accountCreateRequest)
 
     //wait account creation in CloudStack server
     Thread.sleep(5000)
 
-    val emptyTags = tagDao.find(new TagFindRequest().withResource(accountId).withResourceType(AccountTagType))
+    val emptyTags = tagDao.find({
+      val tagFindRequest = new TagFindRequest
+      tagFindRequest.withResource(accountId)
+      tagFindRequest.withResourceType(AccountTagType)
+      tagFindRequest
+    })
+
     assert(emptyTags.isEmpty)
 
     //run vault docker container
@@ -62,7 +70,12 @@ class FaultToleranceVaultTestSuite extends FlatSpec with Checks with BeforeAndAf
     Thread.sleep(20000)
 
     //check vault token tags creation
-    val tags = tagDao.find(new TagFindRequest().withResource(accountId).withResourceType(AccountTagType))
+    val tags = tagDao.find({
+      val tagFindRequest = new TagFindRequest
+      tagFindRequest.withResource(accountId)
+      tagFindRequest.withResourceType(AccountTagType)
+      tagFindRequest
+    })
 
     val roTokenTagOpt = tags.find { tag =>
       VaultTagKey.fromString(tag.key) == VaultTagKey.VaultRO
