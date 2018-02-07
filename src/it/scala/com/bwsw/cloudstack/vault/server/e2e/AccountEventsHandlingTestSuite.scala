@@ -21,11 +21,11 @@ package com.bwsw.cloudstack.vault.server.e2e
 import java.nio.file.Paths
 import java.util.UUID
 
+import com.bwsw.cloudstack.entities.requests.account.AccountDeleteRequest
 import com.bwsw.cloudstack.entities.requests.tag.types.AccountTagType
 import com.bwsw.cloudstack.entities.responses.tag.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.entities.VaultTagKey
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.AccountDeleteRequest
 import com.bwsw.cloudstack.vault.server.util.vault.components.CommonVaultTestComponents
 import com.bwsw.cloudstack.vault.server.util.{IntegrationTestsSettings, TestComponents}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
@@ -79,7 +79,7 @@ class AccountEventsHandlingTestSuite extends FlatSpec with CloudStackTestEntitie
 
     //delete account
     val accountDeleteRequest = new AccountDeleteRequest(accountId)
-    executor.executeRequest(accountDeleteRequest.request)
+    executor.executeRequest(accountDeleteRequest.getRequest)
 
     //wait for account deletion handling
     Thread.sleep(10000)
