@@ -82,7 +82,8 @@ Note: fault tolerance tests could be failed due to unstable starting of vault co
    
 ## Versioning
 
-Server has the same version as Apache CloudStack server, and used Vault version 0.8.3
+Library used Vault version 0.8.3 and depends on CloudStack version which is included as the minor version. \
+For example 1.410.0 version depends on CloudStack 4.10
 
 Also see:
 * [Event processing logic](docs/logic.md)
