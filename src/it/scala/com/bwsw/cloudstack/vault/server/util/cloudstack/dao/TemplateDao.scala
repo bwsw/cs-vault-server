@@ -27,5 +27,5 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Template, Tem
 class TemplateDao(executor: Executor, mapper: JsonMapper) extends GenericDao[TemplateResponse, Template](executor, mapper) {
   protected type F = TemplateFindRequest
 
-  override def find(request: TemplateFindRequest)(implicit m: Manifest[TemplateResponse]): Iterable[Template] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[TemplateResponse]): Iterable[Template] = super.find(request)
 }

@@ -27,5 +27,5 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{Zone, ZoneRes
 class ZoneDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ZoneResponse, Zone](executor, mapper) {
   protected type F = ZoneFindRequest
 
-  override def find(request: F)(implicit m: Manifest[ZoneResponse]): Iterable[Zone] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[ZoneResponse]): Iterable[Zone] = super.find(request)
 }

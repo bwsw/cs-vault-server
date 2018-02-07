@@ -20,7 +20,7 @@ package com.bwsw.cloudstack.vault.server.mocks.services
 
 import java.util.UUID
 
-import com.bwsw.cloudstack.entities.responses.Tag
+import com.bwsw.cloudstack.entities.responses.tag.Tag
 import com.bwsw.cloudstack.vault.server.cloudstack.CloudStackService
 import com.bwsw.cloudstack.vault.server.mocks.dao.{MockAccountDao, MockTagDao, MockVirtualMachineDao}
 

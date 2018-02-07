@@ -27,5 +27,5 @@ import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.{ServiceOfferi
 class ServiceOfferingDao(executor: Executor, mapper: JsonMapper) extends GenericDao[ServiceOfferingResponse, ServiceOffering](executor, mapper) {
   protected type F = ServiceOfferingFindRequest
 
-  override def find(request: ServiceOfferingFindRequest)(implicit m: Manifest[ServiceOfferingResponse]): Iterable[ServiceOffering] = super.find(request)
+  override def find[R <: F](request: R)(implicit m: Manifest[ServiceOfferingResponse]): Iterable[ServiceOffering] = super.find(request)
 }

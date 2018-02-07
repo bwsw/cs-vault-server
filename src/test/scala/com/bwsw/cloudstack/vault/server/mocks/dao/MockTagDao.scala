@@ -21,15 +21,15 @@ package com.bwsw.cloudstack.vault.server.mocks.dao
 import com.bwsw.cloudstack.entities.Executor
 import com.bwsw.cloudstack.entities.common.JsonMapper
 import com.bwsw.cloudstack.entities.dao.TagDao
-import com.bwsw.cloudstack.entities.responses.{Tag, TagResponse}
+import com.bwsw.cloudstack.entities.responses.tag.{Tag, TagFindResponse}
 import com.bwsw.cloudstack.vault.server.mocks.{MockClientCreator, MockConfig}
 
 class MockTagDao extends TagDao(new Executor(MockConfig.executorSettings, new MockClientCreator), new JsonMapper) {
-  override def create(request: C): Unit = {
+  override def create[R <: C](request: R): Unit = {
     throw new NotImplementedError("create method is not implemented")
   }
 
-  override def find(request: F)(implicit m: Manifest[TagResponse]): Set[Tag] = {
+  override def find[R <: F](request: R)(implicit m: Manifest[TagFindResponse]): Set[Tag] = {
     throw new NotImplementedError("find method is not implemented")
   }
 }

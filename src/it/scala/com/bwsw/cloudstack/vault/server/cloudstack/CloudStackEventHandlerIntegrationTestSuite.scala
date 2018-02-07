@@ -28,7 +28,7 @@ import com.bwsw.cloudstack.vault.server.cloudstack.util.CloudStackEventHandler
 import com.bwsw.cloudstack.vault.server.controllers.CloudStackVaultController
 import com.bwsw.cloudstack.vault.server.util.IntegrationTestsSettings
 import com.bwsw.cloudstack.vault.server.util.cloudstack.CloudStackTestEntities
-import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmCreateTestRequest, VmDeleteRequest}
+import com.bwsw.cloudstack.vault.server.util.cloudstack.requests.{AccountDeleteRequest, VmDeleteRequest}
 import com.bwsw.cloudstack.vault.server.util.cloudstack.responses.VmCreateResponse
 import com.bwsw.cloudstack.vault.server.util.kafka.TestConsumer
 import com.bwsw.kafka.reader.MessageQueue
@@ -73,7 +73,8 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
       "lastName",
       "password",
       s"username $accountId"
-    )).withId(accountId)
+    ))
+    accountCreateRequest.withId(accountId)
 
     accountDao.create(accountCreateRequest)
 
@@ -98,13 +99,13 @@ class CloudStackEventHandlerIntegrationTestSuite extends FlatSpec with MockitoSu
     var countOfCreationHandling = 0
     var countOfDeletionHandling = 0
 
-    val vmCreateTestRequest = new VmCreateTestRequest(VmCreateRequest.Settings(
+    val vmCreateRequest = new VmCreateRequest(VmCreateRequest.Settings(
       retrievedServiceOfferingId,
       retrievedTemplateId,
       retrievedZoneId
     ))
 
-    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateTestRequest.request)).vmId.id
+    val vmId = mapper.deserialize[VmCreateResponse](executor.executeRequest(vmCreateRequest.getRequest)).vmId.id
 
     val controller = mock[CloudStackVaultController]
 
